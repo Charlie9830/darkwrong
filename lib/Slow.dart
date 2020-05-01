@@ -35,7 +35,7 @@ class Slow extends StatelessWidget {
                 cells: [
                   DataCell(Text(item.unitNumber,)),
                   DataCell(Text(item.position,)),
-                  DataCell(Text(item.intrumentType,)),
+                  DataCell(Text(item.instrumentType,)),
                   DataCell(Text(item.wattage,)),
                   DataCell(Text(item.multicoreName,)),
                   DataCell(Text(item.multicoreNumber,)),
