@@ -1,6 +1,12 @@
 import 'dart:math';
-import 'package:darkwrong/Fast.dart';
-import 'package:darkwrong/Slow.dart';
+import 'package:darkwrong/Cell.dart';
+import 'package:darkwrong/FastRow.dart';
+import 'package:darkwrong/FastTable.dart';
+import 'package:darkwrong/Field.dart';
+import 'package:darkwrong/FieldValue.dart';
+import 'package:darkwrong/Fixture.dart';
+import 'package:darkwrong/TableHeader.dart';
+import 'package:darkwrong/enums.dart';
 import 'package:uuid/uuid.dart';
 
 import 'package:flutter/material.dart';
@@ -17,11 +23,11 @@ const List<String> positions = [
   'LX8',
   'Ladder 1 Left',
   'Ladder 1 Right',
-   'Ladder 2 Left',
+  'Ladder 2 Left',
   'Ladder 2 Right',
-   'Ladder 3 Left',
+  'Ladder 3 Left',
   'Ladder 3 Right',
-   'Ladder 4 Left',
+  'Ladder 4 Left',
   'Ladder 4 Right',
   'Rover 1 Left',
   'Rover 1 Right',
@@ -42,7 +48,7 @@ const List<String> positions = [
   'Near Slot Left',
   'Near Slot Right',
   'Far Slot Left',
-  'Far Slot Right'  
+  'Far Slot Right'
 ];
 
 const List<String> instrumentTypes = [
@@ -104,34 +110,91 @@ class MyHomePage extends StatefulWidget {
   _MyHomePageState createState() => _MyHomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage>
-    with SingleTickerProviderStateMixin {
+class _MyHomePageState extends State<MyHomePage> {
   List<Fixture> fixtures = [];
-  MaxColumnLengths maxColumnLengths = MaxColumnLengths();
-
-  TabController _tabController;
+  List<Fixture> testBuffer = [];
+  Map<String, Field> fields = {};
+  Map<String, int> maxFieldLengths = {};
 
   @override
   void initState() {
-    _tabController = TabController(length: 2, initialIndex: 0, vsync: this);
-
     final _random = Random();
     final uuid = Uuid();
 
+    final String firstId = uuid.v4();
+    final String secondId = uuid.v4();
+    final String thirdId = uuid.v4();
+    final String fourthId = uuid.v4();
+    final String fifthId = uuid.v4();
+    final String sixthId = uuid.v4();
+    final String seventhId = uuid.v4();
+    final String eighthId = uuid.v4();
+
+    fields.addAll(<String, Field>{
+      firstId: Field(uid: firstId, name: 'Unit Number', type: FieldType.text),
+      secondId: Field(
+        uid: secondId,
+        name: 'Position',
+        type: FieldType.text,
+      ),
+      thirdId: Field(
+        uid: thirdId,
+        name: 'Instrument Type',
+        type: FieldType.text,
+      ),
+      fourthId: Field(
+        uid: fourthId,
+        name: 'Instrument Type 2',
+        type: FieldType.text,
+      ),
+      fifthId: Field(
+        uid: fifthId,
+        name: 'Instrument Type 3',
+        type: FieldType.text,
+      ),
+      sixthId: Field(
+        uid: sixthId,
+        name: 'Instrument Type 4',
+        type: FieldType.text,
+      ),
+      seventhId: Field(
+        uid: seventhId,
+        name: 'Instrument Type 5',
+        type: FieldType.text,
+      ),
+      eighthId: Field(
+        uid: eighthId,
+        name: 'Instrument Type 6',
+        type: FieldType.text,
+      )
+    });
+
     fixtures.addAll(List.generate(2000, (index) {
-      return Fixture(
-        uid: uuid.v4(),
-        unitNumber: (index + 1).toRadixString(10),
-        instrumentType:
-            instrumentTypes[_random.nextInt(instrumentTypes.length)],
-        multicoreName: '1.1',
-        multicoreNumber: _random.nextInt(4).toString(),
-        position: positions[_random.nextInt(positions.length)],
-        wattage: '750w',
-      );
+      return Fixture(uid: uuid.v4(), fieldValues: <String, FieldValue>{
+        firstId: FieldValue((index + 1).toString()), // Unit Number
+        secondId: FieldValue(
+            positions[_random.nextInt(positions.length)]), // Position
+        thirdId: FieldValue(
+            instrumentTypes[_random.nextInt(instrumentTypes.length)]),
+
+        fourthId: FieldValue(
+            instrumentTypes[_random.nextInt(instrumentTypes.length)]),
+
+        fifthId: FieldValue(
+            instrumentTypes[_random.nextInt(instrumentTypes.length)]),
+
+        sixthId: FieldValue(
+            instrumentTypes[_random.nextInt(instrumentTypes.length)]),
+
+        seventhId: FieldValue(
+            instrumentTypes[_random.nextInt(instrumentTypes.length)]),
+
+        eighthId: FieldValue(instrumentTypes[
+            _random.nextInt(instrumentTypes.length)]), // Instrument Type
+      });
     }));
 
-    maxColumnLengths = _buildMaxColumnLengths(fixtures);
+    maxFieldLengths = _buildMaxFieldLengths(fixtures);
     super.initState();
   }
 
@@ -139,115 +202,70 @@ class _MyHomePageState extends State<MyHomePage>
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-            title: Text('Darkwrong'),
-            actions: [
-              RaisedButton(
-                child: Text('Debug'),
-                onPressed: _onDebugButtonPressed,
-              )
-            ],
-            bottom: TabBar(controller: _tabController, tabs: [
-              Text('Virtualized'),
-              Text('Unvirtualized'),
-            ])),
-        body: TabBarView(
-          controller: _tabController,
-          children: [
-            Fast(
-              fixtures: fixtures,
-              maxColumnLengths: maxColumnLengths
+          title: Text('Darkwrong'),
+          actions: [
+            RaisedButton(
+              child: Text('Dump'),
+              onPressed: _onDumpButtonPressed,
             ),
-            Slow(fixtures: fixtures)
+            RaisedButton(
+              child: Text('Rebuild'),
+              onPressed: _onRebuildButtonPressed,
+            )
           ],
+        ),
+        body: FastTable(
+          headers: fields.entries.map((field) {
+            return TableHeader(
+              Text(field.value.name),
+              key: Key(field.key),
+              width: maxFieldLengths[field.key] * 8.0,
+            );
+          }).toList(),
+          rows: fixtures.map((fixture) {
+            return FastRow(
+              key: Key(fixture.uid),
+              children: fixture.fieldValues.entries.map((entry) {
+                return Cell(
+                  entry.value.value,
+                );
+              }).toList(),
+            );
+          }).toList(),
         ));
   }
 
-  void _onDebugButtonPressed() {
-    print(fixtures);
+  void _onDumpButtonPressed() {
+    setState(() {
+      testBuffer = fixtures.toList();
+      fixtures = [];
+    });
   }
 
-  MaxColumnLengths _buildMaxColumnLengths(List<Fixture> fixtures) {
-    final MaxColumnLengths maxLengths = MaxColumnLengths();
+  void _onRebuildButtonPressed() {
+    setState(() {
+      fixtures = testBuffer.toList();
+      testBuffer = [];
+    });
+  }
+
+  Map<String, int> _buildMaxFieldLengths(List<Fixture> fixtures) {
+    final Map<String, int> maxLengths = {};
 
     for (var fixture in fixtures) {
-      // Unit Number
-      if (fixture.unitNumberLength > maxLengths.unitNumber) {
-        maxLengths.unitNumber = fixture.unitNumberLength;
-      }
+      for (var fieldValue in fixture.fieldValues.entries) {
+        // Place an entry if one doesn't already exist.
+        if (maxLengths.containsKey(fieldValue.key) == false) {
+          maxLengths[fieldValue.key] = 0;
+        }
 
-      // Position
-      if (fixture.positionLength > maxLengths.position) {
-        maxLengths.position = fixture.positionLength;
-      }
-
-      // InstrumentType
-      if (fixture.instrumentTypeLength > maxLengths.instrumentType) {
-        maxLengths.instrumentType = fixture.instrumentTypeLength;
-      }
-
-      // Wattage
-      if (fixture.wattageLength > maxLengths.wattage) {
-        maxLengths.wattage = fixture.wattageLength;
-      }
-
-      // MulticoreName
-      if (fixture.multicoreNameLength > maxLengths.multicoreName) {
-        maxLengths.multicoreName = fixture.multicoreNameLength;
-      }
-
-      // MulticoreNumber
-      if (fixture.multicoreNumberLength > maxLengths.multicoreNumber) {
-        maxLengths.multicoreNumber = fixture.multicoreNumberLength;
+        // Update the max length if greater than existing value.
+        if (maxLengths[fieldValue.key] < fieldValue.value.length) {
+          maxLengths[fieldValue.key] = fieldValue.value.length;
+        }
       }
     }
 
     return maxLengths;
   }
-
-  @override
-  void dispose() {
-    _tabController.dispose();
-    super.dispose();
-  }
-}
-
-class MaxColumnLengths {
-  int unitNumber = 0;
-  int position = 0;
-  int instrumentType = 0;
-  int wattage = 0;
-  int multicoreName = 0;
-  int multicoreNumber = 0;
-}
-
-class Fixture {
-  final String uid;
-  final String unitNumber;
-  final String position;
-  final String instrumentType;
-  final String wattage;
-  final String multicoreName;
-  final String multicoreNumber;
-
-  final int unitNumberLength;
-  final int positionLength;
-  final int instrumentTypeLength;
-  final int wattageLength;
-  final int multicoreNameLength;
-  final int multicoreNumberLength;
-
-  Fixture(
-      {this.uid,
-      this.unitNumber = '',
-      this.position = '',
-      this.instrumentType = '',
-      this.wattage = '',
-      this.multicoreName = '',
-      this.multicoreNumber = ''})
-      : unitNumberLength = unitNumber.length ?? 0,
-        positionLength = position.length ?? 0,
-        instrumentTypeLength = instrumentType.length ?? 0,
-        wattageLength = wattage.length ?? 0,
-        multicoreNameLength = multicoreName.length ?? 0,
-        multicoreNumberLength = multicoreNumber.length ?? 0;
 }
