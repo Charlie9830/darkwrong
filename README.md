@@ -1,4 +1,4 @@
 # darkwrong
 
-Darkwrong is a viability tester of Flutter's Data Table performance in respect to a possible alternative to Lightwright, the industry standard in theatrical lighting paperwork management.
+Darkwrong is a a viability study of building a new Entertainment Lighting Paperwork management solution. Darkwrong is heavily inspired by Lightwright 6 (© 2018-2020 John McKernon Software).
 
