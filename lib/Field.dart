@@ -1,11 +1,11 @@
 import 'package:darkwrong/enums.dart';
 
-class Field {
+class FieldModel {
   final String uid;
   final String name;
   final FieldType type;
 
-  Field({
+  FieldModel({
     this.uid,
     this.name,
     this.type,

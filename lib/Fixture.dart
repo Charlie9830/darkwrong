@@ -1,11 +1,11 @@
 import 'package:darkwrong/FieldValue.dart';
 import 'package:flutter/foundation.dart';
 
-class Fixture {
+class FixtureModel {
   final String uid;
   final Map<String, FieldValue> fieldValues;
 
-  Fixture({
+  FixtureModel({
     @required this.uid,
     @required this.fieldValues,
   });
