@@ -8,17 +8,24 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-   return Scaffold(
-        appBar: AppBar(
-          title: Text('Darkwrong'),
-          actions: [
-            RaisedButton(
-              child: Text('Debug'),
-              onPressed: viewModel.onDebugButtonPressed,
-            )
-          ],
-        ),
-        body: WorksheetContainer(), 
-        );
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Darkwrong'),
+        actions: [
+          Expanded(
+            child: TextField(
+            ),
+          ),
+          IconButton(
+              icon: Icon(Icons.add),
+              onPressed: viewModel.onAddFixtureButtonPressed),
+          RaisedButton(
+            child: Text('Debug'),
+            onPressed: viewModel.onDebugButtonPressed,
+          ),
+        ],
+      ),
+      body: WorksheetContainer(),
+    );
   }
 }

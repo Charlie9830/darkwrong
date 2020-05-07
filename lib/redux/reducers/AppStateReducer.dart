@@ -1,119 +1,171 @@
-import 'dart:math';
-
-import 'package:darkwrong/Field.dart';
-import 'package:darkwrong/FieldValue.dart';
-import 'package:darkwrong/Fixture.dart';
+import 'package:darkwrong/mock_data/initMockData.dart';
+import 'package:darkwrong/models/Field.dart';
+import 'package:darkwrong/models/FieldValue.dart';
+import 'package:darkwrong/models/Fixture.dart';
 import 'package:darkwrong/enums.dart';
-import 'package:darkwrong/mock_data/mockInstrumentTypes.dart';
-import 'package:darkwrong/mock_data/mockPositions.dart';
+import 'package:darkwrong/models/SelectedCell.dart';
+import 'package:darkwrong/models/ValueReferenceModel.dart';
+import 'package:darkwrong/models/WorksheetCell.dart';
+import 'package:darkwrong/models/WorksheetHeader.dart';
+import 'package:darkwrong/models/WorksheetModel.dart';
+import 'package:darkwrong/models/WorksheetRow.dart';
 import 'package:darkwrong/redux/actions/SyncActions.dart';
 import 'package:darkwrong/redux/state/AppState.dart';
-import 'package:uuid/uuid.dart';
+import 'package:darkwrong/util/getCellId.dart';
+import 'package:darkwrong/util/getUid.dart';
 
 AppState appStateReducer(AppState state, dynamic action) {
   if (action is InitMockData) {
-    final _random = Random();
-    final uuid = Uuid();
+    final mockState = initMockData(state);
+    return mockState.copyWith(
+      worksheet: _rebuildWorksheet(state.worksheet, mockState.fixtures, mockState.fieldValues, mockState.fields),
+    );
+  }
 
-    final String firstId = uuid.v4();
-    final String secondId = uuid.v4();
-    final String thirdId = uuid.v4();
-    final String fourthId = uuid.v4();
-    final String fifthId = uuid.v4();
-    final String sixthId = uuid.v4();
-    final String seventhId = uuid.v4();
-    final String eighthId = uuid.v4();
+  if (action is AddFields) {
+    return state.copyWith(fields: _addFields(state.fields, action.names));
+  }
 
-    final fields = <String, FieldModel>{
-      firstId:
-          FieldModel(uid: firstId, name: 'Unit Number', type: FieldType.text),
-      secondId: FieldModel(
-        uid: secondId,
-        name: 'Position',
-        type: FieldType.text,
-      ),
-      thirdId: FieldModel(
-        uid: thirdId,
-        name: 'Instrument Type',
-        type: FieldType.text,
-      ),
-      fourthId: FieldModel(
-        uid: fourthId,
-        name: 'Instrument Type 2',
-        type: FieldType.text,
-      ),
-      fifthId: FieldModel(
-        uid: fifthId,
-        name: 'Instrument Type 3',
-        type: FieldType.text,
-      ),
-      sixthId: FieldModel(
-        uid: sixthId,
-        name: 'Instrument Type 4',
-        type: FieldType.text,
-      ),
-      seventhId: FieldModel(
-        uid: seventhId,
-        name: 'Instrument Type 5',
-        type: FieldType.text,
-      ),
-      eighthId: FieldModel(
-        uid: eighthId,
-        name: 'Instrument Type 6',
-        type: FieldType.text,
-      )
-    };
+  if (action is UpdateValue) {
+    // final selectedCells = state.worksheet.selectedCells.values.toList();
 
-    final fixtures = List.generate(2000, (index) {
-      return FixtureModel(uid: uuid.v4(), fieldValues: <String, FieldValue>{
-        firstId: FieldValue((index + 1).toString()), // Unit Number
-        secondId: FieldValue(
-            mockPositions[_random.nextInt(mockPositions.length)]), // Position
-        thirdId: FieldValue(
-            mockInstrumentTypes[_random.nextInt(mockInstrumentTypes.length)]),
+    // for (var cell in selectedCells) {
+    //   final fixtureId = cell.rowId;
+    //   final fieldId = cell.columnId;
+    //   final valueId = action.newValue;
 
-        fourthId: FieldValue(
-            mockInstrumentTypes[_random.nextInt(mockInstrumentTypes.length)]),
+    //   if (state.fieldValues[fieldId] != null && state.fieldValues[fieldId][action.newValue] != null) {
+    //     // Set to existing Value.
+        
+    //   }
+    // }
+  }
 
-        fifthId: FieldValue(
-            mockInstrumentTypes[_random.nextInt(mockInstrumentTypes.length)]),
-
-        sixthId: FieldValue(
-            mockInstrumentTypes[_random.nextInt(mockInstrumentTypes.length)]),
-
-        seventhId: FieldValue(
-            mockInstrumentTypes[_random.nextInt(mockInstrumentTypes.length)]),
-
-        eighthId: FieldValue(mockInstrumentTypes[
-            _random.nextInt(mockInstrumentTypes.length)]), // Instrument Type
-      });
-    });
+  if (action is AddBlankFixture) {
+    final fixtures = state.fixtures.toList()
+      ..add(FixtureModel(
+        uid: getUid(),
+        values: <String, ValueReferenceModel>{},
+      ));
 
     return state.copyWith(
-        fields: fields,
         fixtures: fixtures,
-        maxFieldLengths: _buildMaxFieldLengths(fixtures));
+        worksheet: _rebuildWorksheet(state.worksheet, fixtures, state.fieldValues, state.fields));
+  }
+
+  if (action is SelectWorksheetCell) {
+    return state.copyWith(
+      worksheet: state.worksheet.copyWith(
+        selectedCells: Map<String, SelectedCellModel>.from(state.worksheet.selectedCells)..addAll({
+          action.cellId : SelectedCellModel(
+            rowId: action.rowId,
+            columnId: action.columnId,
+          )
+        })
+      )
+    );
+  }
+
+  if (action is DeselectWorksheetCell) {
+    return state.copyWith(
+      worksheet: state.worksheet.copyWith(
+        selectedCells: Map<String, SelectedCellModel>.from(state.worksheet.selectedCells)..removeWhere((key, value) => key == action.cellId),
+      )
+    );
   }
 
   return state;
 }
 
-Map<String, int> _buildMaxFieldLengths(List<FixtureModel> fixtures) {
-  final Map<String, int> maxLengths = {};
+WorksheetModel _rebuildWorksheet(
+    WorksheetModel existingWorksheet,
+    List<FixtureModel> fixtures,
+    Map<String, Map<String, FieldValueModel>> fieldValues,
+    Map<String, FieldModel> fields) {
+  final List<WorksheetRowModel> rows = [];
+  final Map<String, int> maxFieldLengths = {};
+  final displayedFields =
+      fields; // Actual implementation of Filtering and sorting to be completed at a later date.
 
+  // Iterate through Fixtures then each Fixtures fieldEntrys to build Cells into the Rows. Also collect the maxFieldLengths.
   for (var fixture in fixtures) {
-    for (var fieldValue in fixture.fieldValues.entries) {
-      // Place an entry if one doesn't already exist.
-      if (maxLengths.containsKey(fieldValue.key) == false) {
-        maxLengths[fieldValue.key] = 0;
+    final String rowId = fixture.uid;
+    final List<WorksheetCellModel> cells = [];
+
+    for (var fieldsEntry in displayedFields.entries) {
+      // Lookup the fieldValue. Build the Cell.
+      final FieldValueModel value = _lookupFieldValue(fieldValues,
+          fieldsEntry.key, fixture.values[fieldsEntry.key]?.id);
+      cells.add(WorksheetCellModel(
+        cellId: getCellId(rowId, fieldsEntry.key),
+        columnId: fieldsEntry.key,
+        rowId: rowId,
+        value: value?.value ?? '',
+      ));
+
+      // Update maxFieldLengths.
+      final coercedValueLength = value?.length ?? 0;
+      if (maxFieldLengths.containsKey(fieldsEntry.key) == false) {
+        maxFieldLengths[fieldsEntry.key] = coercedValueLength;
       }
 
-      // Update the max length if greater than existing value.
-      if (maxLengths[fieldValue.key] < fieldValue.value.length) {
-        maxLengths[fieldValue.key] = fieldValue.value.length;
+      if (coercedValueLength > maxFieldLengths[fieldsEntry.key]) {
+        maxFieldLengths[fieldsEntry.key] = coercedValueLength;
       }
+    }
+
+    rows.add(WorksheetRowModel(
+      rowId: rowId,
+      cells: cells,
+    ));
+  }
+
+  return existingWorksheet.copyWith(
+    rows: rows,
+    headers: displayedFields.entries.map((entry) {
+      return WorksheetHeaderModel(
+          uid: entry.key,
+          title: entry.value.name,
+          maxFieldLength: maxFieldLengths[entry.key] ?? 0);
+    }).toList(),
+  );
+}
+
+FieldValueModel _lookupFieldValue(
+    Map<String, Map<String, FieldValueModel>> fieldValues,
+    String fieldId,
+    String valueId) {
+  if (fieldValues == null ||
+      fieldValues.isEmpty ||
+      fieldId == null ||
+      valueId == null) {
+    return null;
+  }
+
+  final Map<String, FieldValueModel> valueMap = fieldValues[fieldId];
+  if (valueMap == null) {
+    return null;
+  }
+
+  return valueMap[valueId];
+}
+
+Map<String, FieldModel> _addFields(
+    Map<String, FieldModel> existingFields, List<String> fieldNames) {
+  final fields = Map<String, FieldModel>.from(existingFields);
+
+  // Add Fields if not already existing.
+  for (var name in fieldNames) {
+    if (existingFields.values.any((item) => item.name == name) == false) {
+      final uid = getUid();
+
+      fields[uid] = FieldModel(
+        uid: uid,
+        name: name,
+        type: FieldType.text,
+      );
     }
   }
 
-  return maxLengths;
+  return fields;
 }

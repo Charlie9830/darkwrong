@@ -4,19 +4,34 @@ import 'package:flutter/material.dart';
 
 class Cell extends StatelessWidget {
   final String text;
+  final bool isSelected;
+  final dynamic onClick;
 
-  const Cell(this.text, {Key key}) : super(key: key);
+  const Cell(this.text, {Key key, this.isSelected, this.onClick})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: _getWidth(context),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(text),
-          VerticalDivider(),
-        ],
+    final coercedText = text == null || text == '' ? '-' : text;
+    return GestureDetector(
+      onTap: onClick,
+      child: SizedBox(
+        width: _getWidth(context),
+        child: Container(
+          decoration: BoxDecoration(
+              border: Border.all(
+            color: Colors.red,
+            width: 2.0,
+            style: isSelected ? BorderStyle.solid : BorderStyle.none,
+          )),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(coercedText),
+              VerticalDivider(),
+            ],
+          ),
+        ),
       ),
     );
   }

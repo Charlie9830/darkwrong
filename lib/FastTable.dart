@@ -1,8 +1,6 @@
 import 'package:darkwrong/ColumnWidthsProvider.dart';
 import 'package:darkwrong/FastRow.dart';
-import 'package:darkwrong/Fixture.dart';
 import 'package:darkwrong/TableHeader.dart';
-import 'package:darkwrong/main.dart';
 import 'package:flutter/material.dart';
 
 class FastTable extends StatelessWidget {

@@ -10,7 +10,8 @@ class TableHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       alignment: Alignment.center,
-      width: width,
+      width: width < 100 ? 100 : width,
+      height: 48.0,
       child: header,
     );
   }

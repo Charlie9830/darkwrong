@@ -1,14 +1,13 @@
-import 'package:darkwrong/Field.dart';
-import 'package:darkwrong/Fixture.dart';
+import 'package:darkwrong/models/WorksheetModel.dart';
 
 class WorksheetViewModel {
-  final Map<String, FieldModel> fields;
-  final List<FixtureModel> fixtures;
-  final Map<String, int> maxFieldLengths;
+  final WorksheetModel data;
+  final dynamic onCellSelect;
+  final dynamic onCellDeselect;
 
   WorksheetViewModel({
-    this.fields,
-    this.fixtures,
-    this.maxFieldLengths,
+    this.data,
+    this.onCellSelect,
+    this.onCellDeselect
   });
 }

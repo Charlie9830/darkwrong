@@ -1,8 +1,6 @@
 import 'package:darkwrong/Cell.dart';
 import 'package:darkwrong/FastRow.dart';
 import 'package:darkwrong/FastTable.dart';
-import 'package:darkwrong/Field.dart';
-import 'package:darkwrong/Fixture.dart';
 import 'package:darkwrong/TableHeader.dart';
 import 'package:darkwrong/view_models/WorksheetViewModel.dart';
 import 'package:flutter/material.dart';
@@ -15,23 +13,29 @@ class Worksheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return FastTable(
-          headers: viewModel.fields.entries.map((field) {
-            return TableHeader(
-              Text(field.value.name),
-              key: Key(field.key),
-              width: viewModel.maxFieldLengths[field.key] * 8.0,
-            );
-          }).toList(),
-          rows: viewModel.fixtures.map((fixture) {
-            return FastRow(
-              key: Key(fixture.uid),
-              children: fixture.fieldValues.entries.map((entry) {
-                return Cell(
-                  entry.value.value,
-                );
-              }).toList(),
-            );
-          }).toList(),
-        );
+      headers: viewModel.data.headers
+          .map((item) => TableHeader(Text(item.title),
+              key: Key(item.uid), width: item.maxFieldLength * 8.0))
+          .toList(),
+      rows: viewModel.data.rows
+          .map((row) => FastRow(
+                key: Key(row.rowId),
+                children: row.cells.map(
+                  (cell) {
+                    final isSelected =
+                        viewModel.data.selectedCells.containsKey(cell.cellId);
+                    return Cell(cell.value,
+                        key: Key(cell.cellId),
+                        isSelected: isSelected,
+                        onClick: isSelected
+                            ? () => viewModel.onCellDeselect(
+                                row.rowId, cell.columnId, cell.cellId)
+                            : () => viewModel.onCellSelect(
+                                row.rowId, cell.columnId, cell.cellId));
+                  },
+                ).toList(),
+              ))
+          .toList(),
+    );
   }
 }

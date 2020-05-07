@@ -19,7 +19,8 @@ class HomeScreenContainer extends StatelessWidget {
       },
       converter: (Store<AppState> store) {
         return HomeScreenViewModel(
-          onDebugButtonPressed: () => store.dispatch(InitMockData()) 
+          onDebugButtonPressed: () => store.dispatch(InitMockData()),
+          onAddFixtureButtonPressed: () => store.dispatch(AddBlankFixture()),
         );
       },
     );

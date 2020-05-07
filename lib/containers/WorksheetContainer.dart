@@ -1,4 +1,5 @@
 import 'package:darkwrong/Worksheet.dart';
+import 'package:darkwrong/redux/actions/SyncActions.dart';
 import 'package:darkwrong/redux/state/AppState.dart';
 import 'package:darkwrong/view_models/WorksheetViewModel.dart';
 import 'package:flutter/material.dart';
@@ -18,9 +19,9 @@ class WorksheetContainer extends StatelessWidget {
 
   WorksheetViewModel _converter(Store<AppState> store, BuildContext context) {
     return WorksheetViewModel(
-      fields: store.state.fields,
-      fixtures: store.state.fixtures,
-      maxFieldLengths: store.state.maxFieldLengths,
+      data: store.state.worksheet,
+      onCellSelect: (String rowId, String columnId, String cellId) => store.dispatch(SelectWorksheetCell(rowId: rowId, columnId: columnId, cellId: cellId)),
+      onCellDeselect: (String rowId, String columnId, String cellId) => store.dispatch(DeselectWorksheetCell(rowId: rowId, columnId: columnId, cellId: cellId))
     );
   }
 }
