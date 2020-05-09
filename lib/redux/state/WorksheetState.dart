@@ -2,28 +2,28 @@ import 'package:darkwrong/models/SelectedCell.dart';
 import 'package:darkwrong/models/WorksheetHeader.dart';
 import 'package:darkwrong/models/WorksheetRow.dart';
 
-class WorksheetModel {
+class WorksheetState {
   final List<WorksheetRowModel> rows;
   final List<WorksheetHeaderModel> headers;
   final Map<String, SelectedCellModel> selectedCells;
 
-  WorksheetModel({
+  WorksheetState({
     this.rows,
     this.headers,
     this.selectedCells,
   });
 
-  WorksheetModel.initial() :
+  WorksheetState.initial() :
   rows = [],
   headers = [],
   selectedCells = {};
 
-  WorksheetModel copyWith({
+  WorksheetState copyWith({
     List<WorksheetRowModel> rows,
     List<WorksheetHeaderModel> headers,
     Map<String, SelectedCellModel> selectedCells,
   }) {
-    return WorksheetModel(
+    return WorksheetState(
       rows: rows ?? this.rows,
       headers: headers ?? this.headers,
       selectedCells: selectedCells ?? this.selectedCells,
