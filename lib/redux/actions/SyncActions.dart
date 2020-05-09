@@ -1,11 +1,13 @@
+import 'package:darkwrong/models/FieldValue.dart';
+
 class InitMockData {
   InitMockData();
 }
 
-class UpdateValue {
-  final String newValue;
+class UpdateFixtureValue {
+  final FieldValue newValue;
 
-  UpdateValue({
+  UpdateFixtureValue({
     this.newValue,
   });
 }
