@@ -14,9 +14,13 @@ FixtureState fixtureStateReducer(FixtureState state, dynamic action) {
   if (action is UpdateFixturesAndFieldValues) {
     return state.copyWith(
       fixtures: Map<String, FixtureModel>.from(state.fixtures)
-        ..updateAll((key, value) => action.fixtureUpdates.containsKey(key)
-            ? action.fixtureUpdates[key]
-            : value),
+        ..updateAll((key, value) {
+          if (action.fixtureUpdates.containsKey(key)) {
+            return action.fixtureUpdates[key];
+          } else {
+            return value;
+          }
+        }),
       fieldValues: state.fieldValues.copyWithNewValues(action.fieldValueUpdates),
     );
   }

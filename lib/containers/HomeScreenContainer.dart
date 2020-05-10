@@ -23,7 +23,8 @@ class HomeScreenContainer extends StatelessWidget {
         return HomeScreenViewModel(
           onDebugButtonPressed: () => store.dispatch(InitMockData()),
           onAddFixtureButtonPressed: () => store.dispatch(rebuildWorksheet()),
-          onValueUpdate: (String newValue) => store.dispatch(updateFixtureValues(store.state.worksheetState.selectedCells, FieldValue(newValue)))
+          isFixtureEditEnabled: store.state.worksheetState.selectedCells.isNotEmpty,
+          onValueUpdate: (String newValue) => store.dispatch(updateFixtureValues(store.state.worksheetState.selectedCells, FieldValue(newValue))),
         );
       },
     );

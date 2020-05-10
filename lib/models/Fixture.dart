@@ -20,9 +20,9 @@ class FixtureModel {
     );
   }
 
-  FixtureModel copyWithUpdatedValue(String valueId, FieldValue newValue) {
+  FixtureModel copyWithUpdatedValue(String fieldId, FieldValue newValue) {
     final map = Map<String, FieldValue>.from(values);
-    map[valueId] = newValue;
+    map[fieldId] = newValue;
 
     return this.copyWith(
       values: map,

@@ -1,4 +1,5 @@
 import 'package:darkwrong/containers/WorksheetContainer.dart';
+import 'package:darkwrong/presentation/FixtureEditTextField.dart';
 import 'package:darkwrong/view_models/HomeScreenViewModel.dart';
 import 'package:flutter/material.dart';
 
@@ -13,8 +14,9 @@ class HomeScreen extends StatelessWidget {
         title: Text('Darkwrong'),
         actions: [
           Expanded(
-            child: TextField(
-            onSubmitted: (newValue) => print('doop'),
+            child: FixtureEditTextField(
+              enabled: viewModel.isFixtureEditEnabled,
+              onSubmitted: (newValue) => viewModel.onValueUpdate(newValue),
             ),
           ),
           IconButton(

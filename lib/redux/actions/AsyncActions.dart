@@ -31,15 +31,19 @@ ThunkAction<AppState> updateFixtureValues(
       }
 
       if (fieldValues.containsValue(fieldId, newValue.key) == false) {
+        if (updatedFieldValues[fieldId] == null) {
+          updatedFieldValues[fieldId] = <String, FieldValue>{};
+        }
+
         updatedFieldValues[fieldId][newValue.key] = newValue;
       }
 
       if (updatedFixtures.containsKey(fixtureId)) {
         updatedFixtures[fixtureId] = updatedFixtures[fixtureId]
-            .copyWithUpdatedValue(newValue.key, newValue);
+            .copyWithUpdatedValue(fieldId, newValue);
       } else {
         updatedFixtures[fixtureId] =
-            fixture.copyWithUpdatedValue(newValue.key, newValue);
+            fixture.copyWithUpdatedValue(fieldId, newValue);
       }
     }
 
@@ -54,6 +58,8 @@ ThunkAction<AppState> updateFixtureValues(
 
 ThunkAction<AppState> rebuildWorksheet() {
   return (Store<AppState> store) async {
+    
+    print(store.state.fixtureState.fixtures.values.first.values.values.first.value);
     final watch = Stopwatch();
     watch.start();
     final worksheet = _rebuildWorksheet(
