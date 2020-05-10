@@ -35,5 +35,11 @@ const List<String> mockPositions = [
   'Near Slot Left',
   'Near Slot Right',
   'Far Slot Left',
-  'Far Slot Right'
+  'Far Slot Right',
+  'Deck Left',
+  'Deck Right',
+  'DS Deck Left',
+  'DS Deck Right',
+  'US Deck Right',
+  'US Deck Left',
 ];

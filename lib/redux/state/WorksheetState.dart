@@ -3,8 +3,8 @@ import 'package:darkwrong/models/WorksheetHeader.dart';
 import 'package:darkwrong/models/WorksheetRow.dart';
 
 class WorksheetState {
-  final List<WorksheetRowModel> rows;
-  final List<WorksheetHeaderModel> headers;
+  final Map<String, WorksheetRowModel> rows;
+  final Map<String, WorksheetHeaderModel> headers;
   final Map<String, SelectedCellModel> selectedCells;
 
   WorksheetState({
@@ -14,13 +14,13 @@ class WorksheetState {
   });
 
   WorksheetState.initial() :
-  rows = [],
-  headers = [],
-  selectedCells = {};
+  rows = <String, WorksheetRowModel>{},
+  headers = <String, WorksheetHeaderModel>{},
+  selectedCells = <String, SelectedCellModel>{};
 
   WorksheetState copyWith({
-    List<WorksheetRowModel> rows,
-    List<WorksheetHeaderModel> headers,
+    Map<String, WorksheetRowModel> rows,
+    Map<String, WorksheetHeaderModel> headers,
     Map<String, SelectedCellModel> selectedCells,
   }) {
     return WorksheetState(

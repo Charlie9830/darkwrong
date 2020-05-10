@@ -14,6 +14,7 @@ class HomeScreen extends StatelessWidget {
         actions: [
           Expanded(
             child: TextField(
+            onSubmitted: (newValue) => print('doop'),
             ),
           ),
           IconButton(

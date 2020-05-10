@@ -1,11 +1,11 @@
 import 'package:darkwrong/models/Field.dart';
-import 'package:darkwrong/models/FieldValue.dart';
+import 'package:darkwrong/models/FieldValuesStore.dart';
 import 'package:darkwrong/models/Fixture.dart';
 
 class FixtureState {
   final Map<String, FixtureModel> fixtures;
   final Map<String, FieldModel> fields;
-  final Map<String, Map<String, FieldValue>> fieldValues;
+  final FieldValuesStore fieldValues;
   
   FixtureState({
     this.fixtures,
@@ -16,12 +16,12 @@ class FixtureState {
   FixtureState.initial()
       : fixtures = <String, FixtureModel>{},
         fields = <String, FieldModel>{},
-        fieldValues = <String, Map<String,FieldValue>>{};
+        fieldValues = FieldValuesStore.initial();
 
   FixtureState copyWith({
     Map<String, FixtureModel> fixtures,
     Map<String, FieldModel> fields,
-    Map<String, Map<String, FieldValue>> fieldValues,
+    FieldValuesStore fieldValues,
   }) {
     return FixtureState(
       fixtures: fixtures ?? this.fixtures,

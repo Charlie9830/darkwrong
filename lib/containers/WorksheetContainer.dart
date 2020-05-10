@@ -19,7 +19,7 @@ class WorksheetContainer extends StatelessWidget {
 
   WorksheetViewModel _converter(Store<AppState> store, BuildContext context) {
     return WorksheetViewModel(
-      data: store.state.worksheet,
+      state: store.state.worksheetState,
       onCellSelect: (String rowId, String columnId, String cellId) => store.dispatch(SelectWorksheetCell(rowId: rowId, columnId: columnId, cellId: cellId)),
       onCellDeselect: (String rowId, String columnId, String cellId) => store.dispatch(DeselectWorksheetCell(rowId: rowId, columnId: columnId, cellId: cellId))
     );

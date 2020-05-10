@@ -1,3 +1,5 @@
+import 'package:darkwrong/models/FieldValue.dart';
+import 'package:darkwrong/redux/actions/AsyncActions.dart';
 import 'package:darkwrong/redux/actions/SyncActions.dart';
 import 'package:darkwrong/redux/state/AppState.dart';
 import 'package:darkwrong/screens/HomeScreen.dart';
@@ -20,7 +22,8 @@ class HomeScreenContainer extends StatelessWidget {
       converter: (Store<AppState> store) {
         return HomeScreenViewModel(
           onDebugButtonPressed: () => store.dispatch(InitMockData()),
-          onAddFixtureButtonPressed: () => store.dispatch(AddBlankFixture()),
+          onAddFixtureButtonPressed: () => store.dispatch(rebuildWorksheet()),
+          onValueUpdate: (String newValue) => store.dispatch(updateFixtureValues(store.state.worksheetState.selectedCells, FieldValue(newValue)))
         );
       },
     );

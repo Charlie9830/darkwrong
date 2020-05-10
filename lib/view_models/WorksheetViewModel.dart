@@ -1,12 +1,12 @@
-import 'package:darkwrong/models/WorksheetModel.dart';
+import 'package:darkwrong/redux/state/WorksheetState.dart';
 
 class WorksheetViewModel {
-  final WorksheetModel data;
+  final WorksheetState state;
   final dynamic onCellSelect;
   final dynamic onCellDeselect;
 
   WorksheetViewModel({
-    this.data,
+    this.state,
     this.onCellSelect,
     this.onCellDeselect
   });

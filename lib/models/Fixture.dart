@@ -28,4 +28,8 @@ class FixtureModel {
       values: map,
     );
   }
+
+  FieldValue getValue(String fieldId) {
+    return values[fieldId];
+  }
 }

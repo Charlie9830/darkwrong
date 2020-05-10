@@ -37,9 +37,10 @@ class Cell extends StatelessWidget {
   }
 
   double _getWidth(BuildContext context) {
-    final index = CellIndexProvider.of(context).index;
-    final width = ColumnWidthsProvider.of(context).widths[index];
+    // final index = CellIndexProvider.of(context).index;
+    // final width = ColumnWidthsProvider.of(context).widths.elementAt(index);
 
-    return width > 48.0 ? width : 48.0;
+    // return width > 48.0 ? width : 48.0;
+    return 100.0;
   }
 }

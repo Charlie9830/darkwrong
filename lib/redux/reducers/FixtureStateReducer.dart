@@ -11,6 +11,16 @@ FixtureState fixtureStateReducer(FixtureState state, dynamic action) {
     return state.copyWith(fields: _addFields(state.fields, action.names));
   }
 
+  if (action is UpdateFixturesAndFieldValues) {
+    return state.copyWith(
+      fixtures: Map<String, FixtureModel>.from(state.fixtures)
+        ..updateAll((key, value) => action.fixtureUpdates.containsKey(key)
+            ? action.fixtureUpdates[key]
+            : value),
+      fieldValues: state.fieldValues.copyWithNewValues(action.fieldValueUpdates),
+    );
+  }
+
   if (action is AddBlankFixture) {
     final fixtures = Map<String, FixtureModel>.from(state.fixtures);
     final fixture = FixtureModel(
@@ -20,51 +30,7 @@ FixtureState fixtureStateReducer(FixtureState state, dynamic action) {
 
     fixtures[fixture.uid] = fixture;
 
-    return state.copyWith(
-        fixtures: fixtures
-    );
-  }
-
-  if (action is UpdateFixtureValue) {
-    final selectedCells = action.selectedCells;
-    final fieldValues =
-        Map<String, Map<String, FieldValue>>.from(state.fieldValues);
-    final modifiedFixtures = <String, FixtureModel>{};
-
-    for (var cell in selectedCells) {
-      final fixtureId = cell.rowId;
-      final fieldId = cell.columnId;
-      final fixture = state.fixtures[fixtureId];
-      final currentValue = fixture.values[fieldId];
-
-      if (currentValue == action.newValue) {
-        continue;
-      }
-
-      if (fieldValues[fieldId][currentValue.key] == null) {
-        // Add the value to fieldValues.
-        fieldValues[fieldId][currentValue.key] = currentValue;
-      }
-
-      // Modify the Fixture.
-      if (modifiedFixtures.containsKey(fixtureId)) {
-        modifiedFixtures[fixtureId] = modifiedFixtures[fixtureId]
-            .copyWithUpdatedValue(currentValue.key, currentValue);
-      } else {
-        modifiedFixtures[fixtureId] =
-            fixture.copyWithUpdatedValue(currentValue.key, currentValue);
-      }
-    }
-
-    // Merge modifiedFixtures with fixtures.
-    final newFixtures = state.fixtures.map((key, value) {
-      if (modifiedFixtures.containsKey(key)) {
-        return MapEntry(key, modifiedFixtures[key]);
-      }
-      return MapEntry(key, value);
-    });
-
-    return state.copyWith(fieldValues: fieldValues, fixtures: newFixtures);
+    return state.copyWith(fixtures: fixtures);
   }
 
   return state;

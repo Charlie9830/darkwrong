@@ -1,26 +1,26 @@
-import 'package:darkwrong/models/WorksheetModel.dart';
 import 'package:darkwrong/redux/state/FixtureState.dart';
+import 'package:darkwrong/redux/state/WorksheetState.dart';
 
 class AppState {
   final FixtureState fixtureState;
-  final WorksheetModel worksheet;
+  final WorksheetState worksheetState;
   
   AppState({
     this.fixtureState,
-    this.worksheet,
+    this.worksheetState,
   });
 
   AppState.initial()
       : fixtureState = FixtureState.initial(),
-        worksheet = WorksheetModel.initial();
+        worksheetState = WorksheetState.initial();
 
   AppState copyWith({
     FixtureState fixtureState,
-    WorksheetModel worksheet,
+    WorksheetState worksheet,
   }) {
     return AppState(
       fixtureState: fixtureState ?? this.fixtureState,
-      worksheet: worksheet ?? this.worksheet,
+      worksheetState: worksheet ?? this.worksheetState,
     );
   }
 }

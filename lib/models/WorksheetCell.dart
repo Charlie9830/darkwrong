@@ -12,4 +12,18 @@ class WorksheetCellModel {
     this.columnId,
     this.value = '',
   });
+
+  WorksheetCellModel copyWith({
+    String cellId,
+    String rowId,
+    String columnId,
+    String value,
+  }) {
+    return WorksheetCellModel(
+      cellId: cellId ?? this.cellId,
+      rowId: rowId ?? this.rowId,
+      columnId: columnId ?? this.columnId,
+      value: value ?? this.value,
+    );
+  }
 }
