@@ -1,5 +1,3 @@
-import 'package:darkwrong/CellIndexProvider.dart';
-import 'package:darkwrong/ColumnWidthsProvider.dart';
 import 'package:flutter/material.dart';
 
 class Cell extends StatelessWidget {

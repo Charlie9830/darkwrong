@@ -1,5 +1,5 @@
-import 'package:darkwrong/Cell.dart';
-import 'package:darkwrong/CellIndexProvider.dart';
+import 'package:darkwrong/presentation/fast_table/Cell.dart';
+import 'package:darkwrong/presentation/fast_table/CellIndexProvider.dart';
 import 'package:flutter/material.dart';
 
 class FastRow extends StatelessWidget {

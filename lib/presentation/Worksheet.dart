@@ -1,7 +1,7 @@
-import 'package:darkwrong/Cell.dart';
-import 'package:darkwrong/FastRow.dart';
-import 'package:darkwrong/FastTable.dart';
-import 'package:darkwrong/TableHeader.dart';
+import 'package:darkwrong/presentation/fast_table/Cell.dart';
+import 'package:darkwrong/presentation/fast_table/FastRow.dart';
+import 'package:darkwrong/presentation/fast_table/FastTable.dart';
+import 'package:darkwrong/presentation/fast_table/TableHeader.dart';
 import 'package:darkwrong/view_models/WorksheetViewModel.dart';
 import 'package:flutter/material.dart';
 
