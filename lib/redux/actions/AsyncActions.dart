@@ -58,8 +58,6 @@ ThunkAction<AppState> updateFixtureValues(
 
 ThunkAction<AppState> rebuildWorksheet() {
   return (Store<AppState> store) async {
-    
-    print(store.state.fixtureState.fixtures.values.first.values.values.first.value);
     final watch = Stopwatch();
     watch.start();
     final worksheet = _rebuildWorksheet(
