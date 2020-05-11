@@ -1,14 +1,15 @@
 import 'package:darkwrong/models/FieldValue.dart';
+import 'package:darkwrong/models/FieldValueKey.dart';
 
 class FieldValuesStore {
-  final Map<String, Map<String, FieldValue>> valueMap;
+  final Map<String, Map<FieldValueKey, FieldValue>> valueMap;
 
   FieldValuesStore({this.valueMap});
 
-  FieldValuesStore.initial() : valueMap = <String, Map<String, FieldValue>>{};
+  FieldValuesStore.initial() : valueMap = <String, Map<FieldValueKey, FieldValue>>{};
 
   FieldValuesStore copyWith({
-    Map<String, Map<String, FieldValue>> valueMap,
+    Map<String, Map<FieldValueKey, FieldValue>> valueMap,
   }) {
     return FieldValuesStore(
       valueMap: valueMap ?? this.valueMap,
@@ -16,12 +17,12 @@ class FieldValuesStore {
   }
 
   FieldValuesStore copyWithNewValue(
-      String fieldId, String valueId, FieldValue value) {
-    final newValueMap = Map<String, Map<String, FieldValue>>.from(valueMap);
+      String fieldId, FieldValueKey valueId, FieldValue value) {
+    final newValueMap = Map<String, Map<FieldValueKey, FieldValue>>.from(valueMap);
 
     if (containsField(fieldId) == false) {
       // Coerce field Existence.
-      newValueMap[fieldId] = <String, FieldValue>{};
+      newValueMap[fieldId] = <FieldValueKey, FieldValue>{};
     }
 
     newValueMap[fieldId][valueId] = value;
@@ -32,8 +33,8 @@ class FieldValuesStore {
   }
 
   FieldValuesStore copyWithNewValues(
-      Map<String, Map<String, FieldValue>> values) {
-    final newValueMap = Map<String, Map<String, FieldValue>>.from(valueMap);
+      Map<String, Map<FieldValueKey, FieldValue>> values) {
+    final newValueMap = Map<String, Map<FieldValueKey, FieldValue>>.from(valueMap);
 
     for (var fieldEntry in values.entries) {
       for (var valueEntry in fieldEntry.value.entries) {
@@ -50,16 +51,16 @@ class FieldValuesStore {
     return valueMap.containsKey(fieldId) && valueMap[fieldId] != null;
   }
 
-  bool containsValue(String fieldId, String valueId) {
+  bool containsValue(String fieldId, FieldValueKey valueKey) {
     return containsField(fieldId) &&
-        valueMap[fieldId].containsKey(valueId) &&
-        valueMap[fieldId][valueId] != null;
+        valueMap[fieldId].containsKey(valueKey) &&
+        valueMap[fieldId][valueKey] != null;
   }
 
-  FieldValue getValue(String fieldId, String valueId) {
-    return containsValue(fieldId, valueId) == null
+  FieldValue getValue(String fieldId, FieldValueKey valueKey) {
+    return containsValue(fieldId, valueKey) == null
         ? null
-        : valueMap[fieldId][valueId];
+        : valueMap[fieldId][valueKey];
   }
 
   int getMaxFieldLength(String fieldId) {

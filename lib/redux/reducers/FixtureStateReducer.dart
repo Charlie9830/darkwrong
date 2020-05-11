@@ -1,6 +1,7 @@
 import 'package:darkwrong/enums.dart';
 import 'package:darkwrong/models/Field.dart';
 import 'package:darkwrong/models/FieldValue.dart';
+import 'package:darkwrong/models/FieldValueKey.dart';
 import 'package:darkwrong/models/Fixture.dart';
 import 'package:darkwrong/redux/actions/SyncActions.dart';
 import 'package:darkwrong/redux/state/FixtureState.dart';
@@ -29,7 +30,7 @@ FixtureState fixtureStateReducer(FixtureState state, dynamic action) {
     final fixtures = Map<String, FixtureModel>.from(state.fixtures);
     final fixture = FixtureModel(
       uid: getUid(),
-      values: <String, FieldValue>{},
+      valueKeys: <String, FieldValueKey>{},
     );
 
     fixtures[fixture.uid] = fixture;

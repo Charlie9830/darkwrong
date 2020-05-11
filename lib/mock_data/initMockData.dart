@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:darkwrong/enums.dart';
 import 'package:darkwrong/models/Field.dart';
 import 'package:darkwrong/models/FieldValue.dart';
+import 'package:darkwrong/models/FieldValueKey.dart';
 import 'package:darkwrong/models/FieldValuesStore.dart';
 import 'package:darkwrong/models/Fixture.dart';
 import 'package:darkwrong/redux/state/AppState.dart';
@@ -11,11 +12,11 @@ import 'package:darkwrong/util/getUid.dart';
 import 'package:random_words/random_words.dart';
 
 AppState initMockData(AppState state) {
-  const desiredFieldCount = 14;
-  const desiredFixtureCount = 20000;
+  const desiredFieldCount = 10;
+  const desiredFixtureCount = 100;
   const wordCount = 1000;
 
-  final words = generateWordPairs().take(wordCount).toList();
+  final wordPairs = generateWordPairs().take(wordCount).toList();
 
   final fieldIds =
       List<String>.generate(desiredFieldCount, (index) => getUid());
@@ -26,25 +27,16 @@ AppState initMockData(AppState state) {
         name: 'Field ${index + 1}', type: FieldType.text, uid: fieldIds[index]),
   );
 
+  final fieldValues = _generateRandomFieldValues(fields, wordPairs);
+
   final fixtureIds =
       List<String>.generate(desiredFixtureCount, (index) => getUid());
   final fixtures = List<FixtureModel>.generate(
       desiredFixtureCount,
       (index) => FixtureModel(
             uid: fixtureIds[index],
-            values: _generateRandomFieldValues(fields, words),
+            valueKeys: _generateRandomFieldValueKeysMap(fields, fieldValues),
           ));
-
-  final fieldValues = Map<String, Map<String, FieldValue>>.fromEntries(
-      fields.map((field) => MapEntry(field.uid, <String, FieldValue>{})));
-
-  for (var fixture in fixtures) {
-    for (var entry in fixture.values.entries) {
-      if (fieldValues[entry.key].containsKey(entry.value.key) == false) {
-        fieldValues[entry.key][entry.value.key] = entry.value;
-      }
-    }
-  }
 
   return state.copyWith(
       fixtureState: FixtureState(
@@ -56,9 +48,41 @@ AppState initMockData(AppState state) {
   ));
 }
 
-Map<String, FieldValue> _generateRandomFieldValues(
-    List<FieldModel> fields, List<WordPair> nouns) {
+Map<String, FieldValueKey> _generateRandomFieldValueKeysMap(
+    List<FieldModel> fields,
+    Map<String, Map<FieldValueKey, FieldValue>> fieldValues) {
   final random = Random();
-  return Map<String, FieldValue>.fromEntries(fields.map((field) => MapEntry(
-      field.uid, FieldValue(nouns[random.nextInt(nouns.length - 1)].asString))));
+  return Map<String, FieldValueKey>.fromEntries(fields.map((field) {
+    final options = fieldValues[field.uid].keys;
+    final pickIndex = random.nextInt(options.length - 1);
+
+    return MapEntry(field.uid, options.elementAt(pickIndex));
+  }));
+}
+
+Map<String, Map<FieldValueKey, FieldValue>> _generateRandomFieldValues(
+    List<FieldModel> fields, List<WordPair> wordPairs) {
+  return Map<String, Map<FieldValueKey, FieldValue>>.fromEntries(
+      fields.map((field) {
+    return MapEntry(field.uid, _generateRandomFieldValuesValue(wordPairs));
+  }));
+}
+
+Map<FieldValueKey, FieldValue> _generateRandomFieldValuesValue(
+    List<WordPair> wordPairs) {
+  final random = Random();
+  final map = <FieldValueKey, FieldValue>{};
+  final loopCount = random.nextInt(wordPairs.length - 1);
+
+  for (var i = 0; i <= loopCount; i++) {
+    final textValue =
+        '${wordPairs[random.nextInt(wordPairs.length - 1)].first} ${wordPairs[random.nextInt(wordPairs.length - 1)].second}';
+    final fieldValueKey = FieldValueKey.fromText(textValue);
+
+    if (map.containsKey(fieldValueKey) == false) {
+      map[fieldValueKey] = FieldValue.fromText(textValue);
+    }
+  }
+
+  return map;
 }

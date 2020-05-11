@@ -1,3 +1,4 @@
+import 'package:darkwrong/models/FieldValueKey.dart';
 import 'package:darkwrong/models/FieldValuesStore.dart';
 import 'package:darkwrong/models/Fixture.dart';
 import 'package:darkwrong/models/SelectedCell.dart';
@@ -37,12 +38,10 @@ WorksheetState worksheetStateReducer(WorksheetState state, dynamic action) {
     final watch = Stopwatch()..start();
     final newState = state.copyWith(
         headers: _mergeHeaderUpdates(state.headers, action.fieldValueUpdates),
-        rows: _mergeRowUpdates(
-            state.rows, action.fixtureUpdates, action.fieldValueUpdates, action.existingFieldValues));
+        rows: _mergeRowUpdates(state.rows, action.fixtureUpdates,
+            action.fieldValueUpdates, action.existingFieldValues));
 
     watch.stop();
-    print(newState.rows.values.first.cells.values);
-    print('Completed partial rebuild in ${watch.elapsedMilliseconds}ms');
 
     return newState;
   }
@@ -80,8 +79,8 @@ Map<String, WorksheetRowModel> _mergeRowUpdates(
       return MapEntry(
           rowKey,
           rowValue.copyWith(
-            cells: _mergeCellUpdates(
-                rowValue.cells, fixtureUpdate, updatedFieldValues, existingFieldValues),
+            cells: _mergeCellUpdates(rowValue.cells, fixtureUpdate,
+                updatedFieldValues, existingFieldValues),
           ));
     }
 
@@ -96,13 +95,16 @@ Map<String, WorksheetCellModel> _mergeCellUpdates(
     FieldValuesStore existingFieldValues) {
   // Map through cells and merge in updated values from the fixtureUpdate by comparing new values to existing values and return new cells accordingly.
   return cells.map((cellKey, cellValue) {
-    final valueId = fixtureUpdate.values[cellKey].key;
-    if (_compareFixtureValue(
-        cellKey, valueId, cellValue, updatedFieldValues, existingFieldValues)) {
+    final valueKey = fixtureUpdate.valueKeys[cellKey];
+    if (_compareFixtureValue(cellKey, valueKey, cellValue, updatedFieldValues,
+        existingFieldValues)) {
       return MapEntry(
           cellKey,
           cellValue.copyWith(
-            value: fixtureUpdate.values[cellKey].value,
+            // Lookup the value in updatedFieldValues if it's not there fall back to existingFieldValues.
+            value: updatedFieldValues.containsValue(cellKey, valueKey)
+                ? updatedFieldValues.getValue(cellKey, valueKey).asText
+                : existingFieldValues.getValue(cellKey, valueKey).asText,
           ));
     }
     return MapEntry(
@@ -114,21 +116,22 @@ Map<String, WorksheetCellModel> _mergeCellUpdates(
 
 bool _compareFixtureValue(
     String cellKey,
-    String valueId,
+    FieldValueKey valueKey,
     WorksheetCellModel cellValue,
     FieldValuesStore updatedFieldValues,
     FieldValuesStore existingFieldValues) {
-      // If the Updated Field Values contains a matching value entry and it differs from the current cell value.
-  if (updatedFieldValues.containsValue(cellKey, valueId) &&
-      updatedFieldValues.getValue(cellKey, valueId).value != cellValue.value) {
+  // If the Updated Field Values contains a matching value entry and it differs from the current cell value.
+  if (updatedFieldValues.containsValue(cellKey, valueKey) &&
+      updatedFieldValues.getValue(cellKey, valueKey).value != cellValue.value) {
     return true;
   }
 
   // If the Existing Field Values contains a matching value entry and it differs from the current cell value. This covers the case in which
-  // a fixture is updated to an already existing value, because the value already exists within fieldValues it will not be added to the updatedFieldValues map as 
+  // a fixture is updated to an already existing value, because the value already exists within fieldValues it will not be added to the updatedFieldValues map as
   // the value itself has not changed just which fixtures it is referenced by.
-  if (existingFieldValues.containsValue(cellKey, valueId) &&
-      existingFieldValues.getValue(cellKey, valueId).value != cellValue.value) {
+  if (existingFieldValues.containsValue(cellKey, valueKey) &&
+      existingFieldValues.getValue(cellKey, valueKey).value !=
+          cellValue.value) {
     return true;
   }
 

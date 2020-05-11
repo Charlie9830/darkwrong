@@ -39,6 +39,6 @@ class Cell extends StatelessWidget {
     // final width = ColumnWidthsProvider.of(context).widths.elementAt(index);
 
     // return width > 48.0 ? width : 48.0;
-    return 100.0;
+    return 120.0;
   }
 }
