@@ -1,4 +1,3 @@
-import 'package:darkwrong/models/FieldValue.dart';
 import 'package:darkwrong/models/FieldValuesStore.dart';
 import 'package:darkwrong/models/Fixture.dart';
 import 'package:darkwrong/redux/state/WorksheetState.dart';
@@ -9,11 +8,13 @@ class InitMockData {
 
 class UpdateFixturesAndFieldValues {
   final Map<String, FixtureModel> fixtureUpdates;
-  final Map<String, Map<String, FieldValue>> fieldValueUpdates;
+  final FieldValuesStore fieldValueUpdates;
+  final FieldValuesStore existingFieldValues;
 
   UpdateFixturesAndFieldValues({
     this.fixtureUpdates,
     this.fieldValueUpdates,
+    this.existingFieldValues,
   });
 }
 

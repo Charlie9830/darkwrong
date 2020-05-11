@@ -1,5 +1,8 @@
+import 'package:darkwrong/models/FieldValuesStore.dart';
+import 'package:darkwrong/models/Fixture.dart';
 import 'package:darkwrong/models/SelectedCell.dart';
 import 'package:darkwrong/models/WorksheetCell.dart';
+import 'package:darkwrong/models/WorksheetHeader.dart';
 import 'package:darkwrong/models/WorksheetRow.dart';
 import 'package:darkwrong/redux/actions/SyncActions.dart';
 import 'package:darkwrong/redux/state/WorksheetState.dart';
@@ -30,35 +33,104 @@ WorksheetState worksheetStateReducer(WorksheetState state, dynamic action) {
     );
   }
 
-
-
   if (action is UpdateFixturesAndFieldValues) {
-    // return state.copyWith(
-    //   rows: Map<String, WorksheetRowModel>.from(state.rows)
-    //     ..updateAll((rowKey, rowValue) {
-    //       if (action.fixtureUpdates.containsKey(rowKey) == false) {
-    //         return rowValue;
-    //       }
+    final watch = Stopwatch()..start();
+    final newState = state.copyWith(
+        headers: _mergeHeaderUpdates(state.headers, action.fieldValueUpdates),
+        rows: _mergeRowUpdates(
+            state.rows, action.fixtureUpdates, action.fieldValueUpdates, action.existingFieldValues));
 
-    //       final fixture = action.fixtureUpdates[rowKey];
+    watch.stop();
+    print(newState.rows.values.first.cells.values);
+    print('Completed partial rebuild in ${watch.elapsedMilliseconds}ms');
 
-    //       return rowValue.copyWith(
-    //           cells: Map<String, WorksheetCellModel>.from(rowValue.cells)
-    //             ..updateAll((cellKey, cellValue) {
-    //               // If current cell Value doesn't equal fixture value, return a new Cell otherwise return existing.
-    //               final fixtureValue =
-    //                   fixture.getValue(cellValue.columnId).value;
-
-    //               if (cellValue.value != fixtureValue) {
-    //                 return cellValue.copyWith(
-    //                     value: fixtureValue);
-    //               } else {
-    //                 return cellValue;
-    //               }
-    //             }));
-    //     }),
-    // );
+    return newState;
   }
 
   return state;
+}
+
+Map<String, WorksheetHeaderModel> _mergeHeaderUpdates(
+    Map<String, WorksheetHeaderModel> headers,
+    FieldValuesStore fieldValueUpdates) {
+  return headers.map((key, value) {
+    final newMaxFieldLength = fieldValueUpdates.getMaxFieldLength(key);
+    if (fieldValueUpdates.containsField(key) &&
+        newMaxFieldLength > value.maxFieldLength) {
+      return MapEntry(
+          key,
+          value.copyWith(
+            maxFieldLength: newMaxFieldLength,
+          ));
+    } else {
+      return MapEntry(key, value);
+    }
+  });
+}
+
+Map<String, WorksheetRowModel> _mergeRowUpdates(
+    Map<String, WorksheetRowModel> rows,
+    Map<String, FixtureModel> fixtureUpdates,
+    FieldValuesStore updatedFieldValues,
+    FieldValuesStore existingFieldValues) {
+  return rows.map((rowKey, rowValue) {
+    // Map through rows and merge in updated fixtures.
+    if (fixtureUpdates.containsKey(rowKey)) {
+      final fixtureUpdate = fixtureUpdates[rowKey];
+      return MapEntry(
+          rowKey,
+          rowValue.copyWith(
+            cells: _mergeCellUpdates(
+                rowValue.cells, fixtureUpdate, updatedFieldValues, existingFieldValues),
+          ));
+    }
+
+    return MapEntry(rowKey, rowValue);
+  });
+}
+
+Map<String, WorksheetCellModel> _mergeCellUpdates(
+    Map<String, WorksheetCellModel> cells,
+    FixtureModel fixtureUpdate,
+    FieldValuesStore updatedFieldValues,
+    FieldValuesStore existingFieldValues) {
+  // Map through cells and merge in updated values from the fixtureUpdate by comparing new values to existing values and return new cells accordingly.
+  return cells.map((cellKey, cellValue) {
+    final valueId = fixtureUpdate.values[cellKey].key;
+    if (_compareFixtureValue(
+        cellKey, valueId, cellValue, updatedFieldValues, existingFieldValues)) {
+      return MapEntry(
+          cellKey,
+          cellValue.copyWith(
+            value: fixtureUpdate.values[cellKey].value,
+          ));
+    }
+    return MapEntry(
+      cellKey,
+      cellValue,
+    );
+  });
+}
+
+bool _compareFixtureValue(
+    String cellKey,
+    String valueId,
+    WorksheetCellModel cellValue,
+    FieldValuesStore updatedFieldValues,
+    FieldValuesStore existingFieldValues) {
+      // If the Updated Field Values contains a matching value entry and it differs from the current cell value.
+  if (updatedFieldValues.containsValue(cellKey, valueId) &&
+      updatedFieldValues.getValue(cellKey, valueId).value != cellValue.value) {
+    return true;
+  }
+
+  // If the Existing Field Values contains a matching value entry and it differs from the current cell value. This covers the case in which
+  // a fixture is updated to an already existing value, because the value already exists within fieldValues it will not be added to the updatedFieldValues map as 
+  // the value itself has not changed just which fixtures it is referenced by.
+  if (existingFieldValues.containsValue(cellKey, valueId) &&
+      existingFieldValues.getValue(cellKey, valueId).value != cellValue.value) {
+    return true;
+  }
+
+  return false;
 }

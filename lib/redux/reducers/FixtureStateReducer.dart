@@ -21,7 +21,7 @@ FixtureState fixtureStateReducer(FixtureState state, dynamic action) {
             return value;
           }
         }),
-      fieldValues: state.fieldValues.copyWithNewValues(action.fieldValueUpdates),
+      fieldValues: state.fieldValues.copyWithNewValues(action.fieldValueUpdates.valueMap),
     );
   }
 

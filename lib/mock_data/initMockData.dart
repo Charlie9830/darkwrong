@@ -11,8 +11,8 @@ import 'package:darkwrong/util/getUid.dart';
 import 'package:random_words/random_words.dart';
 
 AppState initMockData(AppState state) {
-  const desiredFieldCount = 12;
-  const desiredFixtureCount = 200;
+  const desiredFieldCount = 14;
+  const desiredFixtureCount = 20000;
   const wordCount = 1000;
 
   final words = generateWordPairs().take(wordCount).toList();

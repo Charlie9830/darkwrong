@@ -16,6 +16,8 @@ import 'package:redux_thunk/redux_thunk.dart';
 ThunkAction<AppState> updateFixtureValues(
     Map<String, SelectedCellModel> selectedCells, FieldValue newValue) {
   return (Store<AppState> store) async {
+    // Iterate through selectedCells, build new updated fixtures and fieldValues as required.
+    // If a matching value doesn't already exist within fieldValues, create it. Then attach the fixture to that value.
     final fieldValues = store.state.fixtureState.fieldValues;
     final updatedFieldValues = <String, Map<String, FieldValue>>{};
     final updatedFixtures = <String, FixtureModel>{};
@@ -25,12 +27,14 @@ ThunkAction<AppState> updateFixtureValues(
       final fieldId = cell.columnId;
       final fixture = store.state.fixtureState.fixtures[fixtureId];
 
-      if (fixture.getValue(fieldId) == newValue) {
+      if (fieldValues.getValue(fieldId, fixture.values[fieldId].key) == newValue) {
         // No update required.
         continue;
       }
 
+      // If fieldValues doesn't already contain the new value we add it.
       if (fieldValues.containsValue(fieldId, newValue.key) == false) {
+        // Ensure a map exists at the fieldId location first.
         if (updatedFieldValues[fieldId] == null) {
           updatedFieldValues[fieldId] = <String, FieldValue>{};
         }
@@ -38,6 +42,7 @@ ThunkAction<AppState> updateFixtureValues(
         updatedFieldValues[fieldId][newValue.key] = newValue;
       }
 
+      // Create a new updated Fixture or use an existing one if we have already updated this fixture previously in the loop.
       if (updatedFixtures.containsKey(fixtureId)) {
         updatedFixtures[fixtureId] = updatedFixtures[fixtureId]
             .copyWithUpdatedValue(fieldId, newValue);
@@ -47,20 +52,20 @@ ThunkAction<AppState> updateFixtureValues(
       }
     }
 
+    // Update State.
     store.dispatch(UpdateFixturesAndFieldValues(
       fixtureUpdates: updatedFixtures,
-      fieldValueUpdates: updatedFieldValues,
+      fieldValueUpdates: FieldValuesStore(valueMap: updatedFieldValues),
+      existingFieldValues: store.state.fixtureState.fieldValues,
     ));
-
-    store.dispatch(rebuildWorksheet());
   };
 }
 
-ThunkAction<AppState> rebuildWorksheet() {
+ThunkAction<AppState> buildWorksheet() {
   return (Store<AppState> store) async {
     final watch = Stopwatch();
     watch.start();
-    final worksheet = _rebuildWorksheet(
+    final worksheet = _buildWorksheet(
         store.state.worksheetState,
         store.state.fixtureState.fixtures,
         store.state.fixtureState.fieldValues,
@@ -74,7 +79,7 @@ ThunkAction<AppState> rebuildWorksheet() {
   };
 }
 
-WorksheetState _rebuildWorksheet(
+WorksheetState _buildWorksheet(
     WorksheetState existingWorksheet,
     Map<String, FixtureModel> fixtures,
     FieldValuesStore fieldValuesStore,

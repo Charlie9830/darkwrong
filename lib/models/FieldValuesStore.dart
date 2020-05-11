@@ -61,4 +61,19 @@ class FieldValuesStore {
         ? null
         : valueMap[fieldId][valueId];
   }
+
+  int getMaxFieldLength(String fieldId) {
+    if (containsField(fieldId) == false) {
+      return 0;
+    }
+
+    int length = 0;
+    valueMap[fieldId].forEach((key, value) {
+      if (value.length > length) {
+        length = value.length;
+      }
+    });
+
+    return length;
+  }
 }
