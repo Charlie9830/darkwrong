@@ -32,7 +32,6 @@ ThunkAction<AppState> updateFixtureValues(
 
       if (oldValue.asText == newValue) {
         // No update required.
-        print('No Update Requried');
         continue;
       }
 
