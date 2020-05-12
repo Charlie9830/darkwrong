@@ -8,6 +8,7 @@ class HomeScreenViewModel {
   final dynamic onAddFixtureButtonPressed;
   final dynamic onValueUpdate;
   final dynamic onFieldFilterSelect;
+  final dynamic onDeleteFixtures;
 
   HomeScreenViewModel({
     this.selectedFieldFilterId,
@@ -17,5 +18,6 @@ class HomeScreenViewModel {
     this.onAddFixtureButtonPressed,
     this.onValueUpdate,
     this.onFieldFilterSelect,
+    this.onDeleteFixtures,
   });
 }

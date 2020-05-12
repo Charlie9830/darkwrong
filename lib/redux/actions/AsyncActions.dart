@@ -14,6 +14,14 @@ import 'package:darkwrong/util/getCellId.dart';
 import 'package:redux/redux.dart';
 import 'package:redux_thunk/redux_thunk.dart';
 
+ThunkAction<AppState> removeFixtures(Set<String> fixtureIds) {
+    return (Store<AppState> store) async {
+      final fixturesToRemove = Map<String, FixtureModel>.fromEntries(fixtureIds.map((id) => MapEntry(id, store.state.fixtureState.fixtures[id])));
+
+      store.dispatch(RemoveFixtures(fixtures: fixturesToRemove));
+  };
+}
+
 ThunkAction<AppState> updateFixtureValues(
     Map<String, SelectedCellModel> selectedCells, String newValue) {
   return (Store<AppState> store) async {

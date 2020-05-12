@@ -47,7 +47,11 @@ class HomeScreen extends StatelessWidget {
             ),
           ),
           IconButton(
-              icon: Icon(Icons.add),
+              icon: Icon(Icons.delete),
+              onPressed: () => viewModel.onDeleteFixtures(),
+          ),
+          IconButton(
+              icon: Icon(Icons.refresh),
               onPressed: viewModel.onAddFixtureButtonPressed),
           RaisedButton(
             child: Text('Debug'),

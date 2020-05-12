@@ -1,4 +1,3 @@
-import 'package:darkwrong/models/FieldValue.dart';
 import 'package:darkwrong/redux/actions/AsyncActions.dart';
 import 'package:darkwrong/redux/actions/SyncActions.dart';
 import 'package:darkwrong/redux/state/AppState.dart';
@@ -22,12 +21,19 @@ class HomeScreenContainer extends StatelessWidget {
       converter: (Store<AppState> store) {
         return HomeScreenViewModel(
           fields: store.state.fixtureState.fields,
-          selectedFieldFilterId: store.state.worksheetState.selectedFieldFilterId,
+          selectedFieldFilterId:
+              store.state.worksheetState.selectedFieldFilterId,
           onFieldFilterSelect: (newValue) => print(newValue),
           onDebugButtonPressed: () => store.dispatch(InitMockData()),
           onAddFixtureButtonPressed: () => store.dispatch(buildWorksheet()),
-          isFixtureEditEnabled: store.state.worksheetState.selectedCells.isNotEmpty,
-          onValueUpdate: (String newValue) => store.dispatch(updateFixtureValues(store.state.worksheetState.selectedCells, newValue)),
+          isFixtureEditEnabled:
+              store.state.worksheetState.selectedCells.isNotEmpty,
+          onValueUpdate: (String newValue) => store.dispatch(
+              updateFixtureValues(
+                  store.state.worksheetState.selectedCells, newValue)),
+          onDeleteFixtures: () => store.dispatch(removeFixtures(
+              Set<String>.from(store.state.worksheetState.selectedCells.values
+                  .map((item) => item.rowId)))),
         );
       },
     );

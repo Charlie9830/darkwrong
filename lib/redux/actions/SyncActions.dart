@@ -19,6 +19,14 @@ class UpdateFixturesAndFieldValues {
   });
 }
 
+class RemoveFixtures {
+  final Map<String, FixtureModel> fixtures;
+
+  RemoveFixtures({
+    this.fixtures,
+  });
+}
+
 class AddFieldValueQuery {
   final String fieldId;
   final FieldValueKey valueKey;

@@ -45,9 +45,17 @@ WorksheetState worksheetStateReducer(WorksheetState state, dynamic action) {
 
     return newState;
   }
-  
-  if (action is AddFieldValueQuery) {
 
+  if (action is RemoveFixtures) {
+    final rows = Map<String, WorksheetRowModel>.from(state.rows);
+    for (var fixtureId in action.fixtures.keys) {
+      rows.remove(fixtureId);
+    }
+    
+    return state.copyWith(
+      rows: rows,
+      selectedCells: <String, SelectedCellModel>{},
+    );
   }
 
   return state;
