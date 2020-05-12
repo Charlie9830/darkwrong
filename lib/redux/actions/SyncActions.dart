@@ -30,8 +30,16 @@ class RemoveFixtures {
 class RemoveWorksheetRows {
   final Set<String> rowIds;
 
-  RemoveWorksheetRows({
-    this.rowIds
+  RemoveWorksheetRows({this.rowIds});
+}
+
+class AddWorksheetRows {
+  final Map<String, FixtureModel> fixtures;
+  final FieldValuesStore fieldValues;
+
+  AddWorksheetRows({
+    this.fixtures,
+    this.fieldValues,
   });
 }
 

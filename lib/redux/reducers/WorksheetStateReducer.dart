@@ -7,6 +7,7 @@ import 'package:darkwrong/models/WorksheetHeader.dart';
 import 'package:darkwrong/models/WorksheetRow.dart';
 import 'package:darkwrong/redux/actions/SyncActions.dart';
 import 'package:darkwrong/redux/state/WorksheetState.dart';
+import 'package:darkwrong/util/getCellId.dart';
 
 WorksheetState worksheetStateReducer(WorksheetState state, dynamic action) {
   if (action is BuildWorksheetState) {
@@ -46,12 +47,18 @@ WorksheetState worksheetStateReducer(WorksheetState state, dynamic action) {
     return newState;
   }
 
+  if (action is AddWorksheetRows) {
+    return state.copyWith(
+        rows: Map<String, WorksheetRowModel>.from(state.rows)
+          ..addAll(_buildRows(action.fixtures, action.fieldValues)));
+  }
+
   if (action is RemoveWorksheetRows) {
     final rows = Map<String, WorksheetRowModel>.from(state.rows);
     for (var fixtureId in action.rowIds) {
       rows.remove(fixtureId);
     }
-    
+
     return state.copyWith(
       rows: rows,
       selectedCells: <String, SelectedCellModel>{},
@@ -61,7 +68,38 @@ WorksheetState worksheetStateReducer(WorksheetState state, dynamic action) {
   return state;
 }
 
+Map<String, WorksheetRowModel> _buildRows(
+    Map<String, FixtureModel> fixtures, FieldValuesStore fieldValues) {
+  return Map<String, WorksheetRowModel>.fromEntries(
+      fixtures.values.map((fixture) {
+    return MapEntry(
+      fixture.uid,
+      WorksheetRowModel(
+        rowId: fixture.uid,
+        cells: _buildCells(fixture, fieldValues),
+      ),
+    );
+  }));
+}
 
+Map<String, WorksheetCellModel> _buildCells(
+    FixtureModel fixture, FieldValuesStore fieldValues) {
+  return Map<String, WorksheetCellModel>.fromEntries(
+      fixture.valueKeys.entries.map((valueEntry) {
+    final rowId = fixture.uid;
+    final fieldId = valueEntry.key;
+    final cellValue =
+        fieldValues.getValue(valueEntry.key, valueEntry.value).asText;
+
+    return MapEntry(
+        valueEntry.key,
+        WorksheetCellModel(
+            cellId: getCellId(rowId, fieldId),
+            rowId: rowId,
+            columnId: fieldId,
+            value: cellValue));
+  }));
+}
 
 Map<String, WorksheetHeaderModel> _mergeHeaderUpdates(
     Map<String, WorksheetHeaderModel> headers,
