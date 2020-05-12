@@ -42,7 +42,7 @@ ThunkAction<AppState> updateFixtureValues(
           updatedFieldValues[fieldId] = <FieldValueKey, FieldValue>{};
         }
 
-        updatedFieldValues[fieldId][newValueKey] = FieldValue(newValue);
+        updatedFieldValues[fieldId][newValueKey] = FieldValue(newValue, newValueKey);
       }
 
       // Create a new updated Fixture or use an existing one if we have already updated this fixture previously in the loop.

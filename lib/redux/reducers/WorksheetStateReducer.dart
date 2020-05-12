@@ -45,9 +45,15 @@ WorksheetState worksheetStateReducer(WorksheetState state, dynamic action) {
 
     return newState;
   }
+  
+  if (action is AddFieldValueQuery) {
+
+  }
 
   return state;
 }
+
+
 
 Map<String, WorksheetHeaderModel> _mergeHeaderUpdates(
     Map<String, WorksheetHeaderModel> headers,

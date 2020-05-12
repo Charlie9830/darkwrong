@@ -48,7 +48,7 @@ class FieldValuesStore {
   }
 
   bool containsField(String fieldId) {
-    return valueMap.containsKey(fieldId) && valueMap[fieldId] != null;
+    return fieldId != null && valueMap.containsKey(fieldId) && valueMap[fieldId] != null;
   }
 
   bool containsValue(String fieldId, FieldValueKey valueKey) {
@@ -61,6 +61,17 @@ class FieldValuesStore {
     return containsValue(fieldId, valueKey) == null
         ? null
         : valueMap[fieldId][valueKey];
+  }
+
+  ///
+  /// Returns the entire contents of a field. Returns an empty map if fieldId is null or does not match.
+  ///
+  Map<FieldValueKey, FieldValue> getFieldContents(String fieldId) {
+    if (containsField(fieldId)) {
+      return valueMap[fieldId];
+    }
+
+    return <FieldValueKey, FieldValue>{};
   }
 
   int getMaxFieldLength(String fieldId) {

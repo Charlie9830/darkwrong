@@ -1,3 +1,4 @@
+import 'package:darkwrong/models/FieldValueKey.dart';
 import 'package:darkwrong/models/FieldValuesStore.dart';
 import 'package:darkwrong/models/Fixture.dart';
 import 'package:darkwrong/redux/state/WorksheetState.dart';
@@ -18,6 +19,24 @@ class UpdateFixturesAndFieldValues {
   });
 }
 
+class AddFieldValueQuery {
+  final String fieldId;
+  final FieldValueKey valueKey;
+
+  AddFieldValueQuery({
+    this.fieldId,
+    this.valueKey,
+  });
+}
+
+class SelectFieldVisibility {
+  final String selectedFieldId;
+
+  SelectFieldVisibility({
+    this.selectedFieldId,
+  });
+}
+
 class BuildWorksheetState {
   final WorksheetState state;
 
@@ -35,9 +54,8 @@ class AddFields {
 }
 
 class AddBlankFixture {
- AddBlankFixture(); 
+  AddBlankFixture();
 }
-
 
 class SelectWorksheetCell {
   final String cellId;

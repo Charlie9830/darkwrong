@@ -21,6 +21,9 @@ class HomeScreenContainer extends StatelessWidget {
       },
       converter: (Store<AppState> store) {
         return HomeScreenViewModel(
+          fields: store.state.fixtureState.fields,
+          selectedFieldFilterId: store.state.worksheetState.selectedFieldFilterId,
+          onFieldFilterSelect: (newValue) => print(newValue),
           onDebugButtonPressed: () => store.dispatch(InitMockData()),
           onAddFixtureButtonPressed: () => store.dispatch(buildWorksheet()),
           isFixtureEditEnabled: store.state.worksheetState.selectedCells.isNotEmpty,

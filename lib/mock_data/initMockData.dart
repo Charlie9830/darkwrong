@@ -80,7 +80,7 @@ Map<FieldValueKey, FieldValue> _generateRandomFieldValuesValue(
     final fieldValueKey = FieldValueKey.fromText(textValue);
 
     if (map.containsKey(fieldValueKey) == false) {
-      map[fieldValueKey] = FieldValue.fromText(textValue);
+      map[fieldValueKey] = FieldValue.fromText(textValue, fieldValueKey);
     }
   }
 
