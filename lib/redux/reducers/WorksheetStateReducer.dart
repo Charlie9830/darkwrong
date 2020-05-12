@@ -9,7 +9,7 @@ import 'package:darkwrong/redux/actions/SyncActions.dart';
 import 'package:darkwrong/redux/state/WorksheetState.dart';
 
 WorksheetState worksheetStateReducer(WorksheetState state, dynamic action) {
-  if (action is RebuildWorksheetState) {
+  if (action is BuildWorksheetState) {
     return state.copyWith(
       headers: action.state.headers,
       rows: action.state.rows,

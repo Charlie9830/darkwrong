@@ -78,7 +78,7 @@ ThunkAction<AppState> buildWorksheet() {
     watch.stop();
     watch.reset();
 
-    store.dispatch(RebuildWorksheetState(state: worksheet));
+    store.dispatch(BuildWorksheetState(state: worksheet));
   };
 }
 

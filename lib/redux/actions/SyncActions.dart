@@ -18,10 +18,10 @@ class UpdateFixturesAndFieldValues {
   });
 }
 
-class RebuildWorksheetState {
+class BuildWorksheetState {
   final WorksheetState state;
 
-  RebuildWorksheetState({
+  BuildWorksheetState({
     this.state,
   });
 }
