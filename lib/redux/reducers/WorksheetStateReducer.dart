@@ -46,9 +46,9 @@ WorksheetState worksheetStateReducer(WorksheetState state, dynamic action) {
     return newState;
   }
 
-  if (action is RemoveFixtures) {
+  if (action is RemoveWorksheetRows) {
     final rows = Map<String, WorksheetRowModel>.from(state.rows);
-    for (var fixtureId in action.fixtures.keys) {
+    for (var fixtureId in action.rowIds) {
       rows.remove(fixtureId);
     }
     

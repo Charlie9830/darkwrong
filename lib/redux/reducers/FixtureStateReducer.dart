@@ -40,7 +40,7 @@ FixtureState fixtureStateReducer(FixtureState state, dynamic action) {
 
   if (action is RemoveFixtures) {
     final fixtures = Map<String, FixtureModel>.from(state.fixtures);
-    for (var fixtureId in action.fixtures.keys) {
+    for (var fixtureId in action.fixtureIds) {
       fixtures.remove(fixtureId);
     }
 
@@ -51,7 +51,6 @@ FixtureState fixtureStateReducer(FixtureState state, dynamic action) {
 
   return state;
 }
-
 
 Map<String, FieldModel> _addFields(
     Map<String, FieldModel> existingFields, List<String> fieldNames) {

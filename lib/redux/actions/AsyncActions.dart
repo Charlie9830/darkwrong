@@ -16,9 +16,9 @@ import 'package:redux_thunk/redux_thunk.dart';
 
 ThunkAction<AppState> removeFixtures(Set<String> fixtureIds) {
     return (Store<AppState> store) async {
-      final fixturesToRemove = Map<String, FixtureModel>.fromEntries(fixtureIds.map((id) => MapEntry(id, store.state.fixtureState.fixtures[id])));
-
-      store.dispatch(RemoveFixtures(fixtures: fixturesToRemove));
+      // TODO: Possible Candiate for created a Batched Action.
+      store.dispatch(RemoveWorksheetRows(rowIds: fixtureIds));
+      store.dispatch(RemoveFixtures(fixtureIds: fixtureIds));
   };
 }
 

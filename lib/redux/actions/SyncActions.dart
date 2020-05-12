@@ -20,10 +20,18 @@ class UpdateFixturesAndFieldValues {
 }
 
 class RemoveFixtures {
-  final Map<String, FixtureModel> fixtures;
+  final Set<String> fixtureIds;
 
   RemoveFixtures({
-    this.fixtures,
+    this.fixtureIds,
+  });
+}
+
+class RemoveWorksheetRows {
+  final Set<String> rowIds;
+
+  RemoveWorksheetRows({
+    this.rowIds
   });
 }
 
