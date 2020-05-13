@@ -43,21 +43,39 @@ class AddWorksheetRows {
   });
 }
 
-class AddFieldValueQuery {
+class AddFieldValueQueries {
   final String fieldId;
-  final FieldValueKey valueKey;
+  final Set<FieldValueKey> valueKeys;
+  final Map<String, FixtureModel> fixtures;
+  final FieldValuesStore fieldValues;
 
-  AddFieldValueQuery({
+  AddFieldValueQueries({
     this.fieldId,
-    this.valueKey,
+    this.valueKeys,
+    this.fixtures,
+    this.fieldValues,
   });
 }
 
-class SelectFieldVisibility {
-  final String selectedFieldId;
+class RemoveFieldValueQueries {
+  final String fieldId;
+  final Set<FieldValueKey> valueKeys;
+  final Map<String, FixtureModel> fixtures;
+  final FieldValuesStore fieldValues;
 
-  SelectFieldVisibility({
-    this.selectedFieldId,
+  RemoveFieldValueQueries({
+    this.fieldId,
+    this.valueKeys,
+    this.fixtures,
+    this.fieldValues,
+  });
+}
+
+class SelectFieldQueryId {
+  final String fieldId;
+
+  SelectFieldQueryId({
+    this.fieldId,
   });
 }
 

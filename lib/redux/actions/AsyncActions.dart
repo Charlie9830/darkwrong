@@ -15,10 +15,32 @@ import 'package:redux/redux.dart';
 import 'package:redux_thunk/redux_thunk.dart';
 
 ThunkAction<AppState> removeFixtures(Set<String> fixtureIds) {
-    return (Store<AppState> store) async {
-      // TODO: Possible Candiate for created a Batched Action.
-      store.dispatch(RemoveWorksheetRows(rowIds: fixtureIds));
-      store.dispatch(RemoveFixtures(fixtureIds: fixtureIds));
+  return (Store<AppState> store) async {
+    // TODO: Possible Candiate for created a Batched Action.
+    store.dispatch(RemoveWorksheetRows(rowIds: fixtureIds));
+    store.dispatch(RemoveFixtures(fixtureIds: fixtureIds));
+  };
+}
+
+ThunkAction<AppState> addFieldValueQueries(
+    String selectedFieldQueryId, Set<FieldValueKey> valueKeys) {
+  return (Store<AppState> store) async {
+    store.dispatch(AddFieldValueQueries(
+        fieldId: selectedFieldQueryId,
+        valueKeys: valueKeys,
+        fixtures: store.state.fixtureState.fixtures,
+        fieldValues: store.state.fixtureState.fieldValues));
+  };
+}
+
+ThunkAction<AppState> removeFieldValueQueries(
+    String selectedFieldQueryId, Set<FieldValueKey> valueKeys) {
+  return (Store<AppState> store) async {
+    store.dispatch(RemoveFieldValueQueries(
+        fieldId: selectedFieldQueryId,
+        valueKeys: valueKeys,
+        fixtures: store.state.fixtureState.fixtures,
+        fieldValues: store.state.fixtureState.fieldValues));
   };
 }
 
@@ -36,7 +58,8 @@ ThunkAction<AppState> updateFixtureValues(
       final fieldId = cell.columnId;
       final fixture = store.state.fixtureState.fixtures[fixtureId];
       final newValueKey = FieldValueKey.fromText(newValue);
-      final oldValue = fieldValues.getValue(fieldId, fixture.valueKeys[fieldId]);
+      final oldValue =
+          fieldValues.getValue(fieldId, fixture.valueKeys[fieldId]);
 
       if (oldValue.asText == newValue) {
         // No update required.
@@ -50,7 +73,8 @@ ThunkAction<AppState> updateFixtureValues(
           updatedFieldValues[fieldId] = <FieldValueKey, FieldValue>{};
         }
 
-        updatedFieldValues[fieldId][newValueKey] = FieldValue(newValue, newValueKey);
+        updatedFieldValues[fieldId][newValueKey] =
+            FieldValue(newValue, newValueKey);
       }
 
       // Create a new updated Fixture or use an existing one if we have already updated this fixture previously in the loop.
@@ -107,8 +131,8 @@ WorksheetState _buildWorksheet(
 
     for (var fieldsEntry in displayedFields.entries) {
       // Build the Cell.
-      final fieldValue =
-          fieldValuesStore.getValue(fieldsEntry.key, fixture.valueKeys[fieldsEntry.key]);
+      final fieldValue = fieldValuesStore.getValue(
+          fieldsEntry.key, fixture.valueKeys[fieldsEntry.key]);
 
       cells[fieldsEntry.key] = WorksheetCellModel(
         cellId: getCellId(rowId, fieldsEntry.key),

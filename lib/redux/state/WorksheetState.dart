@@ -8,37 +8,37 @@ class WorksheetState {
   final Map<String, WorksheetRowModel> rows;
   final Map<String, WorksheetHeaderModel> headers;
   final Map<String, SelectedCellModel> selectedCells;
-  final Map<String, Set<FieldValueKey>> fieldValueQueries;
-  final String selectedFieldFilterId;
+  final Set<FieldValueKey> fieldValueQueries;
+  final String selectedFieldQueryId;
 
   WorksheetState({
     this.rows,
     this.headers,
     this.selectedCells,
     this.fieldValueQueries,
-    this.selectedFieldFilterId,
+    this.selectedFieldQueryId,
   });
 
   WorksheetState.initial() :
   rows = <String, WorksheetRowModel>{},
   headers = <String, WorksheetHeaderModel>{},
   selectedCells = <String, SelectedCellModel>{},
-  fieldValueQueries = <String, Set<FieldValueKey>>{},
-  selectedFieldFilterId = allFieldFilterId;
+  fieldValueQueries = <FieldValueKey>{},
+  selectedFieldQueryId = allFieldQueryId;
 
   WorksheetState copyWith({
     Map<String, WorksheetRowModel> rows,
     Map<String, WorksheetHeaderModel> headers,
     Map<String, SelectedCellModel> selectedCells,
-    Map<String, Set<FieldValueKey>> fieldValueQueries,
-    String selectedFieldFilterId,
+    Set<FieldValueKey> fieldValueQueries,
+    String selectedFieldQueryId,
   }) {
     return WorksheetState(
       rows: rows ?? this.rows,
       headers: headers ?? this.headers,
       selectedCells: selectedCells ?? this.selectedCells,
       fieldValueQueries: fieldValueQueries ?? this.fieldValueQueries,
-      selectedFieldFilterId: selectedFieldFilterId ?? this.selectedFieldFilterId,
+      selectedFieldQueryId: selectedFieldQueryId ?? this.selectedFieldQueryId,
     );
   }
 }

@@ -4,7 +4,7 @@ import 'package:darkwrong/models/FieldValueKey.dart';
 class WorksheetNavigationDrawerViewModel {
   final String fieldName;
   final Map<FieldValueKey, FieldValue> fieldValues;
-  final Set<FieldValueKey> selectedFieldValues;
+  final Set<FieldValueKey> activeFieldValueQueries;
   final dynamic onAddFieldValueSelection;
   final dynamic onRemoveFieldValueSelection;
   final dynamic onShowAllFieldValues;
@@ -13,7 +13,7 @@ class WorksheetNavigationDrawerViewModel {
   WorksheetNavigationDrawerViewModel({
     this.fieldName,
     this.fieldValues,
-    this.selectedFieldValues,
+    this.activeFieldValueQueries,
     this.onAddFieldValueSelection,
     this.onRemoveFieldValueSelection,
     this.onShowAllFieldValues,

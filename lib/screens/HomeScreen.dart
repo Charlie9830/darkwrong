@@ -1,5 +1,6 @@
 import 'package:darkwrong/constants.dart';
 import 'package:darkwrong/containers/WorksheetContainer.dart';
+import 'package:darkwrong/containers/WorksheetNavigationDrawerContainer.dart';
 import 'package:darkwrong/keys.dart';
 import 'package:darkwrong/presentation/FixtureEditTextField.dart';
 import 'package:darkwrong/view_models/HomeScreenViewModel.dart';
@@ -18,7 +19,7 @@ class HomeScreen extends StatelessWidget {
         actions: [
           DropdownButton<String>(
             value: viewModel.selectedFieldFilterId,
-            hint: viewModel.selectedFieldFilterId == allFieldFilterId
+            hint: viewModel.selectedFieldFilterId == allFieldQueryId
                 ? Text('View Field')
                 : null,
             icon: Icon(Icons.filter_list),
@@ -35,9 +36,9 @@ class HomeScreen extends StatelessWidget {
                   ..insert(
                       0,
                       DropdownMenuItem(
-                        key: Key(allFieldFilterId),
+                        key: Key(allFieldQueryId),
                         child: Text('All'),
-                        value: allFieldFilterId,
+                        value: allFieldQueryId,
                       )),
           ),
           Expanded(
@@ -47,8 +48,8 @@ class HomeScreen extends StatelessWidget {
             ),
           ),
           IconButton(
-              icon: Icon(Icons.delete),
-              onPressed: () => viewModel.onDeleteFixtures(),
+            icon: Icon(Icons.delete),
+            onPressed: () => viewModel.onDeleteFixtures(),
           ),
           IconButton(
               icon: Icon(Icons.refresh),
@@ -59,7 +60,15 @@ class HomeScreen extends StatelessWidget {
           ),
         ],
       ),
-      body: WorksheetContainer(),
+      body: Row(
+        children: [
+          SizedBox.fromSize(
+            size: Size.fromWidth(200),
+            child: WorksheetNavigationDrawerContainer(),
+          ),
+          Expanded(child: WorksheetContainer()),
+        ],
+      ),
     );
   }
 }

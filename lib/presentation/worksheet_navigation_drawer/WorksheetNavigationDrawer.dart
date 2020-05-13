@@ -10,21 +10,25 @@ class WorksheetNavigationDrawer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final options = viewModel.fieldValues.values.map((item) {
-      final isSelected = viewModel.selectedFieldValues.contains(item.key);
+      final isSelected = viewModel.activeFieldValueQueries.contains(item.key);
       return ListTile(
           key: ValueKey(item.key),
           title: Text(item.asText),
           selected: isSelected,
-          onTap: () => isSelected
-              ? viewModel.onRemoveFieldValueSelection(item.key)
-              : viewModel.onAddFieldValueSelection(item.key));
+          onTap: () {
+            if (isSelected) {
+              viewModel.onRemoveFieldValueSelection(item.key);
+            } else {
+              viewModel.onAddFieldValueSelection(item.key);
+            }
+          });
     }).toList()
       ..insert(
           0,
           ListTile(
-            key: Key(allFieldFilterId),
+            key: Key(allFieldQueryId),
             title: Text('All'),
-            selected: viewModel.selectedFieldValues.isEmpty,
+            selected: viewModel.activeFieldValueQueries.isEmpty,
             onTap: () => viewModel.onShowAllFieldValues(),
           ));
 

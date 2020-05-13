@@ -54,10 +54,8 @@ WorksheetState worksheetStateReducer(WorksheetState state, dynamic action) {
   }
 
   if (action is RemoveWorksheetRows) {
-    final rows = Map<String, WorksheetRowModel>.from(state.rows);
-    for (var fixtureId in action.rowIds) {
-      rows.remove(fixtureId);
-    }
+    Map<String, WorksheetRowModel> rows =
+        _removeRows(state.rows, action.rowIds);
 
     return state.copyWith(
       rows: rows,
@@ -65,7 +63,74 @@ WorksheetState worksheetStateReducer(WorksheetState state, dynamic action) {
     );
   }
 
+  if (action is SelectFieldQueryId) {
+    return state.copyWith(
+      selectedFieldQueryId: action.fieldId,
+    );
+  }
+
+  if (action is AddFieldValueQueries) {
+    final fieldValueQueries = Set<FieldValueKey>.from(state.fieldValueQueries)
+      ..addAll(action.valueKeys);
+
+    final fixtureIds = _queryFixtures(action.fixtures, action.fieldId,
+        fieldValueQueries);
+    final fixturesToAdd = Map<String, FixtureModel>.fromEntries(
+        fixtureIds.map((item) => MapEntry(item, action.fixtures[item])));
+
+    return state.copyWith(
+      fieldValueQueries: fieldValueQueries,
+      rows: _buildRows(fixturesToAdd, action.fieldValues),
+    );
+  }
+
+  if (action is RemoveFieldValueQueries) {
+    final fieldValueQueries = Set<FieldValueKey>.from(state.fieldValueQueries)
+      ..removeAll(action.valueKeys);
+
+    // If fieldValueQueries is about to be emptied, we are falling back to the 'All' option. So just return all rows.
+    if (fieldValueQueries.isEmpty) {
+      return state.copyWith(
+        fieldValueQueries: fieldValueQueries,
+        rows: _buildRows(action.fixtures, action.fieldValues),
+      );
+    }
+
+    // fieldValueQueries isn't empty so we need to query for and re add the fixtures.
+    final fixtureIds = _queryFixtures(action.fixtures, action.fieldId,
+        action.valueKeys);
+
+    return state.copyWith(
+        fieldValueQueries: fieldValueQueries,
+        rows: _removeRows(state.rows, fixtureIds));
+  }
+
   return state;
+}
+
+Map<String, WorksheetRowModel> _removeRows(
+    Map<String, WorksheetRowModel> existingRows, Iterable<String> rowIds) {
+  final rows = Map<String, WorksheetRowModel>.from(existingRows);
+  for (var fixtureId in rowIds) {
+    rows.remove(fixtureId);
+  }
+
+  return rows;
+}
+
+///
+/// Returns a Set of fixtureIds that contain valueKey within their targetFieldId.
+///
+Set<String> _queryFixtures(
+    Map<String, FixtureModel> fixtures,
+    String targetFieldId,
+    Set<FieldValueKey> valueKeys) {
+
+  return fixtures.values
+      .where((fixture) =>
+          fixture.containsFieldValueKeys(targetFieldId, valueKeys))
+      .map((fixture) => fixture.uid)
+      .toSet();
 }
 
 Map<String, WorksheetRowModel> _buildRows(

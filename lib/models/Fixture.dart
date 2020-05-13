@@ -29,4 +29,12 @@ class FixtureModel {
       values: map,
     );
   }
+
+  bool containsFieldValueKey(String targetFieldId, FieldValueKey key) {
+    return valueKeys[targetFieldId] == key;
+  }
+
+  bool containsFieldValueKeys(String targetFieldId, Set<FieldValueKey> keys) {
+    return keys.any((key) => valueKeys[targetFieldId] == key);
+  }
 }

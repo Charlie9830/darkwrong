@@ -1,1 +1,1 @@
-const String allFieldFilterId = 'all';
+const String allFieldQueryId = 'all';

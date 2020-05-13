@@ -13,8 +13,8 @@ import 'package:random_words/random_words.dart';
 
 AppState initMockData(AppState state) {
   const desiredFieldCount = 10;
-  const desiredFixtureCount = 100;
-  const wordCount = 1000;
+  const desiredFixtureCount = 20;
+  const wordCount = 10;
 
   final wordPairs = generateWordPairs().take(wordCount).toList();
 
@@ -54,7 +54,8 @@ Map<String, FieldValueKey> _generateRandomFieldValueKeysMap(
   final random = Random();
   return Map<String, FieldValueKey>.fromEntries(fields.map((field) {
     final options = fieldValues[field.uid].keys;
-    final pickIndex = random.nextInt(options.length - 1);
+    final pickIndex = random.nextInt(options.length);
+
 
     return MapEntry(field.uid, options.elementAt(pickIndex));
   }));
@@ -72,11 +73,11 @@ Map<FieldValueKey, FieldValue> _generateRandomFieldValuesValue(
     List<WordPair> wordPairs) {
   final random = Random();
   final map = <FieldValueKey, FieldValue>{};
-  final loopCount = random.nextInt(wordPairs.length - 1);
+  final loopCount = random.nextInt(wordPairs.length);
 
   for (var i = 0; i <= loopCount; i++) {
     final textValue =
-        '${wordPairs[random.nextInt(wordPairs.length - 1)].first} ${wordPairs[random.nextInt(wordPairs.length - 1)].second}';
+        '${wordPairs[random.nextInt(wordPairs.length)].first} ${wordPairs[random.nextInt(wordPairs.length)].second}';
     final fieldValueKey = FieldValueKey.fromText(textValue);
 
     if (map.containsKey(fieldValueKey) == false) {

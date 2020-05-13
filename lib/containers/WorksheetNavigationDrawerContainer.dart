@@ -1,4 +1,6 @@
+import 'package:darkwrong/models/FieldValueKey.dart';
 import 'package:darkwrong/presentation/worksheet_navigation_drawer/WorksheetNavigationDrawer.dart';
+import 'package:darkwrong/redux/actions/AsyncActions.dart';
 import 'package:darkwrong/redux/state/AppState.dart';
 import 'package:darkwrong/view_models/WorksheetNavigationDrawerViewModel.dart';
 import 'package:flutter/material.dart';
@@ -21,13 +23,23 @@ class WorksheetNavigationDrawerContainer extends StatelessWidget {
       Store<AppState> store, BuildContext context) {
     final worksheetState = store.state.worksheetState;
     final fixtureState = store.state.fixtureState;
-    final selectedFieldFilterId =
-        store.state.worksheetState.selectedFieldFilterId;
+    final selectedFieldQueryId =
+        store.state.worksheetState.selectedFieldQueryId;
 
     return WorksheetNavigationDrawerViewModel(
-      fieldName: fixtureState.fields[selectedFieldFilterId]?.name ?? '',
-      fieldValues:
-          fixtureState.fieldValues.getFieldContents(selectedFieldFilterId),
-    );
+        fieldName: fixtureState.fields[selectedFieldQueryId]?.name ?? '',
+        fieldValues:
+            fixtureState.fieldValues.getFieldContents(selectedFieldQueryId),
+        activeFieldValueQueries: worksheetState.fieldValueQueries,
+        onAddFieldValueSelection: (FieldValueKey valueKey) => store.dispatch(
+            addFieldValueQueries(
+                selectedFieldQueryId, <FieldValueKey>{valueKey})),
+        onRemoveFieldValueSelection: (FieldValueKey valueKey) => store.dispatch(
+            removeFieldValueQueries(
+                selectedFieldQueryId, <FieldValueKey>{valueKey})),
+        onShowAllFieldValues: () => store.dispatch(
+              removeFieldValueQueries(
+                  selectedFieldQueryId, worksheetState.fieldValueQueries),
+            ));
   }
 }
