@@ -38,7 +38,8 @@ class FieldValuesStore {
 
     for (var fieldEntry in values.entries) {
       for (var valueEntry in fieldEntry.value.entries) {
-        newValueMap[fieldEntry.key][valueEntry.key] = valueEntry.value;
+        final innerMap = newValueMap.putIfAbsent(fieldEntry.key, () => <FieldValueKey, FieldValue>{});
+        innerMap[valueEntry.key] = valueEntry.value;
       }
     }
 

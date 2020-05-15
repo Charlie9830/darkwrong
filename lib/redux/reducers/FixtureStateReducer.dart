@@ -1,6 +1,5 @@
 import 'package:darkwrong/enums.dart';
 import 'package:darkwrong/models/Field.dart';
-import 'package:darkwrong/models/FieldValue.dart';
 import 'package:darkwrong/models/FieldValueKey.dart';
 import 'package:darkwrong/models/Fixture.dart';
 import 'package:darkwrong/redux/actions/SyncActions.dart';
@@ -23,6 +22,13 @@ FixtureState fixtureStateReducer(FixtureState state, dynamic action) {
           }
         }),
       fieldValues: state.fieldValues.copyWithNewValues(action.fieldValueUpdates.valueMap),
+    );
+  }
+
+  if (action is AddNewFixtures) {
+    return state.copyWith(
+      fixtures: Map<String, FixtureModel>.from(state.fixtures)..addAll(action.fixtures),
+      fieldValues: action.fieldValues
     );
   }
 

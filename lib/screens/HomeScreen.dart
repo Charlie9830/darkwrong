@@ -1,4 +1,5 @@
 import 'package:darkwrong/constants.dart';
+import 'package:darkwrong/containers/FixtureCreatorContainer.dart';
 import 'package:darkwrong/containers/WorksheetContainer.dart';
 import 'package:darkwrong/containers/WorksheetNavigationDrawerContainer.dart';
 import 'package:darkwrong/keys.dart';
@@ -59,6 +60,10 @@ class HomeScreen extends StatelessWidget {
             onPressed: viewModel.onDebugButtonPressed,
           ),
         ],
+        bottom: PreferredSize(
+          preferredSize: Size.fromHeight(216.0),
+          child: FixtureCreatorContainer(),
+        ),
       ),
       body: Row(
         children: [

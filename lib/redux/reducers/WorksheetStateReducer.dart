@@ -35,6 +35,12 @@ WorksheetState worksheetStateReducer(WorksheetState state, dynamic action) {
     );
   }
 
+  if (action is AddNewFixtures) {
+    return state.copyWith(
+        rows: Map<String, WorksheetRowModel>.from(state.rows)
+          ..addAll(_buildRows(action.fixtures, action.fieldValues)));
+  }
+
   if (action is UpdateFixturesAndFieldValues) {
     final watch = Stopwatch()..start();
     final newState = state.copyWith(
@@ -73,8 +79,8 @@ WorksheetState worksheetStateReducer(WorksheetState state, dynamic action) {
     final fieldValueQueries = Set<FieldValueKey>.from(state.fieldValueQueries)
       ..addAll(action.valueKeys);
 
-    final fixtureIds = _queryFixtures(action.fixtures, action.fieldId,
-        fieldValueQueries);
+    final fixtureIds =
+        _queryFixtures(action.fixtures, action.fieldId, fieldValueQueries);
     final fixturesToAdd = Map<String, FixtureModel>.fromEntries(
         fixtureIds.map((item) => MapEntry(item, action.fixtures[item])));
 
@@ -97,8 +103,8 @@ WorksheetState worksheetStateReducer(WorksheetState state, dynamic action) {
     }
 
     // fieldValueQueries isn't empty so we need to query for and re add the fixtures.
-    final fixtureIds = _queryFixtures(action.fixtures, action.fieldId,
-        action.valueKeys);
+    final fixtureIds =
+        _queryFixtures(action.fixtures, action.fieldId, action.valueKeys);
 
     return state.copyWith(
         fieldValueQueries: fieldValueQueries,
@@ -121,14 +127,11 @@ Map<String, WorksheetRowModel> _removeRows(
 ///
 /// Returns a Set of fixtureIds that contain valueKey within their targetFieldId.
 ///
-Set<String> _queryFixtures(
-    Map<String, FixtureModel> fixtures,
-    String targetFieldId,
-    Set<FieldValueKey> valueKeys) {
-
+Set<String> _queryFixtures(Map<String, FixtureModel> fixtures,
+    String targetFieldId, Set<FieldValueKey> valueKeys) {
   return fixtures.values
-      .where((fixture) =>
-          fixture.containsFieldValueKeys(targetFieldId, valueKeys))
+      .where(
+          (fixture) => fixture.containsFieldValueKeys(targetFieldId, valueKeys))
       .map((fixture) => fixture.uid)
       .toSet();
 }

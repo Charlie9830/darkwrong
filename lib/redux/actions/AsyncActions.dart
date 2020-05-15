@@ -1,8 +1,10 @@
+import 'package:darkwrong/constants.dart';
 import 'package:darkwrong/models/Field.dart';
 import 'package:darkwrong/models/FieldValue.dart';
 import 'package:darkwrong/models/FieldValueKey.dart';
 import 'package:darkwrong/models/FieldValuesStore.dart';
 import 'package:darkwrong/models/Fixture.dart';
+import 'package:darkwrong/models/NewFixturesRequest.dart';
 import 'package:darkwrong/models/SelectedCell.dart';
 import 'package:darkwrong/models/WorksheetCell.dart';
 import 'package:darkwrong/models/WorksheetHeader.dart';
@@ -11,8 +13,77 @@ import 'package:darkwrong/redux/actions/SyncActions.dart';
 import 'package:darkwrong/redux/state/AppState.dart';
 import 'package:darkwrong/redux/state/WorksheetState.dart';
 import 'package:darkwrong/util/getCellId.dart';
+import 'package:darkwrong/util/getUid.dart';
 import 'package:redux/redux.dart';
 import 'package:redux_thunk/redux_thunk.dart';
+
+ThunkAction<AppState> addNewFixtures(NewFixturesRequest request) {
+  return (Store<AppState> store) async {
+    if (request.isBlank) {
+      return;
+    }
+
+    FieldValuesStore existingFieldValues = store.state.fixtureState.fieldValues;
+    // Process the request object into new Fixtures.
+    Map<String, FixtureModel> fixtures = {};
+    Map<String, Map<FieldValueKey, FieldValue>> updatedFieldValues = {};
+
+    final int multiplier = request.multiplier == 0 ? 1 : request.multiplier;
+    for (int count = 1; count <= multiplier; count++) {
+      // Add existingValues.
+      final valueKeys =
+          Map<String, FieldValueKey>.from(request.existingValueKeys);
+
+      // Add new Values (Checking that they are indeed still new even after enumeration).
+      for (var entry in request.newValues.entries) {
+        // TODO: The code in this loop seems to be very similar to the code inside the UpdateFixturesAndFields reducer.
+        final fieldId = entry.key;
+        final rawValue = entry.value;
+
+        // Enumerate value if it needs to be enumerated.
+        final value = _needsEnumeration(rawValue)
+            ? _enumerateValue(rawValue, count)
+            : rawValue;
+
+        // Build a valueKey from the new value then check if it already exists within fieldValues.
+        final valueKey = FieldValueKey.fromText(value);
+        if (existingFieldValues.containsValue(fieldId, valueKey) == false) {
+          // It is definately a new value, add it to updatedFieldValues.
+          if (updatedFieldValues[fieldId] == null) {
+            updatedFieldValues[fieldId] = <FieldValueKey, FieldValue>{};
+          }
+          updatedFieldValues[fieldId][valueKey] =
+              FieldValue.fromText(value, valueKey);
+        }
+
+        // Add a reference to the fixture valueKeys.
+        valueKeys[fieldId] = valueKey;
+      }
+
+      final fixture = FixtureModel(uid: getUid(), valueKeys: valueKeys);
+
+      // Add to fixtures.
+      fixtures[fixture.uid] = fixture;
+    }
+
+    store.dispatch(AddNewFixtures(
+        fixtures: fixtures,
+        fieldValues: store.state.fixtureState.fieldValues
+            .copyWithNewValues(updatedFieldValues)));
+  };
+}
+
+String _enumerateValue(String value, int index) {
+  // TODO: Implement this properly.
+  return value
+      .replaceAll(positiveValueEnumerationIndicator, '')
+      .replaceAll(negativeValueEnumerationIndicator, '');
+}
+
+bool _needsEnumeration(String value) {
+  return value.endsWith(positiveValueEnumerationIndicator) ||
+      value.endsWith(negativeValueEnumerationIndicator);
+}
 
 ThunkAction<AppState> removeFixtures(Set<String> fixtureIds) {
   return (Store<AppState> store) async {

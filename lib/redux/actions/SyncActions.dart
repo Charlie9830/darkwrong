@@ -7,6 +7,13 @@ class InitMockData {
   InitMockData();
 }
 
+class AddNewFixtures {
+  final Map<String, FixtureModel> fixtures;
+  final FieldValuesStore fieldValues;
+
+  AddNewFixtures({this.fixtures, this.fieldValues});
+}
+
 class UpdateFixturesAndFieldValues {
   final Map<String, FixtureModel> fixtureUpdates;
   final FieldValuesStore fieldValueUpdates;

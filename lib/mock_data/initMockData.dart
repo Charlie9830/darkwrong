@@ -39,10 +39,10 @@ AppState initMockData(AppState state) {
           ));
 
   return state.copyWith(
-      fixtureState: FixtureState(
-    fixtures: Map<String, FixtureModel>.fromEntries(
-        fixtures.map((item) => MapEntry(item.uid, item))),
-    fieldValues: FieldValuesStore(valueMap: fieldValues),
+      fixtureState: state.fixtureState.copyWith(
+    //fixtures: Map<String, FixtureModel>.fromEntries(
+    //fixtures.map((item) => MapEntry(item.uid, item))),
+    //fieldValues: FieldValuesStore(valueMap: fieldValues),
     fields: Map<String, FieldModel>.fromEntries(
         fields.map((item) => MapEntry(item.uid, item))),
   ));
@@ -55,7 +55,6 @@ Map<String, FieldValueKey> _generateRandomFieldValueKeysMap(
   return Map<String, FieldValueKey>.fromEntries(fields.map((field) {
     final options = fieldValues[field.uid].keys;
     final pickIndex = random.nextInt(options.length);
-
 
     return MapEntry(field.uid, options.elementAt(pickIndex));
   }));
