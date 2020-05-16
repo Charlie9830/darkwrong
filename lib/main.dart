@@ -9,8 +9,12 @@ void main() {
   runApp(Darkwrong());
 }
 
-class Darkwrong extends StatelessWidget {
-  // This widget is the root of your application.
+class Darkwrong extends StatefulWidget {
+  @override
+  _DarkwrongState createState() => _DarkwrongState();
+}
+
+class _DarkwrongState extends State<Darkwrong> {
   @override
   Widget build(BuildContext context) {
     return StoreProvider<AppState>(
@@ -22,7 +26,7 @@ class Darkwrong extends StatelessWidget {
           brightness: Brightness.dark,
           visualDensity: VisualDensity.adaptivePlatformDensity,
         ),
-        home:  HomeScreenContainer(),
+        home: HomeScreenContainer(),
       ),
     );
   }
