@@ -33,6 +33,7 @@ class _FixtureCreatorState extends State<FixtureCreator> {
             ),
             FixtureCreatorButtonsPanel(
               onMultiplierChanged: (String newValue) => setState(() {
+                print('break');
                 request = request.copyWith(multiplier: int.parse(newValue, radix: 10));
               }),
               onAddButtonPressed: () {
