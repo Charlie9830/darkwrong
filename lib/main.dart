@@ -1,5 +1,7 @@
 import 'package:darkwrong/containers/HomeScreenContainer.dart';
 import 'package:darkwrong/presentation/fixture_creator/FixtureCreator.dart';
+import 'package:darkwrong/presentation/tool_rail/ToolRail.dart';
+import 'package:darkwrong/presentation/tool_rail/ToolRailOption.dart';
 import 'package:darkwrong/redux/AppStore.dart';
 import 'package:darkwrong/redux/state/AppState.dart';
 import 'package:flutter_redux/flutter_redux.dart';
@@ -20,14 +22,30 @@ class _DarkwrongState extends State<Darkwrong> {
     return StoreProvider<AppState>(
       store: appStore,
       child: MaterialApp(
-        title: 'Darkwrong',
-        theme: ThemeData(
-          primarySwatch: Colors.blue,
-          brightness: Brightness.dark,
-          visualDensity: VisualDensity.adaptivePlatformDensity,
-        ),
-        home: HomeScreenContainer(),
-      ),
+          title: 'Darkwrong',
+          theme: ThemeData(
+            primarySwatch: Colors.blue,
+            brightness: Brightness.dark,
+            visualDensity: VisualDensity.adaptivePlatformDensity,
+          ),
+          home: Container(
+            alignment: Alignment.topLeft,
+            child: ToolRail(
+              options: [
+                ToolRailOption(
+                  icon: Icon(Icons.add_circle),
+                  value: 'add',
+                  onSelected: (value) => print(value),
+                ),
+                ToolRailOption(
+                  icon: Icon(Icons.filter_list),
+                  value: 'view',
+                  onSelected: (value) => print(value),
+                ),
+              ],
+            ),
+          ) //HomeScreenContainer(),
+          ),
     );
   }
 }
