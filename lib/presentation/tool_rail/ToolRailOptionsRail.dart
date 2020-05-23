@@ -8,6 +8,7 @@ class ToolRailOptionsRail extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
+      color: Theme.of(context).primaryColor,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.start,
         children: options ?? <ToolRailOption>[],

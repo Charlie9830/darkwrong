@@ -17,7 +17,10 @@ class ToolRailBase extends StatelessWidget {
       alignment: Alignment.topCenter,
       width: width,
       duration: drawerMoveDuration,
-      child: Material(child: child),
+      child: Material(
+        elevation: 1,
+        child: child,
+      ),
     );
   }
 }

@@ -1,89 +1,91 @@
 import 'package:darkwrong/presentation/tool_rail/ToolRailBase.dart';
 import 'package:darkwrong/presentation/tool_rail/ToolRailDrawer.dart';
-import 'package:darkwrong/presentation/tool_rail/ToolRailOpenToProvider.dart';
 import 'package:darkwrong/presentation/tool_rail/ToolRailOption.dart';
 import 'package:darkwrong/presentation/tool_rail/ToolRailOptionsRail.dart';
-import 'package:darkwrong/presentation/tool_rail/ToolRailStateSelectedProvider.dart';
 import 'package:flutter/material.dart';
 
 const Duration _drawerMoveDuration = const Duration(milliseconds: 150);
 const double _drawerOpenWidth = 300.0;
 const double _drawerClosedWith = 40.0;
 
-class ToolRail extends StatefulWidget {
-  final GlobalKey<ToolRailState> key;
+class ToolRail extends StatelessWidget implements PreferredSizeWidget {
   final List<ToolRailOption> options;
   final List<Widget> children;
-  const ToolRail({this.key, this.options, this.children}) : super(key: key);
-
-  @override
-  ToolRailState createState() => ToolRailState();
-}
-
-class ToolRailState extends State<ToolRail> {
-  String _selectedValue;
-  bool _open;
-
-  @override
-  void initState() {
-    _selectedValue = null;
-    _open = false;
-    super.initState();
-  }
+  final String selectedValue;
+  const ToolRail(
+      {Key key, @required this.options, @required this.children, this.selectedValue})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    final width = _open ? _drawerOpenWidth : _drawerClosedWith;
-    return ToolRailStateSelectedProvider(
-      value: _selectedValue,
-      child: ToolRailOpenToProvider(
-        openToCallback: openTo,
-        child: ToolRailBase(
-          drawerMoveDuration: _drawerMoveDuration,
-          width: width,
-          child: Stack(
-            children: [
-              AnimatedPositioned(
-                top: 0,
-                bottom: 0,
-                left: 0,
-                width: width,
-                duration: _drawerMoveDuration,
-                child: ToolRailDrawer(
-                  child: _getDrawerChild(),
-                ),
-              ),
-              Positioned(
-                left: 0,
-                top: 0,
-                bottom: 0,
-                child: ToolRailOptionsRail(options: widget.options),
-              ),
-            ],
+    _assertOptions(options);
+    _assertChildren(options, children);
+    final width = selectedValue != null
+        ? _drawerOpenWidth
+        : _drawerClosedWith;
+
+    return ToolRailBase(
+      drawerMoveDuration: _drawerMoveDuration,
+      width: width,
+      child: Stack(
+        children: [
+          AnimatedPositioned(
+            top: 0,
+            bottom: 0,
+            left: selectedValue == null ? 0 : 40,
+            width: width,
+            duration: _drawerMoveDuration,
+            child: ToolRailDrawer(
+              child: _getDrawerChild(),
+            ),
           ),
-        ),
+          Positioned(
+            left: 0,
+            top: 0,
+            bottom: 0,
+            child: ToolRailOptionsRail(options: options),
+          ),
+        ],
       ),
     );
   }
 
-  Widget _getDrawerChild() {
-    return Container(
-      color: Colors.yellowAccent,
-    );
-  }
+  void _assertOptions(List<ToolRailOption> options) {
+    if (options == null) {
+      throw AssertionError('ToolRail.options cannot be null');
+    }
 
-  void openTo(String value) {
-    if (_selectedValue == value) {
-      // Close.
-      setState(() {
-        _selectedValue = null;
-        _open = false;
-      });
-    } else {
-      setState(() {
-        _selectedValue = value;
-        _open = true;
-      });
+    if (options.isEmpty) {
+      throw AssertionError('ToolRail.options cannot be empty');
     }
   }
+
+  void _assertChildren(List<ToolRailOption> options, List<Widget> children) {
+    if (children == null) {
+      throw AssertionError('ToolRail.children must not be null');
+    }
+    if (options.length != children.length) {
+      throw AssertionError(
+          'ToolRail.children must be the same length as ToolRail.options');
+    }
+  }
+
+  Widget _getDrawerChild() {
+    if (selectedValue == null) {
+      return null;
+    }
+
+    final widgetIndex = options.indexWhere((item) => item.value == selectedValue);
+    if (widgetIndex == -1) {
+      throw AssertionError(
+          '''A valid index could not be found match the ToolRailOption value '$selectedValue'. 
+          Check that you have not set ToolRailOption.value to a value that does not point to an option''');
+    }
+
+    return children[widgetIndex];
+  }
+
+  @override
+  // TODO: implement preferredSize
+  Size get preferredSize => Size.fromWidth(_drawerClosedWith);
 }
