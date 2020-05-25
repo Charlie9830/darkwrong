@@ -17,70 +17,73 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DarkwrongScaffold(
-        key: homescreenScaffoldKey,
-        appBar: AppBar(
-          title: Text('Darkwrong'),
-          actions: [
-            DropdownButton<String>(
-              value: viewModel.selectedFieldFilterId,
-              hint: viewModel.selectedFieldFilterId == allFieldQueryId
-                  ? Text('View Field')
-                  : null,
-              icon: Icon(Icons.filter_list),
-              onChanged: (newValue) => viewModel.onFieldFilterSelect(newValue),
-              items: viewModel.fields.values
-                  .map(
-                    (field) => DropdownMenuItem(
-                      key: Key(field.uid),
-                      child: Text(field.name),
-                      value: field.uid,
-                    ),
-                  )
-                  .toList()
-                    ..insert(
-                        0,
-                        DropdownMenuItem(
-                          key: Key(allFieldQueryId),
-                          child: Text('All'),
-                          value: allFieldQueryId,
-                        )),
+      key: homescreenScaffoldKey,
+      appBar: AppBar(
+        title: Text('Darkwrong'),
+        actions: [
+          DropdownButton<String>(
+            value: viewModel.selectedFieldFilterId,
+            hint: viewModel.selectedFieldFilterId == allFieldQueryId
+                ? Text('View Field')
+                : null,
+            icon: Icon(Icons.filter_list),
+            onChanged: (newValue) => viewModel.onFieldFilterSelect(newValue),
+            items: viewModel.fields.values
+                .map(
+                  (field) => DropdownMenuItem(
+                    key: Key(field.uid),
+                    child: Text(field.name),
+                    value: field.uid,
+                  ),
+                )
+                .toList()
+                  ..insert(
+                      0,
+                      DropdownMenuItem(
+                        key: Key(allFieldQueryId),
+                        child: Text('All'),
+                        value: allFieldQueryId,
+                      )),
+          ),
+          Expanded(
+            child: FixtureEditTextField(
+              enabled: viewModel.isFixtureEditEnabled,
+              onSubmitted: (newValue) => viewModel.onValueUpdate(newValue),
             ),
-            Expanded(
-              child: FixtureEditTextField(
-                enabled: viewModel.isFixtureEditEnabled,
-                onSubmitted: (newValue) => viewModel.onValueUpdate(newValue),
-              ),
-            ),
-            IconButton(
-              icon: Icon(Icons.delete),
-              onPressed: () => viewModel.onDeleteFixtures(),
-            ),
-            IconButton(
-                icon: Icon(Icons.refresh),
-                onPressed: viewModel.onAddFixtureButtonPressed),
-            RaisedButton(
-              child: Text('Debug'),
-              onPressed: viewModel.onDebugButtonPressed,
-            ),
-          ],
-        ),
-        body: WorksheetContainer(),
-        leftRail: _buildLeftRail(context),
-        persistentLeftRail: viewModel.worksheetLeftRailViewModel.isPersistent,);
+          ),
+          IconButton(
+            icon: Icon(Icons.delete),
+            onPressed: () => viewModel.onDeleteFixtures(),
+          ),
+          IconButton(
+              icon: Icon(Icons.refresh),
+              onPressed: viewModel.onAddFixtureButtonPressed),
+          RaisedButton(
+            child: Text('Debug'),
+            onPressed: viewModel.onDebugButtonPressed,
+          ),
+        ],
+      ),
+      body: WorksheetContainer(),
+      leftRail: _buildLeftRail(context),
+      persistentLeftRail: viewModel.worksheetLeftRailViewModel.isPersistent,
+    );
   }
 
   PreferredSizeWidget _buildLeftRail(BuildContext context) {
     return ToolRail(
-
-      selectedValue: viewModel.worksheetLeftRailViewModel.selectedTool == WorksheetToolOptions.noSelection ? null : viewModel.worksheetLeftRailViewModel.selectedTool,
+      selectedValue: viewModel.worksheetLeftRailViewModel.selectedTool ==
+              WorksheetToolOptions.noSelection
+          ? null
+          : viewModel.worksheetLeftRailViewModel.selectedTool,
+      onOptionPressed: (value) =>
+          viewModel.worksheetLeftRailViewModel.onToolSelect(value),
       options: <ToolRailOption>[
         ToolRailOption(
           icon: Icon(Icons.add_circle),
           value: WorksheetToolOptions.addFixtures,
           selected: viewModel.worksheetLeftRailViewModel.selectedTool ==
               WorksheetToolOptions.addFixtures,
-          onSelected: (value) =>
-              viewModel.worksheetLeftRailViewModel.onToolSelect(value),
         )
       ],
       children: <Widget>[

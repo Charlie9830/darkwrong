@@ -1,3 +1,4 @@
+import 'package:darkwrong/presentation/tool_rail/ToolOptionPressedCallbackProvider.dart';
 import 'package:darkwrong/presentation/tool_rail/ToolRailBase.dart';
 import 'package:darkwrong/presentation/tool_rail/ToolRailOption.dart';
 import 'package:darkwrong/presentation/tool_rail/ToolRailOptionsRail.dart';
@@ -7,15 +8,19 @@ const Duration _drawerMoveDuration = const Duration(milliseconds: 150);
 const double _drawerOpenWidth = 300.0;
 const double _drawerClosedWidth = 40.0;
 
+typedef void OnToolOptionPressedCallback(String value);
+
 class ToolRail extends StatelessWidget implements PreferredSizeWidget {
   final List<ToolRailOption> options;
   final List<Widget> children;
   final String selectedValue;
+  final OnToolOptionPressedCallback onOptionPressed;
 
   const ToolRail(
       {Key key,
       @required this.options,
       @required this.children,
+      @required this.onOptionPressed,
       this.selectedValue})
       : super(key: key);
 
@@ -42,7 +47,10 @@ class ToolRail extends StatelessWidget implements PreferredSizeWidget {
             left: 0,
             top: 0,
             bottom: 0,
-            child: ToolRailOptionsRail(options: options),
+            child: ToolOptionPressedCallbackProvider(
+              callback: onOptionPressed,
+              child: ToolRailOptionsRail(options: options),
+            ),
           ),
         ],
       ),
