@@ -14,10 +14,10 @@ class ToolRailBase extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AnimatedContainer(
-      alignment: Alignment.topCenter,
       width: width,
       duration: drawerMoveDuration,
       child: Material(
+        color: Theme.of(context).colorScheme.background,
         elevation: 1,
         child: child,
       ),

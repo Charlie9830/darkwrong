@@ -27,6 +27,7 @@ class FixtureTextFieldsList extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
         child: ListView(
+          shrinkWrap: true,
       children: fields.map((item) {
         return Row(
           children: [

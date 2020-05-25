@@ -28,7 +28,7 @@ class _DarkwrongState extends State<Darkwrong> {
           theme: ThemeData(
             primarySwatch: Colors.blue,
             brightness: Brightness.dark,
-            visualDensity: VisualDensity.adaptivePlatformDensity,
+            visualDensity: VisualDensity.compact,
           ),
           home: HomeScreenContainer(),
         ));

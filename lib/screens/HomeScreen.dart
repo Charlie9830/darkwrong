@@ -1,9 +1,12 @@
 import 'package:darkwrong/constants.dart';
 import 'package:darkwrong/containers/FixtureCreatorContainer.dart';
 import 'package:darkwrong/containers/WorksheetContainer.dart';
-import 'package:darkwrong/containers/WorksheetNavigationDrawerContainer.dart';
 import 'package:darkwrong/keys.dart';
+import 'package:darkwrong/presentation/DarkwrongScaffold/DarkwrongScaffold.dart';
 import 'package:darkwrong/presentation/FixtureEditTextField.dart';
+import 'package:darkwrong/presentation/tool_rail/ToolRail.dart';
+import 'package:darkwrong/presentation/tool_rail/ToolRailDrawerScaffold.dart';
+import 'package:darkwrong/presentation/tool_rail/ToolRailOption.dart';
 import 'package:darkwrong/view_models/HomeScreenViewModel.dart';
 import 'package:flutter/material.dart';
 
@@ -13,67 +16,80 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      key: homescreenScaffoldKey,
-      appBar: AppBar(
-        title: Text('Darkwrong'),
-        actions: [
-          DropdownButton<String>(
-            value: viewModel.selectedFieldFilterId,
-            hint: viewModel.selectedFieldFilterId == allFieldQueryId
-                ? Text('View Field')
-                : null,
-            icon: Icon(Icons.filter_list),
-            onChanged: (newValue) => viewModel.onFieldFilterSelect(newValue),
-            items: viewModel.fields.values
-                .map(
-                  (field) => DropdownMenuItem(
-                    key: Key(field.uid),
-                    child: Text(field.name),
-                    value: field.uid,
-                  ),
-                )
-                .toList()
-                  ..insert(
-                      0,
-                      DropdownMenuItem(
-                        key: Key(allFieldQueryId),
-                        child: Text('All'),
-                        value: allFieldQueryId,
-                      )),
-          ),
-          Expanded(
-            child: FixtureEditTextField(
-              enabled: viewModel.isFixtureEditEnabled,
-              onSubmitted: (newValue) => viewModel.onValueUpdate(newValue),
+    return DarkwrongScaffold(
+        key: homescreenScaffoldKey,
+        appBar: AppBar(
+          title: Text('Darkwrong'),
+          actions: [
+            DropdownButton<String>(
+              value: viewModel.selectedFieldFilterId,
+              hint: viewModel.selectedFieldFilterId == allFieldQueryId
+                  ? Text('View Field')
+                  : null,
+              icon: Icon(Icons.filter_list),
+              onChanged: (newValue) => viewModel.onFieldFilterSelect(newValue),
+              items: viewModel.fields.values
+                  .map(
+                    (field) => DropdownMenuItem(
+                      key: Key(field.uid),
+                      child: Text(field.name),
+                      value: field.uid,
+                    ),
+                  )
+                  .toList()
+                    ..insert(
+                        0,
+                        DropdownMenuItem(
+                          key: Key(allFieldQueryId),
+                          child: Text('All'),
+                          value: allFieldQueryId,
+                        )),
             ),
-          ),
-          IconButton(
-            icon: Icon(Icons.delete),
-            onPressed: () => viewModel.onDeleteFixtures(),
-          ),
-          IconButton(
-              icon: Icon(Icons.refresh),
-              onPressed: viewModel.onAddFixtureButtonPressed),
-          RaisedButton(
-            child: Text('Debug'),
-            onPressed: viewModel.onDebugButtonPressed,
-          ),
-        ],
-        bottom: PreferredSize(
-          preferredSize: Size.fromHeight(216.0),
-          child: FixtureCreatorContainer(),
+            Expanded(
+              child: FixtureEditTextField(
+                enabled: viewModel.isFixtureEditEnabled,
+                onSubmitted: (newValue) => viewModel.onValueUpdate(newValue),
+              ),
+            ),
+            IconButton(
+              icon: Icon(Icons.delete),
+              onPressed: () => viewModel.onDeleteFixtures(),
+            ),
+            IconButton(
+                icon: Icon(Icons.refresh),
+                onPressed: viewModel.onAddFixtureButtonPressed),
+            RaisedButton(
+              child: Text('Debug'),
+              onPressed: viewModel.onDebugButtonPressed,
+            ),
+          ],
         ),
-      ),
-      body: Row(
-        children: [
-          SizedBox.fromSize(
-            size: Size.fromWidth(200),
-            child: WorksheetNavigationDrawerContainer(),
-          ),
-          Expanded(child: WorksheetContainer()),
-        ],
-      ),
+        body: WorksheetContainer(),
+        leftRail: _buildLeftRail(context),
+        persistentLeftRail: viewModel.worksheetLeftRailViewModel.isPersistent,);
+  }
+
+  PreferredSizeWidget _buildLeftRail(BuildContext context) {
+    return ToolRail(
+
+      selectedValue: viewModel.worksheetLeftRailViewModel.selectedTool == WorksheetToolOptions.noSelection ? null : viewModel.worksheetLeftRailViewModel.selectedTool,
+      options: <ToolRailOption>[
+        ToolRailOption(
+          icon: Icon(Icons.add_circle),
+          value: WorksheetToolOptions.addFixtures,
+          selected: viewModel.worksheetLeftRailViewModel.selectedTool ==
+              WorksheetToolOptions.addFixtures,
+          onSelected: (value) =>
+              viewModel.worksheetLeftRailViewModel.onToolSelect(value),
+        )
+      ],
+      children: <Widget>[
+        ToolRailDrawerScaffold(
+            child: FixtureCreatorContainer(),
+            isPersistent: viewModel.worksheetLeftRailViewModel.isPersistent,
+            onPersistButtonPressed:
+                viewModel.worksheetLeftRailViewModel.onPersistButtonPressed)
+      ],
     );
   }
 }

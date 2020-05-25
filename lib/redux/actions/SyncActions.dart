@@ -7,6 +7,22 @@ class InitMockData {
   InitMockData();
 }
 
+class SelectWorksheetLeftTool {
+  final String value;
+
+  SelectWorksheetLeftTool({
+    this.value,
+  });
+}
+
+class SetWorksheetLeftRailPersistence {
+  final bool persist;
+
+  SetWorksheetLeftRailPersistence({
+    this.persist,
+  });
+}
+
 class AddNewFixtures {
   final Map<String, FixtureModel> fixtures;
   final FieldValuesStore fieldValues;

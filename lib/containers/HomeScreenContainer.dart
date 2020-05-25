@@ -3,6 +3,7 @@ import 'package:darkwrong/redux/actions/SyncActions.dart';
 import 'package:darkwrong/redux/state/AppState.dart';
 import 'package:darkwrong/screens/HomeScreen.dart';
 import 'package:darkwrong/view_models/HomeScreenViewModel.dart';
+import 'package:darkwrong/view_models/WorksheetLeftRailViewModel.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:redux/redux.dart';
@@ -20,6 +21,7 @@ class HomeScreenContainer extends StatelessWidget {
       },
       converter: (Store<AppState> store) {
         return HomeScreenViewModel(
+          worksheetLeftRailViewModel: _buildLeftRailViewModel(store),
           fields: store.state.fixtureState.fields,
           selectedFieldFilterId:
               store.state.worksheetState.selectedFieldQueryId,
@@ -37,6 +39,16 @@ class HomeScreenContainer extends StatelessWidget {
                   .map((item) => item.rowId)))),
         );
       },
+    );
+  }
+
+  WorksheetLeftRailViewModel _buildLeftRailViewModel(Store<AppState> store) {
+    return WorksheetLeftRailViewModel(
+      selectedTool: store.state.worksheetNavState.selectedLeftRailTool,
+      onToolSelect: (value) =>
+          store.dispatch(SelectWorksheetLeftTool(value: value)),
+      isPersistent: store.state.worksheetNavState.isLeftRailPersistent,
+      onPersistButtonPressed: (currentValue) => store.dispatch(SetWorksheetLeftRailPersistence(persist: !currentValue))
     );
   }
 }

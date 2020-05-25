@@ -1,28 +1,29 @@
 import 'package:darkwrong/presentation/tool_rail/ToolRailBase.dart';
-import 'package:darkwrong/presentation/tool_rail/ToolRailDrawer.dart';
 import 'package:darkwrong/presentation/tool_rail/ToolRailOption.dart';
 import 'package:darkwrong/presentation/tool_rail/ToolRailOptionsRail.dart';
 import 'package:flutter/material.dart';
 
 const Duration _drawerMoveDuration = const Duration(milliseconds: 150);
 const double _drawerOpenWidth = 300.0;
-const double _drawerClosedWith = 40.0;
+const double _drawerClosedWidth = 40.0;
 
 class ToolRail extends StatelessWidget implements PreferredSizeWidget {
   final List<ToolRailOption> options;
   final List<Widget> children;
   final String selectedValue;
+
   const ToolRail(
-      {Key key, @required this.options, @required this.children, this.selectedValue})
+      {Key key,
+      @required this.options,
+      @required this.children,
+      this.selectedValue})
       : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     _assertOptions(options);
     _assertChildren(options, children);
-    final width = selectedValue != null
-        ? _drawerOpenWidth
-        : _drawerClosedWith;
+    final width = selectedValue != null ? _drawerOpenWidth : _drawerClosedWidth;
 
     return ToolRailBase(
       drawerMoveDuration: _drawerMoveDuration,
@@ -33,11 +34,9 @@ class ToolRail extends StatelessWidget implements PreferredSizeWidget {
             top: 0,
             bottom: 0,
             left: selectedValue == null ? 0 : 40,
-            width: width,
+            width: width - _drawerClosedWidth,
             duration: _drawerMoveDuration,
-            child: ToolRailDrawer(
-              child: _getDrawerChild(),
-            ),
+            child: _getDrawerChild(),
           ),
           Positioned(
             left: 0,
@@ -72,14 +71,16 @@ class ToolRail extends StatelessWidget implements PreferredSizeWidget {
 
   Widget _getDrawerChild() {
     if (selectedValue == null) {
-      return null;
+      return Container();
     }
 
-    final widgetIndex = options.indexWhere((item) => item.value == selectedValue);
+    final widgetIndex =
+        options.indexWhere((item) => item.value == selectedValue);
     if (widgetIndex == -1) {
       throw AssertionError(
           '''A valid index could not be found match the ToolRailOption value '$selectedValue'. 
-          Check that you have not set ToolRailOption.value to a value that does not point to an option''');
+          If you intended to to deselect the current value set ToolRail.selectedValue to null or
+          check that you have not set ToolRailOption.value to a value that does not point to an option''');
     }
 
     return children[widgetIndex];
@@ -87,5 +88,5 @@ class ToolRail extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   // TODO: implement preferredSize
-  Size get preferredSize => Size.fromWidth(_drawerClosedWith);
+  Size get preferredSize => Size.fromWidth(_drawerClosedWidth);
 }

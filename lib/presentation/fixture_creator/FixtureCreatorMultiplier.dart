@@ -27,7 +27,7 @@ class _FixtureCreatorMultiplierState extends State<FixtureCreatorMultiplier> {
       width: 100.0,
       child: TextField(
         controller: _controller,
-        textAlign: TextAlign.center,
+        textAlign: TextAlign.end,
         onSubmitted: (newValue) => widget.onChanged(newValue),
         keyboardType: TextInputType.number,
         inputFormatters: [
