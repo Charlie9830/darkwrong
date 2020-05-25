@@ -4,7 +4,7 @@ class WorksheetLeftRailViewModel {
   final String selectedTool;
   final bool isPersistent;
   final dynamic onToolSelect;
-  final OnPersistButtonPressedCallback onPersistButtonPressed;
+  final PersistButtonPressedCallback onPersistButtonPressed;
 
   WorksheetLeftRailViewModel({
     this.selectedTool,

@@ -1,20 +1,20 @@
-import 'package:darkwrong/presentation/tool_rail/ToolRailPersistenceProvider.dart';
+import 'package:darkwrong/presentation/tool_rail/ToolRailController.dart';
 import 'package:flutter/material.dart';
 
-typedef void OnPersistButtonPressedCallback(bool currentValue);
+typedef void PersistButtonPressedCallback(bool currentValue);
 
 class ToolRailDrawerScaffold extends StatelessWidget {
   final Widget child;
 
-  const ToolRailDrawerScaffold(
-      {Key key,
-      @required this.child})
+  const ToolRailDrawerScaffold({Key key, @required this.child})
       : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    final isPersistent = ToolRailPersistenceProvider.of(context).isPersistent;
-    final onPersistButtonPressed = ToolRailPersistenceProvider.of(context).onPersistButtonPresed;
+    final railController = ToolRailController.of(context);
+    final bool persistent = railController.persistent;
+    final PersistButtonPressedCallback onPersistButtonPressed =
+        railController.onPersistButtonPressed;
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -28,10 +28,11 @@ class ToolRailDrawerScaffold extends StatelessWidget {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('Add Fixtures', style: Theme.of(context).textTheme.subtitle1),
+                    Text('Add Fixtures',
+                        style: Theme.of(context).textTheme.subtitle1),
                     IconButton(
-                      icon: Icon(isPersistent ? Icons.lock_open : Icons.lock),
-                      onPressed: () => onPersistButtonPressed(isPersistent),
+                      icon: Icon(persistent ? Icons.lock_open : Icons.lock),
+                      onPressed: () => onPersistButtonPressed(persistent),
                     )
                   ],
                 ),

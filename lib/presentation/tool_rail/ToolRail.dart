@@ -1,14 +1,9 @@
 import 'package:darkwrong/presentation/tool_rail/ToolOptionPressedCallbackProvider.dart';
 import 'package:darkwrong/presentation/tool_rail/ToolRailBase.dart';
-import 'package:darkwrong/presentation/tool_rail/ToolRailDrawerScaffold.dart';
+import 'package:darkwrong/presentation/tool_rail/ToolRailController.dart';
 import 'package:darkwrong/presentation/tool_rail/ToolRailOption.dart';
 import 'package:darkwrong/presentation/tool_rail/ToolRailOptionsRail.dart';
-import 'package:darkwrong/presentation/tool_rail/ToolRailPersistenceProvider.dart';
 import 'package:flutter/material.dart';
-
-const Duration _drawerMoveDuration = const Duration(milliseconds: 150);
-const double _drawerOpenWidth = 300.0;
-const double _drawerClosedWidth = 40.0;
 
 typedef void OnToolOptionPressedCallback(String value);
 
@@ -17,16 +12,12 @@ class ToolRail extends StatelessWidget implements PreferredSizeWidget {
   final List<Widget> children;
   final String selectedValue;
   final OnToolOptionPressedCallback onOptionPressed;
-  final bool isPersistent;
-  final OnPersistButtonPressedCallback onPesistButtonPressed;
 
   const ToolRail(
       {Key key,
       @required this.options,
       @required this.children,
       @required this.onOptionPressed,
-      @required this.onPesistButtonPressed,
-      @required this.isPersistent,
       this.selectedValue})
       : super(key: key);
 
@@ -34,19 +25,25 @@ class ToolRail extends StatelessWidget implements PreferredSizeWidget {
   Widget build(BuildContext context) {
     _assertOptions(options);
     _assertChildren(options, children);
-    final width = selectedValue != null ? _drawerOpenWidth : _drawerClosedWidth;
+    _assertController(context);
+
+    final railController = ToolRailController.of(context);
+    final open = railController.open;
+    final width = open
+        ? railController.drawerOpenedWidth
+        : railController.drawerClosedWidth;
 
     return ToolRailBase(
-      drawerMoveDuration: _drawerMoveDuration,
+      drawerMoveDuration: railController.drawerMoveDuration,
       width: width,
       child: Stack(
         children: [
           AnimatedPositioned(
             top: 0,
             bottom: 0,
-            left: selectedValue == null ? 0 : 40,
-            width: width - _drawerClosedWidth,
-            duration: _drawerMoveDuration,
+            left: open ? railController.drawerClosedWidth : 0,
+            width: width - railController.drawerClosedWidth,
+            duration: railController.drawerMoveDuration,
             child: _getDrawerChild(),
           ),
           Positioned(
@@ -61,6 +58,14 @@ class ToolRail extends StatelessWidget implements PreferredSizeWidget {
         ],
       ),
     );
+  }
+
+  void _assertController(BuildContext context) {
+    if (ToolRailController.of(context) == null) {
+      throw AssertionError(
+          '''ToolRail could not find an instance of a ToolRailController in it's ancestors.
+          Please ensure that this widget is a child of a ToolRailController''');
+    }
   }
 
   void _assertOptions(List<ToolRailOption> options) {
@@ -97,13 +102,9 @@ class ToolRail extends StatelessWidget implements PreferredSizeWidget {
           check that you have not set ToolRailOption.value to a value that does not point to an option''');
     }
 
-    return ToolRailPersistenceProvider(
-      isPersistent: isPersistent,
-      onPersistButtonPresed: onPesistButtonPressed,
-      child: children[widgetIndex]);
+    return children[widgetIndex];
   }
 
   @override
-  // TODO: implement preferredSize
-  Size get preferredSize => Size.fromWidth(_drawerClosedWidth);
+  Size get preferredSize => Size.fromWidth(40.0);
 }

@@ -66,15 +66,17 @@ class HomeScreen extends StatelessWidget {
       ),
       body: WorksheetContainer(),
       leftRail: _buildLeftRail(context),
+      leftDrawerOpen: viewModel.worksheetLeftRailViewModel.selectedTool != WorksheetToolOptions.noSelection,
       persistentLeftRail: viewModel.worksheetLeftRailViewModel.isPersistent,
+      onLeftRailPersistButtonPressed: viewModel.worksheetLeftRailViewModel.onPersistButtonPressed,
+      drawerClosedWidth: 40.0,
+      drawerOpenedWidth: 300.0,
+
     );
   }
 
   PreferredSizeWidget _buildLeftRail(BuildContext context) {
     return ToolRail(
-      isPersistent: viewModel.worksheetLeftRailViewModel.isPersistent,
-      onPesistButtonPressed:
-          viewModel.worksheetLeftRailViewModel.onPersistButtonPressed,
       selectedValue: viewModel.worksheetLeftRailViewModel.selectedTool ==
               WorksheetToolOptions.noSelection
           ? null

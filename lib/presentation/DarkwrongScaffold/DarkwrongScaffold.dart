@@ -1,4 +1,8 @@
+import 'package:darkwrong/presentation/tool_rail/ToolRailController.dart';
+import 'package:darkwrong/presentation/tool_rail/ToolRailDrawerScaffold.dart';
 import 'package:flutter/material.dart';
+
+const _drawerMoveDuration = const Duration(milliseconds: 150);
 
 class DarkwrongScaffold extends StatefulWidget {
   final PreferredSizeWidget appBar;
@@ -7,6 +11,12 @@ class DarkwrongScaffold extends StatefulWidget {
   final PreferredSizeWidget rightRail;
   final bool persistentLeftRail;
   final bool persistentRightRail;
+  final bool leftDrawerOpen;
+  final bool rightDrawerOpen;
+  final double drawerOpenedWidth;
+  final double drawerClosedWidth;
+  final PersistButtonPressedCallback onLeftRailPersistButtonPressed;
+  final PersistButtonPressedCallback onRightRailPersistButtonPressed;
 
   DarkwrongScaffold({
     Key key,
@@ -16,6 +26,12 @@ class DarkwrongScaffold extends StatefulWidget {
     this.rightRail,
     this.persistentRightRail = false,
     this.persistentLeftRail = false,
+    this.leftDrawerOpen = false,
+    this.rightDrawerOpen = false,
+    this.drawerOpenedWidth = 300.0,
+    this.drawerClosedWidth = 40.0,
+    this.onLeftRailPersistButtonPressed,
+    this.onRightRailPersistButtonPressed,
   }) : super(key: key);
 
   @override
@@ -39,52 +55,94 @@ class DarkwrongScaffoldState extends State<DarkwrongScaffold> {
           children: [
             if (widget.appBar != null) widget.appBar,
             Expanded(
-              child: _canUseSimpleBody(
-                widget.persistentLeftRail,
-                widget.persistentRightRail,
-              )
-                  ? _SimpleBodyBuilder(
-                      body: body,
-                      leftRail: widget.leftRail,
-                      rightRail: widget.rightRail,
-                    )
-                  : _ComplexBodyBuilder(
-                      body: body,
-                      leftRail: widget.leftRail,
-                      rightRail: widget.rightRail,
-                    ),
-            )
+                child: _BodyBuilder(
+              leftRail: widget.leftRail,
+              persistentLeftRail: widget.persistentLeftRail,
+              leftDrawerOpen: widget.leftDrawerOpen,
+              rightRail: widget.rightRail,
+              persistentRightRail: widget.persistentRightRail,
+              rightDrawerOpen: widget.rightDrawerOpen,
+              drawerClosedWidth: widget.drawerClosedWidth,
+              drawerOpenedWidth: widget.drawerOpenedWidth,
+              onLeftRailPersistButtonPressed: widget.onLeftRailPersistButtonPressed,
+              onRightRailPersistButtonPressed: widget.onRightRailPersistButtonPressed,
+              body: body,
+            ))
           ],
         ));
-  }
-
-  bool _canUseSimpleBody(bool persistentLeftRail, bool persistentRightRail) {
-    return persistentLeftRail || persistentRightRail;
   }
 }
 
 /// Responsible for building a complex body. This is requried if either or both of the Rails are non persistent.
-class _ComplexBodyBuilder extends StatelessWidget {
+class _BodyBuilder extends StatelessWidget {
   final PreferredSizeWidget leftRail;
   final PreferredSizeWidget rightRail;
+  final bool persistentLeftRail;
+  final bool persistentRightRail;
+  final bool leftDrawerOpen;
+  final bool rightDrawerOpen;
+  final double drawerOpenedWidth;
+  final double drawerClosedWidth;
+  final PersistButtonPressedCallback onLeftRailPersistButtonPressed;
+  final PersistButtonPressedCallback onRightRailPersistButtonPressed;
   final Widget body;
 
-  const _ComplexBodyBuilder({Key key, this.leftRail, this.rightRail, this.body})
-      : super(key: key);
+  const _BodyBuilder({
+    Key key,
+    this.leftRail,
+    this.rightRail,
+    this.body,
+    this.persistentLeftRail,
+    this.persistentRightRail,
+    this.drawerOpenedWidth,
+    this.drawerClosedWidth,
+    this.leftDrawerOpen,
+    this.rightDrawerOpen,
+    this.onLeftRailPersistButtonPressed,
+    this.onRightRailPersistButtonPressed,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    final positionedLeftRail =
-        Positioned(top: 0, left: 0, bottom: 0, child: leftRail);
-    final positionedRightRail =
-        Positioned(top: 0, right: 0, bottom: 0, child: rightRail);
+    final positionedLeftRail = Positioned(
+      top: 0,
+      left: 0,
+      bottom: 0,
+      child: ToolRailController(
+          persistent: persistentLeftRail,
+          open: leftDrawerOpen,
+          drawerClosedWidth: drawerClosedWidth,
+          drawerOpenedWidth: drawerOpenedWidth,
+          drawerMoveDuration: _drawerMoveDuration,
+          onPersistButtonPressed: onLeftRailPersistButtonPressed,
+          child: leftRail),
+    );
+
+    final positionedRightRail = Positioned(
+      top: 0,
+      right: 0,
+      bottom: 0,
+      child: ToolRailController(
+          persistent: persistentRightRail,
+          open: rightDrawerOpen,
+          drawerClosedWidth: drawerClosedWidth,
+          drawerOpenedWidth: drawerOpenedWidth,
+          drawerMoveDuration: _drawerMoveDuration,
+          onPersistButtonPressed: onRightRailPersistButtonPressed,
+          child: rightRail),
+    );
+
+    final bodyLeftOffset = _getBodyOffset(leftRail, persistentLeftRail,
+        leftDrawerOpen, drawerOpenedWidth, drawerClosedWidth);
+    final bodyRightOffset = _getBodyOffset(rightRail, persistentRightRail,
+        rightDrawerOpen, drawerOpenedWidth, drawerClosedWidth);
 
     return Stack(
       children: [
         Positioned(
           top: 0,
-          left: leftRail?.preferredSize?.width ?? 0,
-          right: rightRail?.preferredSize?.width ?? 0,
+          left: bodyLeftOffset,
+          right: bodyRightOffset,
           child: body,
         ),
         if (leftRail != null) positionedLeftRail,
@@ -92,32 +150,18 @@ class _ComplexBodyBuilder extends StatelessWidget {
       ],
     );
   }
-}
 
-/// Responsible for building a simple body. This is available when both Rails are set to persistent.
-class _SimpleBodyBuilder extends StatelessWidget {
-  final PreferredSizeWidget leftRail;
-  final PreferredSizeWidget rightRail;
-  final Widget body;
+  double _getBodyOffset(Widget rail, bool persistent, bool open,
+      double openedWidth, double closedWidth) {
+    if (rail == null) {
+      return 0;
+    }
 
-  const _SimpleBodyBuilder({
-    Key key,
-    this.leftRail,
-    this.rightRail,
-    this.body,
-  }) : super(key: key);
+    if (persistent) {
+      return open ? openedWidth : closedWidth;
+    }
 
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        if (leftRail != null) leftRail,
-        Expanded(
-          child: body,
-        ),
-        if (rightRail != null) rightRail
-      ],
-    );
+    return closedWidth;
   }
 }
 
