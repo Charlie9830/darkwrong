@@ -15,7 +15,7 @@ class Worksheet extends StatelessWidget {
     return FastTable(
       headers: viewModel.state.headers.values
           .map((item) => TableHeader(Text(item.title),
-              key: Key(item.uid), width: 48.0/* item.maxFieldLength * 8.0 */))
+              key: Key(item.uid), width: 120.0/* item.maxFieldLength * 8.0 */))
           .toList(),
       rows: viewModel.state.rows.values
           .map((row) => FastRow(

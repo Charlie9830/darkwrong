@@ -11,11 +11,13 @@ class FastTable extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final _columnWidths = headers.map((item) => item.width).toList();
-
     return Column(
       children: [
-        Row(
-          children: headers,
+        Container(
+          color: Theme.of(context).colorScheme.surface,
+          child: Row(
+            children: headers,
+          ),
         ),
         Expanded(
           child: ListView.builder(

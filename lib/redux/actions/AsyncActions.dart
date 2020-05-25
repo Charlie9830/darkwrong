@@ -271,11 +271,11 @@ WorksheetState _buildWorksheet(
 
   return existingWorksheet.copyWith(
       rows: rows,
-      headers: Map<String, WorksheetHeaderModel>.from(existingWorksheet.headers)
-        ..updateAll((key, value) {
-          return WorksheetHeaderModel(
-              uid: key,
-              title: value.title,
-              maxFieldLength: maxFieldLengths[key] ?? 0);
-        }));
+      headers: Map<String, WorksheetHeaderModel>.fromEntries(fields.entries.map(
+          (entry) => MapEntry(
+              entry.key,
+              WorksheetHeaderModel(
+                  uid: entry.key,
+                  maxFieldLength: maxFieldLengths[entry.key] ?? 0,
+                  title: entry.value.name)))));
 }

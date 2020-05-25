@@ -59,9 +59,9 @@ class FieldValuesStore {
   }
 
   FieldValue getValue(String fieldId, FieldValueKey valueKey) {
-    return containsValue(fieldId, valueKey) == null
-        ? null
-        : valueMap[fieldId][valueKey];
+    return containsValue(fieldId, valueKey)
+        ? valueMap[fieldId][valueKey]
+        : null;
   }
 
   ///
