@@ -72,6 +72,9 @@ class HomeScreen extends StatelessWidget {
 
   PreferredSizeWidget _buildLeftRail(BuildContext context) {
     return ToolRail(
+      isPersistent: viewModel.worksheetLeftRailViewModel.isPersistent,
+      onPesistButtonPressed:
+          viewModel.worksheetLeftRailViewModel.onPersistButtonPressed,
       selectedValue: viewModel.worksheetLeftRailViewModel.selectedTool ==
               WorksheetToolOptions.noSelection
           ? null
@@ -88,10 +91,8 @@ class HomeScreen extends StatelessWidget {
       ],
       children: <Widget>[
         ToolRailDrawerScaffold(
-            child: FixtureCreatorContainer(),
-            isPersistent: viewModel.worksheetLeftRailViewModel.isPersistent,
-            onPersistButtonPressed:
-                viewModel.worksheetLeftRailViewModel.onPersistButtonPressed)
+          child: FixtureCreatorContainer(),
+        )
       ],
     );
   }

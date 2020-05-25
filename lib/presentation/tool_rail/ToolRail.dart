@@ -1,7 +1,9 @@
 import 'package:darkwrong/presentation/tool_rail/ToolOptionPressedCallbackProvider.dart';
 import 'package:darkwrong/presentation/tool_rail/ToolRailBase.dart';
+import 'package:darkwrong/presentation/tool_rail/ToolRailDrawerScaffold.dart';
 import 'package:darkwrong/presentation/tool_rail/ToolRailOption.dart';
 import 'package:darkwrong/presentation/tool_rail/ToolRailOptionsRail.dart';
+import 'package:darkwrong/presentation/tool_rail/ToolRailPersistenceProvider.dart';
 import 'package:flutter/material.dart';
 
 const Duration _drawerMoveDuration = const Duration(milliseconds: 150);
@@ -15,12 +17,16 @@ class ToolRail extends StatelessWidget implements PreferredSizeWidget {
   final List<Widget> children;
   final String selectedValue;
   final OnToolOptionPressedCallback onOptionPressed;
+  final bool isPersistent;
+  final OnPersistButtonPressedCallback onPesistButtonPressed;
 
   const ToolRail(
       {Key key,
       @required this.options,
       @required this.children,
       @required this.onOptionPressed,
+      @required this.onPesistButtonPressed,
+      @required this.isPersistent,
       this.selectedValue})
       : super(key: key);
 
@@ -91,7 +97,10 @@ class ToolRail extends StatelessWidget implements PreferredSizeWidget {
           check that you have not set ToolRailOption.value to a value that does not point to an option''');
     }
 
-    return children[widgetIndex];
+    return ToolRailPersistenceProvider(
+      isPersistent: isPersistent,
+      onPersistButtonPresed: onPesistButtonPressed,
+      child: children[widgetIndex]);
   }
 
   @override

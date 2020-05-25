@@ -1,21 +1,21 @@
+import 'package:darkwrong/presentation/tool_rail/ToolRailPersistenceProvider.dart';
 import 'package:flutter/material.dart';
 
 typedef void OnPersistButtonPressedCallback(bool currentValue);
 
 class ToolRailDrawerScaffold extends StatelessWidget {
-  final bool isPersistent;
-  final OnPersistButtonPressedCallback onPersistButtonPressed;
   final Widget child;
 
   const ToolRailDrawerScaffold(
       {Key key,
-      @required this.isPersistent,
-      this.onPersistButtonPressed,
       @required this.child})
       : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    final isPersistent = ToolRailPersistenceProvider.of(context).isPersistent;
+    final onPersistButtonPressed = ToolRailPersistenceProvider.of(context).onPersistButtonPresed;
+
     return LayoutBuilder(
       builder: (context, constraints) {
         return Padding(
