@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:darkwrong/enums.dart';
+import 'package:darkwrong/mock_data/mockFieldNames.dart';
 import 'package:darkwrong/models/Field.dart';
 import 'package:darkwrong/models/FieldValue.dart';
 import 'package:darkwrong/models/FieldValueKey.dart';
@@ -12,20 +13,17 @@ import 'package:darkwrong/util/getUid.dart';
 import 'package:random_words/random_words.dart';
 
 AppState initMockData(AppState state) {
-  const desiredFieldCount = 10;
+  const desiredFieldCount = 10; // Set by the ammount of fieldNames in mockFieldNames.
   const desiredFixtureCount = 20;
   const wordCount = 10;
 
   final wordPairs = generateWordPairs().take(wordCount).toList();
 
-  final fieldIds =
-      List<String>.generate(desiredFieldCount, (index) => getUid());
-
-  final fields = List<FieldModel>.generate(
-    desiredFieldCount,
-    (index) => FieldModel(
-        name: 'Field ${index + 1}', type: FieldType.text, uid: fieldIds[index]),
-  );
+  final fields = mockFieldNames.map((item) => FieldModel(
+    name: item,
+    type: FieldType.text,
+    uid: getUid()
+  )).toList();
 
   final fieldValues = _generateRandomFieldValues(fields, wordPairs);
 

@@ -31,7 +31,10 @@ class FixtureTextFieldsList extends StatelessWidget {
       children: fields.map((item) {
         return Row(
           children: [
-            Text(item.name),
+            Padding(
+              padding: const EdgeInsets.only(right: 8.0),
+              child: Text(item.name, style: Theme.of(context).textTheme.caption),
+            ),
             Expanded(
                 child: FixtureTextField(
               key: Key(item.uid),
