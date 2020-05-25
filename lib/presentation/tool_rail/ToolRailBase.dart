@@ -16,6 +16,7 @@ class ToolRailBase extends StatelessWidget {
     return AnimatedContainer(
       width: width,
       duration: drawerMoveDuration,
+      curve: Curves.easeInCubic,
       child: Material(
         color: Theme.of(context).colorScheme.background,
         elevation: 1,
