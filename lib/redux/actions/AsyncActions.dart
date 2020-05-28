@@ -40,25 +40,25 @@ ThunkAction<AppState> addNewFixtures(NewFixturesRequest request) {
         // TODO: The code in this loop seems to be very similar to the code inside the UpdateFixturesAndFields reducer.
         final fieldId = entry.key;
         final rawValue = entry.value;
+        final newValue = FieldValue(primaryValue: rawValue);
 
         // Enumerate value if it needs to be enumerated.
         final value = _needsEnumeration(rawValue)
             ? _enumerateValue(rawValue, count)
             : rawValue;
 
-        // Build a valueKey from the new value then check if it already exists within fieldValues.
-        final valueKey = FieldValueKey.fromText(value);
-        if (existingFieldValues.containsValue(fieldId, valueKey) == false) {
+        // Check if the newValues key already exists within fieldValues.
+        if (existingFieldValues.containsValue(fieldId, newValue.key) == false) {
           // It is definately a new value, add it to updatedFieldValues.
           if (updatedFieldValues[fieldId] == null) {
             updatedFieldValues[fieldId] = <FieldValueKey, FieldValue>{};
           }
-          updatedFieldValues[fieldId][valueKey] =
-              FieldValue.fromText(value, valueKey);
+          updatedFieldValues[fieldId][newValue.key] =
+              newValue;
         }
 
         // Add a reference to the fixture valueKeys.
-        valueKeys[fieldId] = valueKey;
+        valueKeys[fieldId] = newValue.key;
       }
 
       final fixture = FixtureModel(uid: getUid(), valueKeys: valueKeys);
@@ -156,7 +156,7 @@ ThunkAction<AppState> removeFieldValueQueries(
 }
 
 ThunkAction<AppState> updateFixtureValues(
-    Map<String, SelectedCellModel> selectedCells, String newValue) {
+    Map<String, SelectedCellModel> selectedCells, String incomingValue) {
   return (Store<AppState> store) async {
     // Iterate through selectedCells, build new updated fixtures and fieldValues as required.
     // If a matching value doesn't already exist within fieldValues, create it. Then attach the fixture to that value.
@@ -168,33 +168,33 @@ ThunkAction<AppState> updateFixtureValues(
       final fixtureId = cell.rowId;
       final fieldId = cell.columnId;
       final fixture = store.state.fixtureState.fixtures[fixtureId];
-      final newValueKey = FieldValueKey.fromText(newValue);
       final oldValue =
           fieldValues.getValue(fieldId, fixture.valueKeys[fieldId]);
+      final newValue = FieldValue(primaryValue: incomingValue);
 
-      if (oldValue.asText == newValue) {
+      if (oldValue.asText == incomingValue) {
         // No update required.
         continue;
       }
 
       // If fieldValues doesn't already contain the new value we add it.
-      if (fieldValues.containsValue(fieldId, newValueKey) == false) {
+      if (fieldValues.containsValue(fieldId, newValue.key) == false) {
         // Ensure a map exists at the fieldId location first.
         if (updatedFieldValues[fieldId] == null) {
           updatedFieldValues[fieldId] = <FieldValueKey, FieldValue>{};
         }
 
-        updatedFieldValues[fieldId][newValueKey] =
-            FieldValue(newValue, newValueKey);
+        updatedFieldValues[fieldId][newValue.key] =
+            newValue;
       }
 
       // Create a new updated Fixture or use an existing one if we have already updated this fixture previously in the loop.
       if (updatedFixtures.containsKey(fixtureId)) {
         updatedFixtures[fixtureId] = updatedFixtures[fixtureId]
-            .copyWithUpdatedValue(fieldId, newValueKey);
+            .copyWithUpdatedValue(fieldId, newValue.key);
       } else {
         updatedFixtures[fixtureId] =
-            fixture.copyWithUpdatedValue(fieldId, newValueKey);
+            fixture.copyWithUpdatedValue(fieldId, newValue.key);
       }
     }
 
@@ -249,7 +249,7 @@ WorksheetState _buildWorksheet(
         cellId: getCellId(rowId, fieldsEntry.key),
         columnId: fieldsEntry.key,
         rowId: rowId,
-        value: fieldValue?.value ?? '',
+        value: fieldValue?.primaryValue ?? '',
       );
 
       // Update maxFieldLengths.

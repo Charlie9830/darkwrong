@@ -242,7 +242,7 @@ bool _compareFixtureValue(
     FieldValuesStore existingFieldValues) {
   // If the Updated Field Values contains a matching value entry and it differs from the current cell value.
   if (updatedFieldValues.containsValue(cellKey, valueKey) &&
-      updatedFieldValues.getValue(cellKey, valueKey).value != cellValue.value) {
+      updatedFieldValues.getValue(cellKey, valueKey).primaryValue != cellValue.value) {
     return true;
   }
 
@@ -250,7 +250,7 @@ bool _compareFixtureValue(
   // a fixture is updated to an already existing value, because the value already exists within fieldValues it will not be added to the updatedFieldValues map as
   // the value itself has not changed just which fixtures it is referenced by.
   if (existingFieldValues.containsValue(cellKey, valueKey) &&
-      existingFieldValues.getValue(cellKey, valueKey).value !=
+      existingFieldValues.getValue(cellKey, valueKey).primaryValue !=
           cellValue.value) {
     return true;
   }
