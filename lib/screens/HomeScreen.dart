@@ -4,6 +4,7 @@ import 'package:darkwrong/containers/WorksheetContainer.dart';
 import 'package:darkwrong/keys.dart';
 import 'package:darkwrong/presentation/DarkwrongScaffold/DarkwrongScaffold.dart';
 import 'package:darkwrong/presentation/FixtureEditTextField.dart';
+import 'package:darkwrong/presentation/field_editor/FieldAndValuesEditor.dart';
 import 'package:darkwrong/presentation/tool_rail/ToolRail.dart';
 import 'package:darkwrong/presentation/tool_rail/ToolRailDrawerScaffold.dart';
 import 'package:darkwrong/presentation/tool_rail/ToolRailOption.dart';
@@ -70,7 +71,7 @@ class HomeScreen extends StatelessWidget {
       persistentLeftRail: viewModel.worksheetLeftRailViewModel.isPersistent,
       onLeftRailPersistButtonPressed: viewModel.worksheetLeftRailViewModel.onPersistButtonPressed,
       drawerClosedWidth: 40.0,
-      drawerOpenedWidth: 300.0,
+      drawerOpenedWidth: 600.0,
 
     );
   }
@@ -89,11 +90,19 @@ class HomeScreen extends StatelessWidget {
           value: WorksheetToolOptions.addFixtures,
           selected: viewModel.worksheetLeftRailViewModel.selectedTool ==
               WorksheetToolOptions.addFixtures,
+        ),
+        ToolRailOption(
+          icon: Icon(Icons.storage),
+          value: WorksheetToolOptions.editFields,
+          selected: viewModel.worksheetLeftRailViewModel.selectedTool == WorksheetToolOptions.editFields,
         )
       ],
       children: <Widget>[
         ToolRailDrawerScaffold(
           child: FixtureCreatorContainer(),
+        ),
+        ToolRailDrawerScaffold(
+          child: FieldAndValuesEditor(),
         )
       ],
     );
