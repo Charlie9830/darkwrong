@@ -1,6 +1,5 @@
 const List<String> mockFieldNames = [
   'Unit Number',
-  'Instrument Type',
   'Position',
   'Wattage',
   'Color',

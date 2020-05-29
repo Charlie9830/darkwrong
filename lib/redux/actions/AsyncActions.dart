@@ -39,10 +39,13 @@ ThunkAction<AppState> addNewFixtures(NewFixturesRequest request) {
       for (var entry in request.newValues.entries) {
         // TODO: The code in this loop seems to be very similar to the code inside the UpdateFixturesAndFields reducer.
         final fieldId = entry.key;
+        final associatedField = store.state.fixtureState.fields[fieldId];
         final rawValue = entry.value;
-        final newValue = FieldValue(primaryValue: rawValue);
+        final newValue =
+            FieldValue(primaryValue: rawValue, type: associatedField.type);
 
         // Enumerate value if it needs to be enumerated.
+        // TODO: value became unused when switching to new Field System.
         final value = _needsEnumeration(rawValue)
             ? _enumerateValue(rawValue, count)
             : rawValue;
@@ -53,8 +56,7 @@ ThunkAction<AppState> addNewFixtures(NewFixturesRequest request) {
           if (updatedFieldValues[fieldId] == null) {
             updatedFieldValues[fieldId] = <FieldValueKey, FieldValue>{};
           }
-          updatedFieldValues[fieldId][newValue.key] =
-              newValue;
+          updatedFieldValues[fieldId][newValue.key] = newValue;
         }
 
         // Add a reference to the fixture valueKeys.
@@ -170,7 +172,11 @@ ThunkAction<AppState> updateFixtureValues(
       final fixture = store.state.fixtureState.fixtures[fixtureId];
       final oldValue =
           fieldValues.getValue(fieldId, fixture.valueKeys[fieldId]);
-      final newValue = FieldValue(primaryValue: incomingValue);
+      final associatedField = store.state.fixtureState.fields[fieldId];
+      final newValue = FieldValue(
+        primaryValue: incomingValue,
+        type: associatedField.type,
+      );
 
       if (oldValue.asText == incomingValue) {
         // No update required.
@@ -184,8 +190,7 @@ ThunkAction<AppState> updateFixtureValues(
           updatedFieldValues[fieldId] = <FieldValueKey, FieldValue>{};
         }
 
-        updatedFieldValues[fieldId][newValue.key] =
-            newValue;
+        updatedFieldValues[fieldId][newValue.key] = newValue;
       }
 
       // Create a new updated Fixture or use an existing one if we have already updated this fixture previously in the loop.

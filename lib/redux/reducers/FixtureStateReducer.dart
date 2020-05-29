@@ -70,7 +70,8 @@ Map<String, FieldModel> _addFields(
       fields[uid] = FieldModel(
         uid: uid,
         name: name,
-        type: FieldType.text,
+        type: FieldType.custom,
+        encoding: ValueEncoding.text,
       );
     }
   }
