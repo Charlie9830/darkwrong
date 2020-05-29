@@ -1,5 +1,5 @@
 import 'package:autocomplete_textfield/autocomplete_textfield.dart';
-import 'package:darkwrong/models/FieldValue.dart';
+import 'package:darkwrong/models/field_values/FieldValue.dart';
 import 'package:darkwrong/models/FieldValueKey.dart';
 import 'package:flutter/material.dart';
 

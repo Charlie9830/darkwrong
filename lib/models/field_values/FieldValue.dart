@@ -1,7 +1,7 @@
 import 'package:darkwrong/enums.dart';
-import 'package:darkwrong/models/CustomValue.dart';
+import 'package:darkwrong/models/field_values/CustomValue.dart';
 import 'package:darkwrong/models/FieldValueKey.dart';
-import 'package:darkwrong/models/InstrumentNameValue.dart';
+import 'package:darkwrong/models/field_values/InstrumentNameValue.dart';
 import 'package:meta/meta.dart';
 
 class FieldValue {

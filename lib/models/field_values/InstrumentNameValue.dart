@@ -1,5 +1,5 @@
 import 'package:darkwrong/enums.dart';
-import 'package:darkwrong/models/FieldValue.dart';
+import 'package:darkwrong/models/field_values/FieldValue.dart';
 import 'package:meta/meta.dart';
 
 class InstrumentNameValue extends FieldValue {
