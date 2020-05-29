@@ -1,4 +1,3 @@
-import 'package:darkwrong/models/field_values/FieldValue.dart';
 import 'package:darkwrong/models/FieldValueKey.dart';
 
 class NewFixturesRequest {

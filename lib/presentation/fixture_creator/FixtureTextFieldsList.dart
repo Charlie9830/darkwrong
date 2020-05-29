@@ -1,5 +1,4 @@
 import 'package:darkwrong/models/Field.dart';
-import 'package:darkwrong/models/field_values/FieldValue.dart';
 import 'package:darkwrong/models/FieldValueKey.dart';
 import 'package:darkwrong/models/FieldValuesStore.dart';
 import 'package:darkwrong/presentation/fixture_creator/FixtureTextField.dart';
