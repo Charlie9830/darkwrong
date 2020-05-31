@@ -15,6 +15,7 @@ class FieldSelector extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DropdownButton<FieldModel>(
+      value: selectedValue,
       onChanged: (field) => onChanged(field),
       items: options.map(
         (item) => DropdownMenuItem(

@@ -51,7 +51,9 @@ class _FieldAndValuesEditorState extends State<FieldAndValuesEditor> {
                     });
                   },
                 ),
-                ValuesEditor(),
+                ValuesEditor(
+                  viewModel: widget.viewModel,
+                ),
               ],
             ),
           )

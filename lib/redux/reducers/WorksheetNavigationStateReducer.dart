@@ -10,6 +10,12 @@ WorksheetNavigationState worksheetNavigationStateReducer(
     );
   }
 
+  if (action is SetFieldsAndValuesEditorSelectedFieldId) {
+    return state.copyWith(
+      selectedFieldId: action.fieldId,
+    );
+  }
+
   if (action is SelectWorksheetLeftTool) {
     return state.copyWith(
       selectedLeftRailTool: action.value == state.selectedLeftRailTool
@@ -19,9 +25,7 @@ WorksheetNavigationState worksheetNavigationStateReducer(
   }
 
   if (action is SetWorksheetLeftRailPersistence) {
-    return state.copyWith(
-      isLeftRailPersistent: action.persist
-    );
+    return state.copyWith(isLeftRailPersistent: action.persist);
   }
 
   return state;

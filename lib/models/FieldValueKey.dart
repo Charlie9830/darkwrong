@@ -11,4 +11,9 @@ class FieldValueKey {
 
   @override
   int get hashCode => _key.hashCode;
+
+  @override
+  String toString() {
+    return _key;
+  }
 }

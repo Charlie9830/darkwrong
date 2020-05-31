@@ -1,3 +1,4 @@
+import 'package:darkwrong/models/Field.dart';
 import 'package:darkwrong/presentation/field_editor/FieldAndValuesEditor.dart';
 import 'package:darkwrong/presentation/field_editor/FieldListTile.dart';
 import 'package:darkwrong/redux/actions/SyncActions.dart';
@@ -39,6 +40,9 @@ class FieldAndValuesEditorContainer extends StatelessWidget {
                 ))
             .toList(),
         onTabChanged: (index) =>
-            store.dispatch(SetFieldsAndValuesEditorTabIndex(index: index)));
+            store.dispatch(SetFieldsAndValuesEditorTabIndex(index: index)),
+        onFieldSelect: (FieldModel field) => store.dispatch(
+            SetFieldsAndValuesEditorSelectedFieldId(
+                fieldId: field?.uid ?? '')));
   }
 }

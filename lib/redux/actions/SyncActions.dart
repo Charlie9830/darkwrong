@@ -17,6 +17,14 @@ class SetFieldsAndValuesEditorTabIndex {
   });
 }
 
+class SetFieldsAndValuesEditorSelectedFieldId {
+  final String fieldId;
+
+  SetFieldsAndValuesEditorSelectedFieldId({
+    this.fieldId,
+  });
+}
+
 class DeleteCustomField {
   final String fieldId;
 
@@ -29,10 +37,7 @@ class AddCustomField {
   final String fieldName;
   final ValueEncoding encoding;
 
-  AddCustomField({
-    this.fieldName,
-    this.encoding
-  });
+  AddCustomField({this.fieldName, this.encoding});
 }
 
 class UpdateField {

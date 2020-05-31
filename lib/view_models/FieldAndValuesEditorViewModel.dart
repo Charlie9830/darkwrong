@@ -8,6 +8,7 @@ class FieldAndValuesEditorViewModel {
   final List<FieldViewModel> fieldViewModels;
   final dynamic onAddNewField;
   final dynamic onTabChanged;
+  final dynamic onFieldSelect;
 
   FieldAndValuesEditorViewModel({
     this.fieldValues,
@@ -16,5 +17,6 @@ class FieldAndValuesEditorViewModel {
     this.fieldViewModels,
     this.onAddNewField,
     this.onTabChanged,
+    this.onFieldSelect,
   });
 }

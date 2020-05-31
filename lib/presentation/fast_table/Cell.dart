@@ -5,7 +5,7 @@ class Cell extends StatelessWidget {
   final bool isSelected;
   final dynamic onClick;
 
-  const Cell(this.text, {Key key, this.isSelected, this.onClick})
+  const Cell(this.text, {Key key, this.isSelected = false, this.onClick})
       : super(key: key);
 
   @override
