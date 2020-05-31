@@ -1,7 +1,22 @@
+import 'package:darkwrong/enums.dart';
+import 'package:darkwrong/presentation/field_editor/FieldEncodingSelector.dart';
+import 'package:darkwrong/presentation/field_editor/FieldListTile.dart';
+import 'package:darkwrong/view_models/FieldAndValuesEditorViewModel.dart';
 import 'package:flutter/material.dart';
 
 class FieldEditor extends StatelessWidget {
-  const FieldEditor({Key key}) : super(key: key);
+  final FieldAndValuesEditorViewModel viewModel;
+  final String editingFieldId;
+  final dynamic onFieldEditingStart;
+  final dynamic onFieldEditingComplete;
+
+  const FieldEditor(
+      {Key key,
+      this.viewModel,
+      this.editingFieldId,
+      this.onFieldEditingStart,
+      this.onFieldEditingComplete})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -10,41 +25,30 @@ class FieldEditor extends StatelessWidget {
         Card(
             child: Padding(
           padding: const EdgeInsets.all(8.0),
-          child: _AddFieldControl(),
+          child: _AddFieldControl(
+            onAddNewField: viewModel.onAddNewField,
+          ),
         )),
         Expanded(
           child: Card(
             child: ListView(
-              children: List<Widget>.generate(
-                  15,
-                  (index) => ListTile(
-                        title: Text('Field ${index + 1}'),
-                        subtitle: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text('Short Name'),
-                            Text('DataType'),
-                          ],
-                        ),
-                      trailing: PopupMenuButton(
-                        padding: EdgeInsets.zero,
-                        icon: Icon(Icons.more_vert),
-                        itemBuilder: (context) {
-                          return <PopupMenuEntry>[
-                            PopupMenuItem(
-                              child: Text('View values'),
-                            ),
-                            PopupMenuItem(
-                              child: Text('Edit'),
-                            ),
-                            PopupMenuDivider(),
-                            PopupMenuItem(
-                              child: Text('Delete'),
-                            ),
-                          ];
-                        },
-                      ),)),
-            ),
+                children: viewModel.fieldViewModels
+                    .map((vm) => FieldListTile(
+                          key: Key(vm.data.uid),
+                          open: vm.data.uid == editingFieldId,
+                          enabled: editingFieldId == '' ||
+                              vm.data.uid == editingFieldId,
+                          fieldName: vm.data.name,
+                          fieldEncoding: vm.data.encoding,
+                          onDeletePressed: vm.onDeletePressed,
+                          onEditPressed: () => onFieldEditingStart(vm.data.uid),
+                          onViewValuesPressed: vm.onViewValuesPressed,
+                          onEditingComplete: (request) {
+                            onFieldEditingComplete();
+                            vm.onChanged(request);
+                          },
+                        ))
+                    .toList()),
           ),
         )
       ],
@@ -53,47 +57,41 @@ class FieldEditor extends StatelessWidget {
 }
 
 class _AddFieldControl extends StatefulWidget {
+  final dynamic onAddNewField;
+
+  _AddFieldControl({
+    this.onAddNewField,
+  });
+
   @override
   __AddFieldControlState createState() => __AddFieldControlState();
 }
 
 class __AddFieldControlState extends State<_AddFieldControl> {
+  TextEditingController _fieldNameController;
+  ValueEncoding _selectedEncoding;
+
+  @override
+  void initState() {
+    _fieldNameController = TextEditingController();
+    _selectedEncoding = ValueEncoding.text;
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         TextField(
+          controller: _fieldNameController,
           decoration: InputDecoration(hintText: 'Field Name'),
         ),
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            Expanded(child: TextField(
-              decoration: InputDecoration(
-                hintText: 'Short name'
-              ),
-            )),
-            Container(width: 16),
-            DropdownButton(
-              isDense: true,
-              onChanged: (_) {},
-              items: [
-                DropdownMenuItem(
-                  child: Text('Text'),
-                ),
-                DropdownMenuItem(
-                  child: Text('Number'),
-                ),
-                DropdownMenuItem(
-                  child: Text('DMX Address'),
-                ),
-                DropdownMenuItem(
-                  child: Text('Color'),
-                )
-              ],
-            ),
-          ],
+        FieldEncodingSelector(
+          selectedValue: _selectedEncoding,
+          onChanged: (value) => setState(() {
+            _selectedEncoding = value;
+          }),
         ),
         Padding(
           padding: const EdgeInsets.only(top: 8.0),
@@ -102,7 +100,10 @@ class __AddFieldControlState extends State<_AddFieldControl> {
             children: [
               RaisedButton(
                 child: Text('Add'),
-                onPressed: () {},
+                onPressed: () {
+                  widget.onAddNewField(
+                      _fieldNameController.text, _selectedEncoding);
+                },
               )
             ],
           ),

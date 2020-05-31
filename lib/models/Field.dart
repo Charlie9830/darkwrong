@@ -15,4 +15,18 @@ class FieldModel {
   });
 
   bool get isBuiltIn => type != FieldType.custom;
+
+  FieldModel copyWith({
+    String uid,
+    String name,
+    ValueEncoding encoding,
+    FieldType type,
+  }) {
+    return FieldModel(
+      uid: uid ?? this.uid,
+      encoding: encoding ?? this.encoding,
+      name: name ?? this.name,
+      type: type ?? this.type,
+    );
+  }
 }

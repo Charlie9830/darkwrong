@@ -7,6 +7,36 @@ import 'package:darkwrong/redux/state/FixtureState.dart';
 import 'package:darkwrong/util/getUid.dart';
 
 FixtureState fixtureStateReducer(FixtureState state, dynamic action) {
+  if (action is DeleteCustomField) {
+    return state.copyWith(
+        fields: Map<String, FieldModel>.from(state.fields)
+          ..remove(action.fieldId));
+  }
+
+  if (action is UpdateField) {
+    return state.copyWith(
+        fields: Map<String, FieldModel>.from(state.fields)
+          ..update(
+              action.fieldId,
+              (value) => value.copyWith(
+                    encoding: action.request.encoding ?? value.encoding,
+                    name: action.request.fieldName ?? value.name,
+                  )));
+  }
+
+  if (action is AddCustomField) {
+    final newField = FieldModel(
+      uid: getUid(),
+      name: action.fieldName,
+      encoding: action.encoding,
+      type: FieldType.custom,
+    );
+
+    return state.copyWith(
+        fields: Map<String, FieldModel>.from(state.fields)
+          ..addAll({newField.uid: newField}));
+  }
+
   if (action is AddFields) {
     return state.copyWith(fields: _addFields(state.fields, action.names));
   }
@@ -21,15 +51,16 @@ FixtureState fixtureStateReducer(FixtureState state, dynamic action) {
             return value;
           }
         }),
-      fieldValues: state.fieldValues.copyWithNewValues(action.fieldValueUpdates.valueMap),
+      fieldValues: state.fieldValues
+          .copyWithNewValues(action.fieldValueUpdates.valueMap),
     );
   }
 
   if (action is AddNewFixtures) {
     return state.copyWith(
-      fixtures: Map<String, FixtureModel>.from(state.fixtures)..addAll(action.fixtures),
-      fieldValues: action.fieldValues
-    );
+        fixtures: Map<String, FixtureModel>.from(state.fixtures)
+          ..addAll(action.fixtures),
+        fieldValues: action.fieldValues);
   }
 
   if (action is AddBlankFixture) {

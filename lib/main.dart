@@ -23,6 +23,7 @@ class _DarkwrongState extends State<Darkwrong> {
         child: MaterialApp(
           title: 'Darkwrong',
           theme: ThemeData(
+            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
             primarySwatch: Colors.blue,
             brightness: Brightness.dark,
             visualDensity: VisualDensity.compact,

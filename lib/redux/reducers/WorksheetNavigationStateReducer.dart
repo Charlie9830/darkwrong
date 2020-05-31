@@ -4,6 +4,12 @@ import 'package:darkwrong/redux/state/WorksheetNavigationState.dart';
 
 WorksheetNavigationState worksheetNavigationStateReducer(
     WorksheetNavigationState state, dynamic action) {
+  if (action is SetFieldsAndValuesEditorTabIndex) {
+    return state.copyWith(
+      fieldsAndValuesEditorTabIndex: action.index,
+    );
+  }
+
   if (action is SelectWorksheetLeftTool) {
     return state.copyWith(
       selectedLeftRailTool: action.value == state.selectedLeftRailTool

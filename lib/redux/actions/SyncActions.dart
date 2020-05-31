@@ -1,10 +1,48 @@
+import 'package:darkwrong/enums.dart';
 import 'package:darkwrong/models/FieldValueKey.dart';
 import 'package:darkwrong/models/FieldValuesStore.dart';
 import 'package:darkwrong/models/Fixture.dart';
+import 'package:darkwrong/presentation/field_editor/FieldListTile.dart';
 import 'package:darkwrong/redux/state/WorksheetState.dart';
 
 class InitMockData {
   InitMockData();
+}
+
+class SetFieldsAndValuesEditorTabIndex {
+  final int index;
+
+  SetFieldsAndValuesEditorTabIndex({
+    this.index,
+  });
+}
+
+class DeleteCustomField {
+  final String fieldId;
+
+  DeleteCustomField({
+    this.fieldId,
+  });
+}
+
+class AddCustomField {
+  final String fieldName;
+  final ValueEncoding encoding;
+
+  AddCustomField({
+    this.fieldName,
+    this.encoding
+  });
+}
+
+class UpdateField {
+  final String fieldId;
+  final FieldChangeRequest request;
+
+  UpdateField({
+    this.fieldId,
+    this.request,
+  });
 }
 
 class SelectWorksheetLeftTool {

@@ -1,4 +1,5 @@
 import 'package:darkwrong/constants.dart';
+import 'package:darkwrong/containers/FieldAndValuesEditorContainer.dart';
 import 'package:darkwrong/containers/FixtureCreatorContainer.dart';
 import 'package:darkwrong/containers/WorksheetContainer.dart';
 import 'package:darkwrong/keys.dart';
@@ -102,7 +103,7 @@ class HomeScreen extends StatelessWidget {
           child: FixtureCreatorContainer(),
         ),
         ToolRailDrawerScaffold(
-          child: FieldAndValuesEditor(),
+          child: FieldAndValuesEditorContainer(),
         )
       ],
     );
