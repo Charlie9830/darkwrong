@@ -1,4 +1,5 @@
 import 'package:darkwrong/models/FieldValuesStore.dart';
+import 'package:darkwrong/presentation/field_editor/ValuesEditor.dart';
 import 'package:darkwrong/view_models/FieldViewModel.dart';
 
 class FieldAndValuesEditorViewModel {
@@ -9,6 +10,7 @@ class FieldAndValuesEditorViewModel {
   final dynamic onAddNewField;
   final dynamic onTabChanged;
   final dynamic onFieldSelect;
+  final MetadataValueChangedCallback onMetadataValueChanged;
 
   FieldAndValuesEditorViewModel({
     this.fieldValues,
@@ -18,5 +20,6 @@ class FieldAndValuesEditorViewModel {
     this.onAddNewField,
     this.onTabChanged,
     this.onFieldSelect,
+    this.onMetadataValueChanged,
   });
 }

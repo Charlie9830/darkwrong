@@ -1,7 +1,9 @@
+import 'package:darkwrong/config/FieldMetadataDescriptors.dart';
 import 'package:darkwrong/enums.dart';
 import 'package:darkwrong/models/Field.dart';
 import 'package:darkwrong/models/FieldValueKey.dart';
 import 'package:darkwrong/models/Fixture.dart';
+import 'package:darkwrong/models/field_values/MetadataValue.dart';
 import 'package:darkwrong/redux/actions/SyncActions.dart';
 import 'package:darkwrong/redux/state/FixtureState.dart';
 import 'package:darkwrong/util/getUid.dart';
@@ -30,6 +32,7 @@ FixtureState fixtureStateReducer(FixtureState state, dynamic action) {
       name: action.fieldName,
       encoding: action.encoding,
       type: FieldType.custom,
+      valueMetadataDescriptors: FieldMetadataDescriptors.custom,
     );
 
     return state.copyWith(
@@ -37,8 +40,12 @@ FixtureState fixtureStateReducer(FixtureState state, dynamic action) {
           ..addAll({newField.uid: newField}));
   }
 
-  if (action is AddFields) {
-    return state.copyWith(fields: _addFields(state.fields, action.names));
+  if (action is UpdateFieldMetadataValue) {
+    return state.copyWith(
+        fieldValues: state.fieldValues.copyWithNewMetadataValue(
+            action.fieldValueKey,
+            action.propertyName,
+            MetadataValue(primaryValue: action.newValue)));
   }
 
   if (action is UpdateFixturesAndFieldValues) {
@@ -87,25 +94,4 @@ FixtureState fixtureStateReducer(FixtureState state, dynamic action) {
   }
 
   return state;
-}
-
-Map<String, FieldModel> _addFields(
-    Map<String, FieldModel> existingFields, List<String> fieldNames) {
-  final fields = Map<String, FieldModel>.from(existingFields);
-
-  // Add Fields if not already existing.
-  for (var name in fieldNames) {
-    if (existingFields.values.any((item) => item.name == name) == false) {
-      final uid = getUid();
-
-      fields[uid] = FieldModel(
-        uid: uid,
-        name: name,
-        type: FieldType.custom,
-        encoding: ValueEncoding.text,
-      );
-    }
-  }
-
-  return fields;
 }

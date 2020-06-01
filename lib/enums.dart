@@ -22,3 +22,9 @@ enum InstrumentType {
   practical,
   other,
 }
+
+enum MetadataEncoding {
+  text,
+  number,
+  instrumentType,
+}

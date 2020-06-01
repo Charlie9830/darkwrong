@@ -23,8 +23,10 @@ class FieldAndValuesEditorContainer extends StatelessWidget {
 
   FieldAndValuesEditorViewModel _converter(
       Store<AppState> store, BuildContext context) {
+    final selectedFieldId = store.state.worksheetNavState.selectedFieldId;
+
     return FieldAndValuesEditorViewModel(
-        selectedFieldId: store.state.worksheetNavState.selectedFieldId,
+        selectedFieldId: selectedFieldId,
         fieldValues: store.state.fixtureState.fieldValues,
         tabIndex: store.state.worksheetNavState.fieldsAndValuesEditorTabIndex,
         onAddNewField: (fieldName, encoding) => store
@@ -42,7 +44,11 @@ class FieldAndValuesEditorContainer extends StatelessWidget {
         onTabChanged: (index) =>
             store.dispatch(SetFieldsAndValuesEditorTabIndex(index: index)),
         onFieldSelect: (FieldModel field) => store.dispatch(
-            SetFieldsAndValuesEditorSelectedFieldId(
-                fieldId: field?.uid ?? '')));
+            SetFieldsAndValuesEditorSelectedFieldId(fieldId: field?.uid ?? '')),
+        onMetadataValueChanged: (fieldValueKey, propertyName, newValue) =>
+            store.dispatch(UpdateFieldMetadataValue(
+                fieldValueKey: fieldValueKey,
+                propertyName: propertyName,
+                newValue: newValue)));
   }
 }

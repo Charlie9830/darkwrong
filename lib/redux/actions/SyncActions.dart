@@ -17,6 +17,15 @@ class SetFieldsAndValuesEditorTabIndex {
   });
 }
 
+class UpdateFieldMetadataValue {
+  final FieldValueKey fieldValueKey;
+  final String propertyName;
+  final String newValue;
+
+  UpdateFieldMetadataValue(
+      {this.fieldValueKey, this.propertyName, this.newValue});
+}
+
 class SetFieldsAndValuesEditorSelectedFieldId {
   final String fieldId;
 
@@ -150,14 +159,6 @@ class BuildWorksheetState {
 
   BuildWorksheetState({
     this.state,
-  });
-}
-
-class AddFields {
-  final List<String> names;
-
-  AddFields({
-    this.names,
   });
 }
 
