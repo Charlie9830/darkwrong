@@ -21,44 +21,46 @@ class _CellState extends State<Cell> {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: widget.onClick,
-      onDoubleTap: () {
-        if (!open) {
+    return Listener(
+      onPointerDown: (_) {
+        if (widget.onClick != null) widget.onClick();
+      },
+      child: GestureDetector(
+        onDoubleTap: () {
           setState(() {
             open = true;
           });
-        }
-      },
-      child: SizedBox(
-        width: _getWidth(context),
-        child: Container(
-          decoration: BoxDecoration(
-              border: Border.all(
-            color: Colors.red,
-            width: 2.0,
-            style: widget.isSelected ? BorderStyle.solid : BorderStyle.none,
-          )),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              if (open)
-                Expanded(
-                  child: _Open(
-                    text: widget.text,
-                    onChanged: (newValue) {
-                      setState(() {
-                        open = false;
-                      });
-                      if (widget.onChanged != null) {
-                        widget.onChanged(newValue);
-                      }
-                    },
+        },
+        child: SizedBox(
+          width: _getWidth(context),
+          child: Container(
+            decoration: BoxDecoration(
+                border: Border.all(
+              color: Colors.red,
+              width: 2.0,
+              style: widget.isSelected ? BorderStyle.solid : BorderStyle.none,
+            )),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                if (open)
+                  Expanded(
+                    child: _Open(
+                      text: widget.text,
+                      onChanged: (newValue) {
+                        setState(() {
+                          open = false;
+                        });
+                        if (widget.onChanged != null) {
+                          widget.onChanged(newValue);
+                        }
+                      },
+                    ),
                   ),
-                ),
-              if (!open) Text(widget.text ?? '-'),
-              VerticalDivider(),
-            ],
+                if (!open) Text(widget.text ?? '-'),
+                VerticalDivider(),
+              ],
+            ),
           ),
         ),
       ),
