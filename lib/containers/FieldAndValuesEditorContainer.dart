@@ -1,6 +1,7 @@
 import 'package:darkwrong/models/Field.dart';
 import 'package:darkwrong/presentation/field_editor/FieldAndValuesEditor.dart';
 import 'package:darkwrong/presentation/field_editor/FieldListTile.dart';
+import 'package:darkwrong/redux/actions/AsyncActions.dart';
 import 'package:darkwrong/redux/actions/SyncActions.dart';
 import 'package:darkwrong/redux/state/AppState.dart';
 import 'package:darkwrong/view_models/FieldAndValuesEditorViewModel.dart';
@@ -49,6 +50,8 @@ class FieldAndValuesEditorContainer extends StatelessWidget {
             store.dispatch(UpdateFieldMetadataValue(
                 fieldValueKey: fieldValueKey,
                 propertyName: propertyName,
-                newValue: newValue)));
+                newValue: newValue)),
+        onFieldValueChanged: (fieldValueKey, newValue) => store.dispatch(
+            updateFieldValue(selectedFieldId, fieldValueKey, newValue)));
   }
 }

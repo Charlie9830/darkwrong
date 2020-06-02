@@ -18,6 +18,47 @@ import 'package:darkwrong/util/getUid.dart';
 import 'package:redux/redux.dart';
 import 'package:redux_thunk/redux_thunk.dart';
 
+ThunkAction<AppState> updateFieldValue(
+    String fieldId, FieldValueKey existingValueKey, String newValue) {
+  return (Store<AppState> store) async {
+    final fixtureState = store.state.fixtureState;
+    final Iterable<FixtureModel> associatedFixtures =
+        fixtureState.fixtures.values.where((fixture) =>
+            fixture.containsFieldValueKey(fieldId, existingValueKey));
+    final newValueKey = FieldValueKey(newValue);
+
+    final existingFieldType =
+        fixtureState.fieldValues.getValue(fieldId, existingValueKey).type;
+
+    final updatedFixtures = Map<String, FixtureModel>.fromEntries(
+        associatedFixtures.map((fixture) => MapEntry(fixture.uid,
+            fixture.copyWithUpdatedValueKey(fieldId, newValueKey))));
+
+    // TODO: UpdateFixtureAndFieldValues is expecting updatedFieldValues to ONLY have the fields that have been updated. Here, we are providing it with every Field,
+    // this is likely causing an expensive Full rebuild of the worksheet. In this situation however, we can't provide just whats been changed because we are deleteing a value
+    // we can't really convey that we have deleted a value. In future we could implement a 'removedFieldValues' optional parameter to the UpdateFixturesAndFieldValues action.
+    final updatedFieldValues = fixtureState.fieldValues.copyWithReplacedValue(
+        fieldId,
+        existingValueKey,
+        newValueKey,
+        FieldValue(
+          primaryValue: newValue,
+          type: existingFieldType,
+        ));
+
+    store.dispatch(UpdateFieldValue(
+      updatedFixtures: updatedFixtures,
+      fieldValues: updatedFieldValues,
+    ));
+
+    // store.dispatch(UpdateFixturesAndFieldValues(
+    //   existingFieldValues: fixtureState.fieldValues,
+    //   fieldValueUpdates: updatedFieldValues,
+    //   fixtureUpdates: updatedFixtures,
+    // ));
+  };
+}
+
 ThunkAction<AppState> addNewFixtures(NewFixturesRequest request) {
   return (Store<AppState> store) async {
     if (request.isBlank) {
@@ -196,10 +237,10 @@ ThunkAction<AppState> updateFixtureValues(
       // Create a new updated Fixture or use an existing one if we have already updated this fixture previously in the loop.
       if (updatedFixtures.containsKey(fixtureId)) {
         updatedFixtures[fixtureId] = updatedFixtures[fixtureId]
-            .copyWithUpdatedValue(fieldId, newValue.key);
+            .copyWithUpdatedValueKey(fieldId, newValue.key);
       } else {
         updatedFixtures[fixtureId] =
-            fixture.copyWithUpdatedValue(fieldId, newValue.key);
+            fixture.copyWithUpdatedValueKey(fieldId, newValue.key);
       }
     }
 

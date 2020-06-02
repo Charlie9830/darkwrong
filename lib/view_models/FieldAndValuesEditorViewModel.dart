@@ -11,6 +11,7 @@ class FieldAndValuesEditorViewModel {
   final dynamic onTabChanged;
   final dynamic onFieldSelect;
   final MetadataValueChangedCallback onMetadataValueChanged;
+  final FieldValueChangedCallback onFieldValueChanged;
 
   FieldAndValuesEditorViewModel({
     this.fieldValues,
@@ -21,5 +22,6 @@ class FieldAndValuesEditorViewModel {
     this.onTabChanged,
     this.onFieldSelect,
     this.onMetadataValueChanged,
+    this.onFieldValueChanged,
   });
 }

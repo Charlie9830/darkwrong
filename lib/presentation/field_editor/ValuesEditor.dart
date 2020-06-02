@@ -49,6 +49,7 @@ class ValuesEditor extends StatelessWidget {
                       field: selectedField,
                       fieldValues: viewModel.fieldValues,
                       onMetadataValueChanged: viewModel.onMetadataValueChanged,
+                      onFieldValueChanged: viewModel.onFieldValueChanged,
                     )),
         ),
       ],
@@ -56,14 +57,23 @@ class ValuesEditor extends StatelessWidget {
   }
 }
 
-typedef void MetadataValueChangedCallback(FieldValueKey fieldKey, String propertyName, String newValue);
+typedef void MetadataValueChangedCallback(
+    FieldValueKey fieldKey, String propertyName, String newValue);
+typedef void FieldValueChangedCallback(FieldValueKey fieldKey, String newValue);
 
 class _ValueTable extends StatelessWidget {
   final FieldModel field;
   final FieldValuesStore fieldValues;
   final MetadataValueChangedCallback onMetadataValueChanged;
+  final FieldValueChangedCallback onFieldValueChanged;
 
-  const _ValueTable({Key key, this.field, this.fieldValues, this.onMetadataValueChanged}) : super(key: key);
+  const _ValueTable(
+      {Key key,
+      this.field,
+      this.fieldValues,
+      this.onMetadataValueChanged,
+      this.onFieldValueChanged})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -71,7 +81,6 @@ class _ValueTable extends StatelessWidget {
         field.valueMetadataDescriptors.values.toList();
     final List<FieldValue> values =
         fieldValues.getFieldContents(field.uid).values.toList();
-
 
     return FastTable(
       headers: _buildDescriptorHeaders(descriptors)
@@ -87,13 +96,22 @@ class _ValueTable extends StatelessWidget {
                 children: descriptors
                     .map(
                       (descriptor) => Cell(
-                        fieldValues.getMetadataValue(value.key, descriptor.propertyName)?.primaryValue,
-                      onChanged: (newValue) {
-                        onMetadataValueChanged(value.key, descriptor.propertyName, newValue);
-                      },),
+                        fieldValues
+                            .getMetadataValue(
+                                value.key, descriptor.propertyName)
+                            ?.primaryValue,
+                        onChanged: (newValue) {
+                          onMetadataValueChanged(
+                              value.key, descriptor.propertyName, newValue);
+                        },
+                      ),
                     )
                     .toList()
-                      ..insert(0, Cell(value.asText)),
+                      ..insert(
+                          0,
+                          Cell(value.asText,
+                              onChanged: (newValue) =>
+                                  onFieldValueChanged(value.key, newValue))),
               ))
           .toList(),
     );

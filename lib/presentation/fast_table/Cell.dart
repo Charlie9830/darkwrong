@@ -101,7 +101,6 @@ class __OpenState extends State<_Open> {
       controller: _controller,
       autofocus: true,
       onEditingComplete: () => _handleSubmit(),
-      onSubmitted: (_) => _handleSubmit(),
     );
   }
 

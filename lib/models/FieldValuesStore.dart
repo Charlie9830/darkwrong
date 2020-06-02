@@ -43,6 +43,38 @@ class FieldValuesStore {
     return metadataValues[valueId][propertyName];
   }
 
+  FieldValuesStore copyWithReplacedValue(String fieldId,
+      FieldValueKey oldValueId, FieldValueKey newValueId, FieldValue newValue) {
+    final newValueMap =
+        Map<String, Map<FieldValueKey, FieldValue>>.from(valueMap);
+
+    if (containsField(fieldId) == false) {
+      // Coerce field Existence.
+      newValueMap[fieldId] = <FieldValueKey, FieldValue>{};
+    }
+
+    print('MetadataValues');
+    print(metadataValues);
+
+    newValueMap[fieldId].remove(oldValueId);
+    newValueMap[fieldId][newValueId] = newValue;
+
+    final associatedMetadata = metadataValues[oldValueId];
+    final newMetadataValues =
+        Map<FieldValueKey, Map<String, MetadataValue>>.from(metadataValues);
+
+    if (associatedMetadata != null) {
+      newMetadataValues.remove(oldValueId);
+      newMetadataValues[newValueId] =
+          Map<String, MetadataValue>.from(associatedMetadata);
+    }
+
+    return copyWith(
+      valueMap: newValueMap,
+      metadataValues: newMetadataValues,
+    );
+  }
+
   FieldValuesStore copyWithNewValue(
       String fieldId, FieldValueKey valueId, FieldValue value) {
     final newValueMap =

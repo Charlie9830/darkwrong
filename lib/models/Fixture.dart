@@ -12,20 +12,20 @@ class FixtureModel {
 
   FixtureModel copyWith({
     String uid,
-    Map<String, FieldValueKey> values
+    Map<String, FieldValueKey> valueKeys
   }) {
     return FixtureModel(
       uid: uid ?? this.uid,
-      valueKeys: values ?? this.valueKeys,
+      valueKeys: valueKeys ?? this.valueKeys,
     );
   }
 
-  FixtureModel copyWithUpdatedValue(String fieldId, FieldValueKey newValue) {
+  FixtureModel copyWithUpdatedValueKey(String fieldId, FieldValueKey newValue) {
     final map = Map<String, FieldValueKey>.from(valueKeys);
     map[fieldId] = newValue;
 
     return this.copyWith(
-      values: map,
+      valueKeys: map,
     );
   }
 

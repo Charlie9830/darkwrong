@@ -17,6 +17,16 @@ class SetFieldsAndValuesEditorTabIndex {
   });
 }
 
+class UpdateFieldValue {
+  final Map<String, FixtureModel> updatedFixtures;
+  final FieldValuesStore fieldValues;
+
+  UpdateFieldValue({
+    this.updatedFixtures,
+    this.fieldValues,
+  });
+}
+
 class UpdateFieldMetadataValue {
   final FieldValueKey fieldValueKey;
   final String propertyName;
