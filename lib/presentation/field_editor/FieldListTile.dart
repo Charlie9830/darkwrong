@@ -1,5 +1,6 @@
 import 'package:darkwrong/enums.dart';
 import 'package:darkwrong/presentation/field_editor/FieldEncodingSelector.dart';
+import 'package:darkwrong/presentation/inheritated_widgets/Hovering.dart';
 import 'package:darkwrong/util/getHumanFriendlyValueEncoding.dart';
 import 'package:flutter/material.dart';
 
@@ -40,24 +41,10 @@ class FieldListTile extends StatelessWidget {
             fieldName: fieldName,
             fieldEncoding: fieldEncoding,
             enabled: enabled,
-            onPopupMenuSelect: _handlePopupMenuItemSelect,
+            onDelete: onDeletePressed,
+            onEdit: onEditPressed,
+            onViewValues: onViewValuesPressed,
           );
-  }
-
-  void _handlePopupMenuItemSelect(String value) {
-    switch (value) {
-      case 'view-values':
-        onViewValuesPressed();
-        break;
-
-      case 'edit':
-        onEditPressed();
-        break;
-
-      case 'delete':
-        onDeletePressed();
-        break;
-    }
   }
 }
 
@@ -146,46 +133,50 @@ class _Closed extends StatelessWidget {
   final String fieldName;
   final ValueEncoding fieldEncoding;
   final bool enabled;
-  final dynamic onPopupMenuSelect;
+  final dynamic onViewValues;
+  final dynamic onEdit;
+  final dynamic onDelete;
 
   const _Closed(
       {Key key,
       this.fieldName,
       this.fieldEncoding,
-      this.onPopupMenuSelect,
+      this.onDelete,
+      this.onEdit,
+      this.onViewValues,
       this.enabled})
       : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return ListTile(
-      enabled: enabled,
-      title: Text(fieldName ?? ''),
-      subtitle: Text(getHumanFriendlyValueEncoding(fieldEncoding) ?? ''),
-      trailing: PopupMenuButton<String>(
-        padding: EdgeInsets.zero,
-        enabled: enabled,
-        icon: Icon(Icons.more_vert),
-        onSelected: onPopupMenuSelect,
-        itemBuilder: (context) {
-          return <PopupMenuEntry<String>>[
-            PopupMenuItem(
-              value: 'view-values',
-              child: Text('View values'),
+    return Hovering(child: Builder(
+      builder: (context) {
+        final hovering = HoveringProvider.of(context).hovering;
+        return GestureDetector(
+          onDoubleTap: onEdit,
+          child: ListTile(
+            enabled: enabled,
+            title: Text(fieldName ?? ''),
+            subtitle: Text(getHumanFriendlyValueEncoding(fieldEncoding) ?? ''),
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (hovering)
+                  IconButton(
+                    icon: Icon(Icons.view_list),
+                    onPressed: onViewValues,
+                  ),
+                if (hovering)
+                  IconButton(
+                    icon: Icon(Icons.delete),
+                    onPressed: onEdit,
+                  )
+              ],
             ),
-            PopupMenuItem(
-              value: 'edit',
-              child: Text('Edit'),
-            ),
-            PopupMenuDivider(),
-            PopupMenuItem(
-              value: 'delete',
-              child: Text('Delete'),
-            ),
-          ];
-        },
-      ),
-    );
+          ),
+        );
+      },
+    ));
   }
 }
 
