@@ -94,13 +94,11 @@ class AddNewFixtures {
 
 class UpdateFixturesAndFieldValues {
   final Map<String, FixtureModel> fixtureUpdates;
-  final FieldValuesStore fieldValueUpdates;
-  final FieldValuesStore existingFieldValues;
+  final FieldValuesStore fieldValues;
 
   UpdateFixturesAndFieldValues({
     this.fixtureUpdates,
-    this.fieldValueUpdates,
-    this.existingFieldValues,
+    this.fieldValues,
   });
 }
 
