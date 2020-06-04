@@ -89,6 +89,20 @@ class _FastTableState extends State<FastTable> {
   }
 }
 
+class BorderState {
+  final bool top;
+  final bool right;
+  final bool bottom;
+  final bool left;
+
+  BorderState({
+    this.top = false,
+    this.right = false,
+    this.bottom = false,
+    this.left = false,
+  });
+}
+
 class CellIndex {
   final int x;
   final int y;
@@ -121,6 +135,40 @@ class CellSelectionConstraint {
   }) {
     return CellSelectionConstraint(
         a: a ?? this.upperLeft, b: b ?? this.lowerRight);
+  }
+
+  BorderState getBorderState(CellIndex cellIndex) {
+    bool top = false;
+    bool right = false;
+    bool left = false;
+    bool bottom = false;
+
+    // Top
+    if (cellIndex.y == upperLeft.y) {
+      top = true;
+    }
+
+    // Right
+    if (cellIndex.x == lowerRight.x) {
+      right = true;
+    }
+
+    // Bottom
+    if (cellIndex.y == lowerRight.y) {
+      bottom = true;
+    }
+
+    // Left
+    if (cellIndex.x == upperLeft.x) {
+      left = true;
+    }
+
+    return BorderState(
+      top: top,
+      right: right,
+      bottom: bottom,
+      left: left
+    );
   }
 
   bool satisfiesConstraints(CellIndex cellIndex) {

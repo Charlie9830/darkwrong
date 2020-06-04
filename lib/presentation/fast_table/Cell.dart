@@ -24,13 +24,17 @@ class _CellState extends State<Cell> {
   @override
   Widget build(BuildContext context) {
     final CellIndexProvider cellIndexProvider = CellIndexProvider.of(context);
+    final CellIndex cellIndex = CellIndex(
+      cellIndexProvider.xIndex,
+      cellIndexProvider.yIndex,
+    );
     final CellSelectionProvider cellSelectionProvider =
         CellSelectionProvider.of(context);
     final isSelected = cellSelectionProvider.selectionConstraint
-        .satisfiesConstraints(CellIndex(
-      cellIndexProvider.xIndex,
-      cellIndexProvider.yIndex,
-    ));
+        .satisfiesConstraints(cellIndex);
+
+    final borderState =
+        cellSelectionProvider.selectionConstraint.getBorderState(cellIndex);
 
     return Listener(
       onPointerDown: (_) {
@@ -50,11 +54,30 @@ class _CellState extends State<Cell> {
           child: Container(
             padding: EdgeInsets.only(left: 4, right: 4),
             decoration: BoxDecoration(
-              color: isSelected ? Theme.of(context).colorScheme.surface : null,
-              border: Border(
-                  right: BorderSide(color: Theme.of(context).dividerColor),
-                  bottom: BorderSide(color: Theme.of(context).dividerColor)),
-            ),
+                // color:
+                //     isSelected ? Theme.of(context).colorScheme.surface : null,
+                border: Border(
+              right: BorderSide(
+                  width: borderState.right && isSelected ? 1.5 : 1,
+                  color: borderState.right && isSelected
+                      ? Theme.of(context).accentColor
+                      : Theme.of(context).dividerColor),
+              bottom: BorderSide(
+                width: borderState.bottom && isSelected ? 1.5 : 1,
+                  color: borderState.bottom && isSelected
+                      ? Theme.of(context).accentColor
+                      : Theme.of(context).dividerColor),
+              left: BorderSide(
+                width: borderState.left && isSelected ? 1.5 : 1,
+                  color: borderState.left && isSelected
+                      ? Theme.of(context).accentColor
+                      : Theme.of(context).dividerColor),
+              top: BorderSide(
+                width: borderState.top && isSelected ? 1.5 : 1,
+                  color: borderState.top && isSelected
+                      ? Theme.of(context).accentColor
+                      : Theme.of(context).dividerColor),
+            )),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
