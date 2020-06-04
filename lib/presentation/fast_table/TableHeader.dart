@@ -9,6 +9,11 @@ class TableHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
+      decoration: BoxDecoration(
+        border: Border(
+          right: BorderSide(color: Theme.of(context).dividerColor),
+        )
+      ),
       alignment: Alignment.center,
       width: width < 100 ? 100 : width,
       height: 40.0,

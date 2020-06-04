@@ -63,17 +63,17 @@ class _CellState extends State<Cell> {
                       ? Theme.of(context).accentColor
                       : Theme.of(context).dividerColor),
               bottom: BorderSide(
-                width: borderState.bottom && isSelected ? 1.5 : 1,
+                  width: borderState.bottom && isSelected ? 1.5 : 1,
                   color: borderState.bottom && isSelected
                       ? Theme.of(context).accentColor
                       : Theme.of(context).dividerColor),
               left: BorderSide(
-                width: borderState.left && isSelected ? 1.5 : 1,
+                  width: borderState.left && isSelected ? 1.5 : 1,
                   color: borderState.left && isSelected
                       ? Theme.of(context).accentColor
                       : Theme.of(context).dividerColor),
               top: BorderSide(
-                width: borderState.top && isSelected ? 1.5 : 1,
+                  width: borderState.top && isSelected ? 1.5 : 1,
                   color: borderState.top && isSelected
                       ? Theme.of(context).accentColor
                       : Theme.of(context).dividerColor),
