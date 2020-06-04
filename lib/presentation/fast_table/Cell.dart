@@ -1,15 +1,17 @@
+import 'package:darkwrong/presentation/fast_table/CellIndexProvider.dart';
+import 'package:darkwrong/presentation/fast_table/CellSelectionProvider.dart';
+import 'package:darkwrong/presentation/fast_table/FastTable.dart';
 import 'package:flutter/material.dart';
 
+typedef void CellClickedCallback(int xIndex, int yIndex);
 typedef void CellContentsChangedCallback(String newValue);
 
 class Cell extends StatefulWidget {
   final String text;
-  final bool isSelected;
-  final dynamic onClick;
+  final CellClickedCallback onClick;
   final CellContentsChangedCallback onChanged;
 
-  const Cell(this.text,
-      {Key key, this.isSelected = false, this.onClick, this.onChanged})
+  const Cell(this.text, {Key key, this.onClick, this.onChanged})
       : super(key: key);
 
   @override
@@ -21,9 +23,20 @@ class _CellState extends State<Cell> {
 
   @override
   Widget build(BuildContext context) {
+    final CellIndexProvider cellIndexProvider = CellIndexProvider.of(context);
+    final CellSelectionProvider cellSelectionProvider =
+        CellSelectionProvider.of(context);
+    final isSelected = cellSelectionProvider.selectionConstraint
+        .satisfiesConstraints(CellIndex(
+      cellIndexProvider.xIndex,
+      cellIndexProvider.yIndex,
+    ));
+
     return Listener(
       onPointerDown: (_) {
-        if (widget.onClick != null) widget.onClick();
+        if (cellSelectionProvider?.onCellClicked != null)
+          cellSelectionProvider.onCellClicked(
+              cellIndexProvider.xIndex, cellIndexProvider.yIndex);
       },
       child: GestureDetector(
         onDoubleTap: () {
@@ -33,13 +46,15 @@ class _CellState extends State<Cell> {
         },
         child: SizedBox(
           width: _getWidth(context),
+          height: 40.0,
           child: Container(
+            padding: EdgeInsets.only(left: 4, right: 4),
             decoration: BoxDecoration(
-                border: Border.all(
-              color: Colors.red,
-              width: 2.0,
-              style: widget.isSelected ? BorderStyle.solid : BorderStyle.none,
-            )),
+              color: isSelected ? Theme.of(context).colorScheme.surface : null,
+              border: Border(
+                  right: BorderSide(color: Theme.of(context).dividerColor),
+                  bottom: BorderSide(color: Theme.of(context).dividerColor)),
+            ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -58,7 +73,6 @@ class _CellState extends State<Cell> {
                     ),
                   ),
                 if (!open) Text(widget.text ?? '-'),
-                VerticalDivider(),
               ],
             ),
           ),

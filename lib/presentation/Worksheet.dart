@@ -12,30 +12,28 @@ class Worksheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    int yIndex = 0;
     return FastTable(
       headers: viewModel.state.headers.values
           .map((item) => TableHeader(Text(item.title),
-              key: Key(item.uid), width: 120.0/* item.maxFieldLength * 8.0 */))
+              key: Key(item.uid), width: 120.0 /* item.maxFieldLength * 8.0 */))
           .toList(),
-      rows: viewModel.state.rows.values
-          .map((row) => FastRow(
-                key: Key(row.rowId),
-                children: row.cells.values.map(
-                  (cell) {
-                    final isSelected =
-                        viewModel.state.selectedCells.containsKey(cell.cellId);
-                    return Cell(cell.value,
-                        key: Key(cell.cellId),
-                        isSelected: isSelected,
-                        onClick: isSelected
-                            ? () => viewModel.onCellDeselect(
-                                row.rowId, cell.columnId, cell.cellId)
-                            : () => viewModel.onCellSelect(
-                                row.rowId, cell.columnId, cell.cellId));
-                  },
-                ).toList(),
-              ))
-          .toList(),
+      rows: viewModel.state.rows.values.map((row) {
+        return FastRow(
+          key: Key(row.rowId),
+          yIndex: yIndex++,
+          children: row.cells.values.map(
+            (cell) {
+              final isSelected =
+                  viewModel.state.selectedCells.containsKey(cell.cellId);
+              return Cell(
+                cell.value,
+                key: Key(cell.cellId),
+              );
+            },
+          ).toList(),
+        );
+      }).toList(),
     );
   }
 }

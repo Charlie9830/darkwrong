@@ -4,14 +4,15 @@ import 'package:flutter/material.dart';
 
 class FastRow extends StatelessWidget {
   final List<Cell> children;
+  final int yIndex;
 
-  FastRow({Key key, this.children}) : super(key: key);
+  FastRow({Key key, this.yIndex, this.children}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Material(
       child: SizedBox.fromSize(
-          size: Size.fromHeight(48),
+          size: Size.fromHeight(40),
           child: DefaultTextStyle(
             style: Theme.of(context).textTheme.caption,
             child: Row(
@@ -28,11 +29,7 @@ class FastRow extends StatelessWidget {
 
     return children.map((child) {
       return CellIndexProvider(
-        key: child.key,
-        index: index++,
-        child: child
-      );
+          key: child.key, xIndex: index++, yIndex: yIndex, child: child);
     }).toList();
   }
 }
-
