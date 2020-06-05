@@ -1,5 +1,4 @@
 import 'package:darkwrong/presentation/fast_table/Cell.dart';
-import 'package:darkwrong/presentation/fast_table/CellIndexProvider.dart';
 import 'package:flutter/material.dart';
 
 class FastRow extends StatelessWidget {
@@ -18,18 +17,9 @@ class FastRow extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.start,
               mainAxisSize: MainAxisSize.max,
-              children: _wrapChildrenWithIndexProviders(children),
+              children: children,
             ),
           )),
     );
-  }
-
-  List<Widget> _wrapChildrenWithIndexProviders(List<Cell> children) {
-    int index = 0;
-
-    return children.map((child) {
-      return CellIndexProvider(
-          key: child.key, xIndex: index++, yIndex: yIndex, child: child);
-    }).toList();
   }
 }

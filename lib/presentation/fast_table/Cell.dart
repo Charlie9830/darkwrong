@@ -1,4 +1,3 @@
-import 'package:darkwrong/presentation/fast_table/CellIndexProvider.dart';
 import 'package:darkwrong/presentation/fast_table/CellSelectionProvider.dart';
 import 'package:darkwrong/presentation/fast_table/FastTable.dart';
 import 'package:flutter/material.dart';
@@ -8,13 +7,17 @@ typedef void CellContentsChangedCallback(String newValue);
 
 class Cell extends StatefulWidget {
   final String text;
+  final CellIndex index;
   final bool active;
-  final CellId id;
   final CellClickedCallback onClick;
   final CellContentsChangedCallback onChanged;
 
   const Cell(this.text,
-      {Key key, @required this.id, this.active, this.onClick, this.onChanged})
+      {Key key,
+      this.active,
+      @required this.index,
+      this.onClick,
+      this.onChanged})
       : super(key: key);
 
   @override
@@ -26,24 +29,21 @@ class _CellState extends State<Cell> {
 
   @override
   Widget build(BuildContext context) {
-    final CellIndexProvider cellIndexProvider = CellIndexProvider.of(context);
-    final CellIndex cellIndex = CellIndex(
-      cellIndexProvider.xIndex,
-      cellIndexProvider.yIndex,
-    );
     final CellSelectionProvider cellSelectionProvider =
         CellSelectionProvider.of(context);
     final isSelected = cellSelectionProvider.selectionConstraint
-        .satisfiesConstraints(cellIndex);
+        .satisfiesConstraints(widget.index);
 
     final borderState =
-        cellSelectionProvider.selectionConstraint.getBorderState(cellIndex);
+        cellSelectionProvider.selectionConstraint.getBorderState(widget.index);
+
+    final dividerColor = Theme.of(context).dividerColor;
+    final borderAccentColor = Theme.of(context).accentColor;
 
     return Listener(
       onPointerDown: (_) {
         if (cellSelectionProvider?.onCellClicked != null)
-          cellSelectionProvider.onCellClicked(
-              cellIndexProvider.xIndex, cellIndexProvider.yIndex);
+          cellSelectionProvider.onCellClicked(widget.index);
       },
       child: GestureDetector(
         onDoubleTap: () {
@@ -57,28 +57,30 @@ class _CellState extends State<Cell> {
           child: Container(
             padding: EdgeInsets.only(left: 4, right: 4),
             decoration: BoxDecoration(
-                color: widget.active ? Colors.lime : null,
+                color: widget.active
+                    ? Theme.of(context).colorScheme.surface
+                    : null,
                 border: Border(
                   right: BorderSide(
                       width: borderState.right && isSelected ? 1.5 : 1,
                       color: borderState.right && isSelected
-                          ? Theme.of(context).accentColor
-                          : Theme.of(context).dividerColor),
+                          ? borderAccentColor
+                          : dividerColor),
                   bottom: BorderSide(
                       width: borderState.bottom && isSelected ? 1.5 : 1,
                       color: borderState.bottom && isSelected
-                          ? Theme.of(context).accentColor
-                          : Theme.of(context).dividerColor),
+                          ? borderAccentColor
+                          : dividerColor),
                   left: BorderSide(
                       width: borderState.left && isSelected ? 1.5 : 1,
                       color: borderState.left && isSelected
-                          ? Theme.of(context).accentColor
-                          : Theme.of(context).dividerColor),
+                          ? borderAccentColor
+                          : dividerColor),
                   top: BorderSide(
                       width: borderState.top && isSelected ? 1.5 : 1,
                       color: borderState.top && isSelected
-                          ? Theme.of(context).accentColor
-                          : Theme.of(context).dividerColor),
+                          ? borderAccentColor
+                          : dividerColor),
                 )),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,

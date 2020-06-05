@@ -1,7 +1,7 @@
 import 'package:darkwrong/presentation/fast_table/FastTable.dart';
 import 'package:flutter/material.dart';
 
-typedef void CellClickedCallback(int xIndex, int yIndex);
+typedef void CellClickedCallback(CellIndex index);
 typedef void IsCellSelectedCallback(int xIndex, int yIndex);
 
 class CellSelectionProvider extends InheritedWidget {

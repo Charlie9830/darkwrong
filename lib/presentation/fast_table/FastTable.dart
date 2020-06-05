@@ -5,10 +5,12 @@ import 'package:darkwrong/presentation/fast_table/TableHeader.dart';
 import 'package:quiver/core.dart' show hash2;
 import 'package:flutter/material.dart';
 
+typedef void CellSelectionChangedCallback(Set<CellIndex> indexes);
+
 class FastTable extends StatefulWidget {
   final List<FastRow> rows;
   final List<TableHeader> headers;
-  final dynamic onSelectionChanged;
+  final CellSelectionChangedCallback onSelectionChanged;
   FastTable({Key key, this.rows, this.headers, this.onSelectionChanged})
       : super(key: key);
 
@@ -20,24 +22,11 @@ class _FastTableState extends State<FastTable> {
   FocusNode _focusNode;
   CellSelectionConstraint _selectionConstraint = CellSelectionConstraint.zero();
   bool _isShiftKeyDown = false;
-  Map<CellIndex, CellId> _cellIdLookup;
 
   @override
   void initState() {
     _focusNode = FocusNode();
-    _cellIdLookup = <CellIndex, CellId>{};
     super.initState();
-  }
-
-  @override
-  void didUpdateWidget(FastTable oldWidget) {
-    for (int y = 0; y < widget.rows.length; y++) {
-      for (int x = 0; x < widget.rows[y].children.length; x++) {
-        _cellIdLookup[CellIndex(x, y)] = widget.rows[y].children[x].id;
-      }
-    }
-
-    super.didUpdateWidget(oldWidget);
   }
 
   @override
@@ -81,43 +70,35 @@ class _FastTableState extends State<FastTable> {
     );
   }
 
-  void _handleCellClicked(int xIndex, int yIndex) {
+  void _handleCellClicked(CellIndex index) {
     if (_isShiftKeyDown == false) {
       // Exclusive Selection.
-      final newConstraint =
-          CellSelectionConstraint.singleExclusive(CellIndex(xIndex, yIndex));
+      final newConstraint = CellSelectionConstraint.singleExclusive(index);
       setState(() {
         _selectionConstraint = newConstraint;
       });
 
-      _notifyCellSelections(newConstraint
-          .getAllPossibleIndexes()
-          .map((cellIndex) => _cellIdLookup[cellIndex])
-          .toList());
+      _notifyCellSelections(newConstraint.getAllPossibleIndexes());
       return;
     }
 
-    if (xIndex == _selectionConstraint.upperLeft.x &&
-        yIndex == _selectionConstraint.upperLeft.y) {
+    if (index.columnIndex == _selectionConstraint.upperLeft.columnIndex &&
+        index.rowIndex == _selectionConstraint.upperLeft.rowIndex) {
       // Do nothing.
       return;
     }
 
-    final newConstraint =
-        _selectionConstraint.copyWith(b: CellIndex(xIndex, yIndex));
+    final newConstraint = _selectionConstraint.copyWith(b: index);
     setState(() {
       _selectionConstraint = newConstraint;
     });
 
-    _notifyCellSelections(newConstraint
-        .getAllPossibleIndexes()
-        .map((cellIndex) => _cellIdLookup[cellIndex])
-        .toList());
+    _notifyCellSelections(newConstraint.getAllPossibleIndexes());
   }
 
-  void _notifyCellSelections(List<CellId> cellIds) {
+  void _notifyCellSelections(Set<CellIndex> cellIndexes) {
     if (widget.onSelectionChanged != null) {
-      widget.onSelectionChanged(cellIds);
+      widget.onSelectionChanged(cellIndexes);
     }
   }
 }
@@ -137,37 +118,23 @@ class BorderState {
 }
 
 class CellIndex {
-  final int x;
-  final int y;
+  final int columnIndex;
+  final int rowIndex;
 
-  const CellIndex(this.x, this.y);
+  const CellIndex({@required this.columnIndex, @required this.rowIndex});
+
   const CellIndex.zero()
-      : x = 0,
-        y = 0;
+      : columnIndex = 0,
+        rowIndex = 0;
 
   operator ==(Object o) {
-    return o is CellIndex && o.x == x && o.y == y;
+    return o is CellIndex &&
+        o.columnIndex == columnIndex &&
+        o.rowIndex == rowIndex;
   }
 
   @override
-  int get hashCode => hash2(x, y);
-}
-
-class CellId {
-  final String rowId;
-  final String columnId;
-
-  CellId({
-    this.rowId,
-    this.columnId,
-  });
-
-  operator ==(Object o) {
-    return o is CellId && o.rowId == rowId && o.columnId == columnId;
-  }
-
-  @override
-  int get hashCode => hash2(rowId, columnId);
+  int get hashCode => hash2(columnIndex, rowIndex);
 }
 
 class CellSelectionConstraint {
@@ -201,22 +168,22 @@ class CellSelectionConstraint {
     bool bottom = false;
 
     // Top
-    if (cellIndex.y == upperLeft.y) {
+    if (cellIndex.rowIndex == upperLeft.rowIndex) {
       top = true;
     }
 
     // Right
-    if (cellIndex.x == lowerRight.x) {
+    if (cellIndex.columnIndex == lowerRight.columnIndex) {
       right = true;
     }
 
     // Bottom
-    if (cellIndex.y == lowerRight.y) {
+    if (cellIndex.rowIndex == lowerRight.rowIndex) {
       bottom = true;
     }
 
     // Left
-    if (cellIndex.x == upperLeft.x) {
+    if (cellIndex.columnIndex == upperLeft.columnIndex) {
       left = true;
     }
 
@@ -224,33 +191,36 @@ class CellSelectionConstraint {
   }
 
   bool satisfiesConstraints(CellIndex cellIndex) {
-    return _withinBounds(
-            upperLeft.x, lowerRight.x, cellIndex.x) && // Hit test X Axis.
-        _withinBounds(
-            upperLeft.y, lowerRight.y, cellIndex.y); // Hit test Y Axis
+    return _withinBounds(upperLeft.columnIndex, lowerRight.columnIndex,
+            cellIndex.columnIndex) && // Hit test X Axis.
+        _withinBounds(upperLeft.rowIndex, lowerRight.rowIndex,
+            cellIndex.rowIndex); // Hit test Y Axis
   }
 
   bool _withinBounds(int lower, int upper, int point) {
     return point >= lower && point <= upper;
   }
 
-  List<CellIndex> getAllPossibleIndexes() {
-    final list = <CellIndex>[];
+  Set<CellIndex> getAllPossibleIndexes() {
+    final returnSet = <CellIndex>{};
 
     if (upperLeft == lowerRight) {
       // Single selection.
-      return <CellIndex>[CellIndex(upperLeft.x, upperLeft.y)];
+      return <CellIndex>{
+        CellIndex(
+            columnIndex: upperLeft.columnIndex, rowIndex: upperLeft.rowIndex)
+      };
     }
 
-    final rows = _buildRange(upperLeft.y, lowerRight.y);
-    final columns = _buildRange(upperLeft.x, lowerRight.x);
+    final rows = _buildRange(upperLeft.rowIndex, lowerRight.rowIndex);
+    final columns = _buildRange(upperLeft.columnIndex, lowerRight.columnIndex);
 
     for (var rowIndex in rows) {
-      list.addAll(
-          columns.map((columnIndex) => CellIndex(columnIndex, rowIndex)));
+      returnSet.addAll(columns.map((columnIndex) =>
+          CellIndex(columnIndex: columnIndex, rowIndex: rowIndex)));
     }
 
-    return list;
+    return returnSet;
   }
 
   List<int> _buildRange(int from, int to) {
@@ -258,7 +228,7 @@ class CellSelectionConstraint {
   }
 
   static CellIndex _getUpperLeft(CellIndex a, CellIndex b) {
-    if (a.x <= b.x && a.y <= b.y) {
+    if (a.columnIndex <= b.columnIndex && a.rowIndex <= b.rowIndex) {
       return a;
     } else {
       return b;
@@ -266,7 +236,7 @@ class CellSelectionConstraint {
   }
 
   static CellIndex _getLowerRight(CellIndex a, CellIndex b) {
-    if (a.x >= b.x && a.y >= b.y) {
+    if (a.columnIndex >= b.columnIndex && a.rowIndex >= b.rowIndex) {
       return a;
     } else {
       return b;
