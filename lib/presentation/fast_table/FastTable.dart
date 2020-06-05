@@ -2,12 +2,15 @@ import 'package:darkwrong/presentation/fast_table/CellSelectionProvider.dart';
 import 'package:darkwrong/presentation/fast_table/ColumnWidthsProvider.dart';
 import 'package:darkwrong/presentation/fast_table/FastRow.dart';
 import 'package:darkwrong/presentation/fast_table/TableHeader.dart';
+import 'package:quiver/core.dart' show hash2;
 import 'package:flutter/material.dart';
 
 class FastTable extends StatefulWidget {
   final List<FastRow> rows;
   final List<TableHeader> headers;
-  FastTable({Key key, this.rows, this.headers}) : super(key: key);
+  final dynamic onSelectionChanged;
+  FastTable({Key key, this.rows, this.headers, this.onSelectionChanged})
+      : super(key: key);
 
   @override
   _FastTableState createState() => _FastTableState();
@@ -17,11 +20,24 @@ class _FastTableState extends State<FastTable> {
   FocusNode _focusNode;
   CellSelectionConstraint _selectionConstraint = CellSelectionConstraint.zero();
   bool _isShiftKeyDown = false;
+  Map<CellIndex, CellId> _cellIdLookup;
 
   @override
   void initState() {
     _focusNode = FocusNode();
+    _cellIdLookup = <CellIndex, CellId>{};
     super.initState();
+  }
+
+  @override
+  void didUpdateWidget(FastTable oldWidget) {
+    for (int y = 0; y < widget.rows.length; y++) {
+      for (int x = 0; x < widget.rows[y].children.length; x++) {
+        _cellIdLookup[CellIndex(x, y)] = widget.rows[y].children[x].id;
+      }
+    }
+
+    super.didUpdateWidget(oldWidget);
   }
 
   @override
@@ -68,11 +84,16 @@ class _FastTableState extends State<FastTable> {
   void _handleCellClicked(int xIndex, int yIndex) {
     if (_isShiftKeyDown == false) {
       // Exclusive Selection.
+      final newConstraint =
+          CellSelectionConstraint.singleExclusive(CellIndex(xIndex, yIndex));
       setState(() {
-        _selectionConstraint =
-            CellSelectionConstraint.singleExclusive(CellIndex(xIndex, yIndex));
+        _selectionConstraint = newConstraint;
       });
 
+      _notifyCellSelections(newConstraint
+          .getAllPossibleIndexes()
+          .map((cellIndex) => _cellIdLookup[cellIndex])
+          .toList());
       return;
     }
 
@@ -82,10 +103,22 @@ class _FastTableState extends State<FastTable> {
       return;
     }
 
+    final newConstraint =
+        _selectionConstraint.copyWith(b: CellIndex(xIndex, yIndex));
     setState(() {
-      _selectionConstraint =
-          _selectionConstraint.copyWith(b: CellIndex(xIndex, yIndex));
+      _selectionConstraint = newConstraint;
     });
+
+    _notifyCellSelections(newConstraint
+        .getAllPossibleIndexes()
+        .map((cellIndex) => _cellIdLookup[cellIndex])
+        .toList());
+  }
+
+  void _notifyCellSelections(List<CellId> cellIds) {
+    if (widget.onSelectionChanged != null) {
+      widget.onSelectionChanged(cellIds);
+    }
   }
 }
 
@@ -111,6 +144,30 @@ class CellIndex {
   const CellIndex.zero()
       : x = 0,
         y = 0;
+
+  operator ==(Object o) {
+    return o is CellIndex && o.x == x && o.y == y;
+  }
+
+  @override
+  int get hashCode => hash2(x, y);
+}
+
+class CellId {
+  final String rowId;
+  final String columnId;
+
+  CellId({
+    this.rowId,
+    this.columnId,
+  });
+
+  operator ==(Object o) {
+    return o is CellId && o.rowId == rowId && o.columnId == columnId;
+  }
+
+  @override
+  int get hashCode => hash2(rowId, columnId);
 }
 
 class CellSelectionConstraint {
@@ -163,12 +220,7 @@ class CellSelectionConstraint {
       left = true;
     }
 
-    return BorderState(
-      top: top,
-      right: right,
-      bottom: bottom,
-      left: left
-    );
+    return BorderState(top: top, right: right, bottom: bottom, left: left);
   }
 
   bool satisfiesConstraints(CellIndex cellIndex) {
@@ -180,6 +232,29 @@ class CellSelectionConstraint {
 
   bool _withinBounds(int lower, int upper, int point) {
     return point >= lower && point <= upper;
+  }
+
+  List<CellIndex> getAllPossibleIndexes() {
+    final list = <CellIndex>[];
+
+    if (upperLeft == lowerRight) {
+      // Single selection.
+      return <CellIndex>[CellIndex(upperLeft.x, upperLeft.y)];
+    }
+
+    final rows = _buildRange(upperLeft.y, lowerRight.y);
+    final columns = _buildRange(upperLeft.x, lowerRight.x);
+
+    for (var rowIndex in rows) {
+      list.addAll(
+          columns.map((columnIndex) => CellIndex(columnIndex, rowIndex)));
+    }
+
+    return list;
+  }
+
+  List<int> _buildRange(int from, int to) {
+    return List<int>.generate((to - from) + 1, (index) => from + index);
   }
 
   static CellIndex _getUpperLeft(CellIndex a, CellIndex b) {

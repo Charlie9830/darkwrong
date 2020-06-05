@@ -8,10 +8,13 @@ typedef void CellContentsChangedCallback(String newValue);
 
 class Cell extends StatefulWidget {
   final String text;
+  final bool active;
+  final CellId id;
   final CellClickedCallback onClick;
   final CellContentsChangedCallback onChanged;
 
-  const Cell(this.text, {Key key, this.onClick, this.onChanged})
+  const Cell(this.text,
+      {Key key, @required this.id, this.active, this.onClick, this.onChanged})
       : super(key: key);
 
   @override
@@ -54,30 +57,29 @@ class _CellState extends State<Cell> {
           child: Container(
             padding: EdgeInsets.only(left: 4, right: 4),
             decoration: BoxDecoration(
-                // color:
-                //     isSelected ? Theme.of(context).colorScheme.surface : null,
+                color: widget.active ? Colors.lime : null,
                 border: Border(
-              right: BorderSide(
-                  width: borderState.right && isSelected ? 1.5 : 1,
-                  color: borderState.right && isSelected
-                      ? Theme.of(context).accentColor
-                      : Theme.of(context).dividerColor),
-              bottom: BorderSide(
-                  width: borderState.bottom && isSelected ? 1.5 : 1,
-                  color: borderState.bottom && isSelected
-                      ? Theme.of(context).accentColor
-                      : Theme.of(context).dividerColor),
-              left: BorderSide(
-                  width: borderState.left && isSelected ? 1.5 : 1,
-                  color: borderState.left && isSelected
-                      ? Theme.of(context).accentColor
-                      : Theme.of(context).dividerColor),
-              top: BorderSide(
-                  width: borderState.top && isSelected ? 1.5 : 1,
-                  color: borderState.top && isSelected
-                      ? Theme.of(context).accentColor
-                      : Theme.of(context).dividerColor),
-            )),
+                  right: BorderSide(
+                      width: borderState.right && isSelected ? 1.5 : 1,
+                      color: borderState.right && isSelected
+                          ? Theme.of(context).accentColor
+                          : Theme.of(context).dividerColor),
+                  bottom: BorderSide(
+                      width: borderState.bottom && isSelected ? 1.5 : 1,
+                      color: borderState.bottom && isSelected
+                          ? Theme.of(context).accentColor
+                          : Theme.of(context).dividerColor),
+                  left: BorderSide(
+                      width: borderState.left && isSelected ? 1.5 : 1,
+                      color: borderState.left && isSelected
+                          ? Theme.of(context).accentColor
+                          : Theme.of(context).dividerColor),
+                  top: BorderSide(
+                      width: borderState.top && isSelected ? 1.5 : 1,
+                      color: borderState.top && isSelected
+                          ? Theme.of(context).accentColor
+                          : Theme.of(context).dividerColor),
+                )),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
