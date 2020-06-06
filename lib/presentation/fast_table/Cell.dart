@@ -8,13 +8,11 @@ typedef void CellContentsChangedCallback(String newValue);
 class Cell extends StatefulWidget {
   final String text;
   final CellIndex index;
-  final bool active;
   final CellClickedCallback onClick;
   final CellContentsChangedCallback onChanged;
 
   const Cell(this.text,
       {Key key,
-      this.active,
       @required this.index,
       this.onClick,
       this.onChanged})
@@ -34,6 +32,9 @@ class _CellState extends State<Cell> {
     final isSelected = cellSelectionProvider.selectionConstraint
         .satisfiesConstraints(widget.index);
 
+    final isActive =
+        widget.index == cellSelectionProvider.selectionConstraint.anchor;
+
     final borderState =
         cellSelectionProvider.selectionConstraint.getBorderState(widget.index);
 
@@ -45,62 +46,68 @@ class _CellState extends State<Cell> {
         if (cellSelectionProvider?.onCellClicked != null)
           cellSelectionProvider.onCellClicked(widget.index);
       },
-      child: GestureDetector(
-        onDoubleTap: () {
-          setState(() {
-            open = true;
-          });
+      child: MouseRegion(
+        onEnter: (pointerEvent) {
+          if (pointerEvent.down) {
+            cellSelectionProvider.onAdjustmentRequested(widget.index);
+          }
         },
-        child: SizedBox(
-          width: _getWidth(context),
-          height: 40.0,
-          child: Container(
-            padding: EdgeInsets.only(left: 4, right: 4),
-            decoration: BoxDecoration(
-                color: widget.active
-                    ? Theme.of(context).colorScheme.surface
-                    : null,
-                border: Border(
-                  right: BorderSide(
-                      width: borderState.right && isSelected ? 1.5 : 1,
-                      color: borderState.right && isSelected
-                          ? borderAccentColor
-                          : dividerColor),
-                  bottom: BorderSide(
-                      width: borderState.bottom && isSelected ? 1.5 : 1,
-                      color: borderState.bottom && isSelected
-                          ? borderAccentColor
-                          : dividerColor),
-                  left: BorderSide(
-                      width: borderState.left && isSelected ? 1.5 : 1,
-                      color: borderState.left && isSelected
-                          ? borderAccentColor
-                          : dividerColor),
-                  top: BorderSide(
-                      width: borderState.top && isSelected ? 1.5 : 1,
-                      color: borderState.top && isSelected
-                          ? borderAccentColor
-                          : dividerColor),
-                )),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                if (open)
-                  Expanded(
-                    child: _Open(
-                      text: widget.text,
-                      onChanged: (newValue) {
-                        setState(() {
-                          open = false;
-                        });
-                        if (widget.onChanged != null) {
-                          widget.onChanged(newValue);
-                        }
-                      },
+        child: GestureDetector(
+          onDoubleTap: () {
+            setState(() {
+              open = true;
+            });
+          },
+          child: SizedBox(
+            width: _getWidth(context),
+            height: 40.0,
+            child: Container(
+              padding: EdgeInsets.only(left: 4, right: 4),
+              decoration: BoxDecoration(
+                  color:
+                      isActive ? Theme.of(context).colorScheme.surface : null,
+                  border: Border(
+                    right: BorderSide(
+                        width: borderState.right && isSelected ? 1.5 : 1,
+                        color: borderState.right && isSelected
+                            ? borderAccentColor
+                            : dividerColor),
+                    bottom: BorderSide(
+                        width: borderState.bottom && isSelected ? 1.5 : 1,
+                        color: borderState.bottom && isSelected
+                            ? borderAccentColor
+                            : dividerColor),
+                    left: BorderSide(
+                        width: borderState.left && isSelected ? 1.5 : 1,
+                        color: borderState.left && isSelected
+                            ? borderAccentColor
+                            : dividerColor),
+                    top: BorderSide(
+                        width: borderState.top && isSelected ? 1.5 : 1,
+                        color: borderState.top && isSelected
+                            ? borderAccentColor
+                            : dividerColor),
+                  )),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  if (open)
+                    Expanded(
+                      child: _Open(
+                        text: widget.text,
+                        onChanged: (newValue) {
+                          setState(() {
+                            open = false;
+                          });
+                          if (widget.onChanged != null) {
+                            widget.onChanged(newValue);
+                          }
+                        },
+                      ),
                     ),
-                  ),
-                if (!open) Text(widget.text ?? '-'),
-              ],
+                  if (!open) Text(widget.text ?? '-'),
+                ],
+              ),
             ),
           ),
         ),

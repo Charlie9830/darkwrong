@@ -58,9 +58,10 @@ class _DarkwrongState extends State<Darkwrong> {
                       (j) {
                         final cellIndex =
                             CellIndex(columnIndex: j, rowIndex: i);
-                        return Cell('($i, $j)',
-                            index: cellIndex,
-                            active: _selectedCellIndexes.contains(cellIndex));
+                        return Cell(
+                          '($i, $j)',
+                          index: cellIndex,
+                        );
                       },
                     ),
                   );

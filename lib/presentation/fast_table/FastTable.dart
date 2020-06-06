@@ -56,6 +56,7 @@ class _FastTableState extends State<FastTable> {
                 itemBuilder: (context, index) {
                   return CellSelectionProvider(
                     onCellClicked: _handleCellClicked,
+                    onAdjustmentRequested: _handleCellAdjustmentRequested,
                     selectionConstraint: _selectionConstraint,
                     child: ColumnWidthsProvider(
                       key: widget.rows[index].key,
@@ -72,7 +73,7 @@ class _FastTableState extends State<FastTable> {
 
   void _handleCellClicked(CellIndex index) {
     if (_isShiftKeyDown == false) {
-      // Exclusive Selection.
+      // Exclusive Selection. Re Anchor.
       final newConstraint = CellSelectionConstraint.singleExclusive(index);
       setState(() {
         _selectionConstraint = newConstraint;
@@ -82,13 +83,8 @@ class _FastTableState extends State<FastTable> {
       return;
     }
 
-    if (index.columnIndex == _selectionConstraint.upperLeft.columnIndex &&
-        index.rowIndex == _selectionConstraint.upperLeft.rowIndex) {
-      // Do nothing.
-      return;
-    }
-
-    final newConstraint = _selectionConstraint.copyWith(b: index);
+    // Adjust Selection Box.
+    final newConstraint = _selectionConstraint.adjustWith(incoming: index);
     setState(() {
       _selectionConstraint = newConstraint;
     });
@@ -100,6 +96,16 @@ class _FastTableState extends State<FastTable> {
     if (widget.onSelectionChanged != null) {
       widget.onSelectionChanged(cellIndexes);
     }
+  }
+
+  void _handleCellAdjustmentRequested(CellIndex index) {
+    // Adjust Selection Box.
+    final newConstraint = _selectionConstraint.adjustWith(incoming: index);
+    setState(() {
+      _selectionConstraint = newConstraint;
+    });
+
+    _notifyCellSelections(newConstraint.getAllPossibleIndexes());
   }
 }
 
@@ -138,27 +144,70 @@ class CellIndex {
 }
 
 class CellSelectionConstraint {
-  final CellIndex upperLeft;
-  final CellIndex lowerRight;
+  final CellIndex topLeft;
+  final CellIndex bottomRight;
+  final CellIndex anchor;
 
-  CellSelectionConstraint({CellIndex a, CellIndex b})
-      : upperLeft = _getUpperLeft(a, b),
-        lowerRight = _getLowerRight(a, b);
+  CellSelectionConstraint({this.anchor, this.topLeft, this.bottomRight});
 
   const CellSelectionConstraint.zero()
-      : upperLeft = const CellIndex.zero(),
-        lowerRight = const CellIndex.zero();
+      : topLeft = const CellIndex.zero(),
+        bottomRight = const CellIndex.zero(),
+        anchor = const CellIndex.zero();
 
   CellSelectionConstraint.singleExclusive(CellIndex cellIndex)
-      : upperLeft = cellIndex,
-        lowerRight = cellIndex;
+      : topLeft = cellIndex,
+        bottomRight = cellIndex,
+        anchor = cellIndex;
 
-  CellSelectionConstraint copyWith({
-    CellIndex a,
-    CellIndex b,
-  }) {
-    return CellSelectionConstraint(
-        a: a ?? this.upperLeft, b: b ?? this.lowerRight);
+  CellSelectionConstraint adjustWith({CellIndex incoming}) {
+    if (incoming == anchor) {
+      // Single Exclusive.
+      return CellSelectionConstraint.singleExclusive(incoming);
+    }
+
+    if (incoming.columnIndex >= anchor.columnIndex &&
+        incoming.rowIndex >= anchor.rowIndex) {
+      // Draw bottom Right Quadrant.
+      return CellSelectionConstraint(
+          bottomRight: incoming, topLeft: anchor, anchor: anchor);
+    }
+
+    if (incoming.columnIndex <= anchor.columnIndex &&
+        incoming.rowIndex >= anchor.rowIndex) {
+      // Draw bottom Left Quadrant.
+      return CellSelectionConstraint(
+        bottomRight: CellIndex(
+            columnIndex: anchor.columnIndex, rowIndex: incoming.rowIndex),
+        topLeft: CellIndex(
+            columnIndex: incoming.columnIndex, rowIndex: anchor.rowIndex),
+        anchor: anchor,
+      );
+    }
+
+    if (incoming.columnIndex <= anchor.columnIndex &&
+        incoming.rowIndex <= anchor.rowIndex) {
+      // Draw top Left Quadrant.
+      return CellSelectionConstraint(
+        bottomRight: anchor,
+        topLeft: incoming,
+        anchor: anchor,
+      );
+    }
+
+    if (incoming.columnIndex >= anchor.columnIndex &&
+        incoming.rowIndex <= anchor.rowIndex) {
+      // Draw top Right Quadrant
+      return CellSelectionConstraint(
+        bottomRight: CellIndex(
+            columnIndex: incoming.columnIndex, rowIndex: anchor.rowIndex),
+        topLeft: CellIndex(
+            columnIndex: anchor.columnIndex, rowIndex: incoming.rowIndex),
+        anchor: anchor,
+      );
+    }
+
+    return CellSelectionConstraint.singleExclusive(incoming);
   }
 
   BorderState getBorderState(CellIndex cellIndex) {
@@ -168,22 +217,22 @@ class CellSelectionConstraint {
     bool bottom = false;
 
     // Top
-    if (cellIndex.rowIndex == upperLeft.rowIndex) {
+    if (cellIndex.rowIndex == topLeft.rowIndex) {
       top = true;
     }
 
     // Right
-    if (cellIndex.columnIndex == lowerRight.columnIndex) {
+    if (cellIndex.columnIndex == bottomRight.columnIndex) {
       right = true;
     }
 
     // Bottom
-    if (cellIndex.rowIndex == lowerRight.rowIndex) {
+    if (cellIndex.rowIndex == bottomRight.rowIndex) {
       bottom = true;
     }
 
     // Left
-    if (cellIndex.columnIndex == upperLeft.columnIndex) {
+    if (cellIndex.columnIndex == topLeft.columnIndex) {
       left = true;
     }
 
@@ -191,9 +240,9 @@ class CellSelectionConstraint {
   }
 
   bool satisfiesConstraints(CellIndex cellIndex) {
-    return _withinBounds(upperLeft.columnIndex, lowerRight.columnIndex,
+    return _withinBounds(topLeft.columnIndex, bottomRight.columnIndex,
             cellIndex.columnIndex) && // Hit test X Axis.
-        _withinBounds(upperLeft.rowIndex, lowerRight.rowIndex,
+        _withinBounds(topLeft.rowIndex, bottomRight.rowIndex,
             cellIndex.rowIndex); // Hit test Y Axis
   }
 
@@ -204,16 +253,15 @@ class CellSelectionConstraint {
   Set<CellIndex> getAllPossibleIndexes() {
     final returnSet = <CellIndex>{};
 
-    if (upperLeft == lowerRight) {
+    if (topLeft == bottomRight) {
       // Single selection.
       return <CellIndex>{
-        CellIndex(
-            columnIndex: upperLeft.columnIndex, rowIndex: upperLeft.rowIndex)
+        CellIndex(columnIndex: topLeft.columnIndex, rowIndex: topLeft.rowIndex)
       };
     }
 
-    final rows = _buildRange(upperLeft.rowIndex, lowerRight.rowIndex);
-    final columns = _buildRange(upperLeft.columnIndex, lowerRight.columnIndex);
+    final rows = _buildRange(topLeft.rowIndex, bottomRight.rowIndex);
+    final columns = _buildRange(topLeft.columnIndex, bottomRight.columnIndex);
 
     for (var rowIndex in rows) {
       returnSet.addAll(columns.map((columnIndex) =>
