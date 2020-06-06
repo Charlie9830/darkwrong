@@ -5,6 +5,9 @@ import 'package:flutter/material.dart';
 typedef void CellClickedCallback(int xIndex, int yIndex);
 typedef void CellContentsChangedCallback(String newValue);
 
+const double _defaultDividerWidth = 1.0;
+const double _selectedDividerWidth = 1.5;
+
 class Cell extends StatefulWidget {
   final String text;
   final CellIndex index;
@@ -12,10 +15,7 @@ class Cell extends StatefulWidget {
   final CellContentsChangedCallback onChanged;
 
   const Cell(this.text,
-      {Key key,
-      @required this.index,
-      this.onClick,
-      this.onChanged})
+      {Key key, @required this.index, this.onClick, this.onChanged})
       : super(key: key);
 
   @override
@@ -68,22 +68,30 @@ class _CellState extends State<Cell> {
                       isActive ? Theme.of(context).colorScheme.surface : null,
                   border: Border(
                     right: BorderSide(
-                        width: borderState.right && isSelected ? 1.5 : 1,
+                        width: borderState.right && isSelected
+                            ? _selectedDividerWidth
+                            : _defaultDividerWidth,
                         color: borderState.right && isSelected
                             ? borderAccentColor
                             : dividerColor),
                     bottom: BorderSide(
-                        width: borderState.bottom && isSelected ? 1.5 : 1,
+                        width: borderState.bottom && isSelected
+                            ? _selectedDividerWidth
+                            : _defaultDividerWidth,
                         color: borderState.bottom && isSelected
                             ? borderAccentColor
                             : dividerColor),
                     left: BorderSide(
-                        width: borderState.left && isSelected ? 1.5 : 1,
+                        width: borderState.left && isSelected
+                            ? _selectedDividerWidth
+                            : _defaultDividerWidth,
                         color: borderState.left && isSelected
                             ? borderAccentColor
                             : dividerColor),
                     top: BorderSide(
-                        width: borderState.top && isSelected ? 1.5 : 1,
+                        width: borderState.top && isSelected
+                            ? _selectedDividerWidth
+                            : _defaultDividerWidth,
                         color: borderState.top && isSelected
                             ? borderAccentColor
                             : dividerColor),
