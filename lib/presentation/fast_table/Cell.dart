@@ -1,3 +1,4 @@
+import 'package:darkwrong/constants.dart';
 import 'package:darkwrong/presentation/fast_table/CellSelectionProvider.dart';
 import 'package:darkwrong/presentation/fast_table/FastTable.dart';
 import 'package:flutter/material.dart';
@@ -59,7 +60,7 @@ class _CellState extends State<Cell> {
         },
         child: SizedBox(
           width: _getWidth(context),
-          height: 40.0,
+          height: rowHeight,
           child: Container(
             padding: EdgeInsets.only(left: 4, right: 4),
             decoration: BoxDecoration(
@@ -147,6 +148,7 @@ class _OpenState extends State<_Open> {
     _controller = TextEditingController(text: widget.text);
     _focusNode = FocusNode();
     _focusNode.requestFocus();
+
     super.initState();
   }
 

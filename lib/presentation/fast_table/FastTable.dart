@@ -20,6 +20,7 @@ class FastTable extends StatefulWidget {
 
 class _FastTableState extends State<FastTable> {
   FocusNode _focusNode;
+  ScrollController _scrollController;
   CellSelectionConstraint _selectionConstraint = CellSelectionConstraint.zero();
   bool _isActiveCellOpen = false;
   String _activeCellInitialCharacter = '';
@@ -29,13 +30,15 @@ class _FastTableState extends State<FastTable> {
   void initState() {
     _focusNode = FocusNode();
     _focusNode.requestFocus();
+
+    _scrollController = ScrollController();
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
     final _columnWidths = widget.headers.map((item) => item.width).toList();
-    
+
     return Focus(
       focusNode: _focusNode,
       onKey: (focusNode, rawKey) {
@@ -64,6 +67,7 @@ class _FastTableState extends State<FastTable> {
           ),
           Expanded(
             child: ListView.builder(
+                controller: _scrollController,
                 itemCount: widget.rows.length,
                 itemBuilder: (context, index) {
                   return CellSelectionProvider(
