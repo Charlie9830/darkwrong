@@ -24,11 +24,9 @@ class Cell extends StatefulWidget {
 
 class _CellState extends State<Cell> {
   bool open = false;
-  FocusNode _focusNode;
 
   @override
   void initState() {
-    _focusNode = FocusNode();
     super.initState();
   }
 
@@ -51,7 +49,7 @@ class _CellState extends State<Cell> {
     return Listener(
       onPointerDown: (_) {
         if (cellSelectionProvider?.onCellClicked != null)
-          cellSelectionProvider.onCellClicked(widget.index, _focusNode);
+          cellSelectionProvider.onCellClicked(widget.index);
       },
       child: MouseRegion(
         onEnter: (pointerEvent) {
@@ -109,7 +107,6 @@ class _CellState extends State<Cell> {
                   if (isActive)
                     Expanded(
                       child: _Open(
-                        focusNode: _focusNode,
                         text: widget.text,
                         onChanged: (newValue) {
                           setState(() {
@@ -142,10 +139,9 @@ class _CellState extends State<Cell> {
 
 class _Open extends StatefulWidget {
   final String text;
-  final FocusNode focusNode;
   final dynamic onChanged;
 
-  _Open({Key key, this.text, this.onChanged, this.focusNode}) : super(key: key);
+  _Open({Key key, this.text, this.onChanged}) : super(key: key);
 
   @override
   _OpenState createState() => _OpenState();
@@ -164,10 +160,11 @@ class _OpenState extends State<_Open> {
   Widget build(BuildContext context) {
     return TextField(
       controller: _controller,
-      focusNode: widget.focusNode,
+      autofocus: true,
       onEditingComplete: () => _handleSubmit(),
       textAlignVertical: TextAlignVertical.center,
       style: Theme.of(context).textTheme.bodyText2,
+      enableInteractiveSelection: false,
       decoration: InputDecoration(
         focusedBorder: UnderlineInputBorder(
             borderSide: BorderSide(style: BorderStyle.none)),

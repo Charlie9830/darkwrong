@@ -20,7 +20,6 @@ class FastTable extends StatefulWidget {
 
 class _FastTableState extends State<FastTable> {
   FocusNode _focusNode;
-  FocusNode _activeCellFocusNode;
   CellSelectionConstraint _selectionConstraint = CellSelectionConstraint.zero();
   bool _isShiftKeyDown = false;
 
@@ -35,18 +34,11 @@ class _FastTableState extends State<FastTable> {
     final _columnWidths = widget.headers.map((item) => item.width).toList();
     return RawKeyboardListener(
       focusNode: _focusNode,
-      autofocus: true,
       onKey: (rawKey) {
-        print('RawKey');
         if (_isShiftKeyDown != rawKey.isShiftPressed) {
           setState(() {
             _isShiftKeyDown = rawKey.isShiftPressed;
           });
-        }
-
-        if (_activeCellFocusNode.hasFocus == false) {
-          print(rawKey.logicalKey.keyLabel);
-          _activeCellFocusNode.requestFocus();
         }
       },
       child: Column(
@@ -78,13 +70,12 @@ class _FastTableState extends State<FastTable> {
     );
   }
 
-  void _handleCellClicked(CellIndex index, FocusNode focusNode) {
+  void _handleCellClicked(CellIndex index) {
     if (_isShiftKeyDown == false) {
       // Exclusive Selection. Re Anchor.
       final newConstraint = CellSelectionConstraint.singleExclusive(index);
       setState(() {
         _selectionConstraint = newConstraint;
-        _activeCellFocusNode = focusNode;
       });
 
       _notifyCellSelections(newConstraint.getAllPossibleIndexes());
