@@ -99,7 +99,7 @@ class _CellState extends State<Cell> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  if (open)
+                  if (isActive)
                     Expanded(
                       child: _Open(
                         text: widget.text,
@@ -113,7 +113,7 @@ class _CellState extends State<Cell> {
                         },
                       ),
                     ),
-                  if (!open) Text(widget.text ?? '-'),
+                  if (!isActive) Text(widget.text ?? '-'),
                 ],
               ),
             ),
@@ -157,6 +157,13 @@ class __OpenState extends State<_Open> {
       controller: _controller,
       autofocus: true,
       onEditingComplete: () => _handleSubmit(),
+      textAlignVertical: TextAlignVertical.center,
+      style: Theme.of(context).textTheme.bodyText2,
+      decoration: InputDecoration(
+        focusedBorder: UnderlineInputBorder(borderSide: BorderSide(style: BorderStyle.none)),
+        enabledBorder: UnderlineInputBorder(borderSide: BorderSide(style: BorderStyle.none)),
+        
+      ),
     );
   }
 

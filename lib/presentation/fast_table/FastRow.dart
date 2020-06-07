@@ -13,7 +13,7 @@ class FastRow extends StatelessWidget {
       child: SizedBox.fromSize(
           size: Size.fromHeight(40),
           child: DefaultTextStyle(
-            style: Theme.of(context).textTheme.caption,
+            style: Theme.of(context).textTheme.bodyText2,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.start,
               mainAxisSize: MainAxisSize.max,
