@@ -31,9 +31,10 @@ class CellSelectionProvider extends InheritedWidget {
 
   @override
   bool updateShouldNotify(CellSelectionProvider oldWidget) {
+    // TODO: This returns true a lot. Comparing the functions may not be requried. Perhaps making selectionContraint Value equatable will stop this from having to notify
+    // as much.
     return oldWidget.selectionConstraint != selectionConstraint ||
         oldWidget.isActiveCellOpen != isActiveCellOpen ||
-        oldWidget.activeCellInitialCharacter != activeCellInitialCharacter ||
-        oldWidget.onEditingComplete != onEditingComplete;
+        oldWidget.activeCellInitialCharacter != activeCellInitialCharacter;
   }
 }

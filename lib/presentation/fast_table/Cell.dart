@@ -169,7 +169,6 @@ class _OpenState extends State<_Open> {
   }
 
   void _handleSubmit() {
-    print('Submitting');
     _focusNode.unfocus();
     widget.onChanged(_controller.text);
   }

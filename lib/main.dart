@@ -13,7 +13,7 @@ void main() {
 }
 
 const columnCount = 10;
-const rowCount = 10;
+const rowCount = 50;
 
 class Darkwrong extends StatefulWidget {
   @override
@@ -61,7 +61,7 @@ class _DarkwrongState extends State<Darkwrong> {
                         return Cell(
                           '($i, $j)',
                           index: cellIndex,
-                          
+
                         );
                       },
                     ),

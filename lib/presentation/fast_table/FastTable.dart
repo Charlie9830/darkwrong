@@ -35,10 +35,10 @@ class _FastTableState extends State<FastTable> {
   @override
   Widget build(BuildContext context) {
     final _columnWidths = widget.headers.map((item) => item.width).toList();
+    
     return Focus(
       focusNode: _focusNode,
       onKey: (focusNode, rawKey) {
-        print('rawKey');
         if (_isShiftKeyDown != rawKey.isShiftPressed) {
           setState(() {
             _isShiftKeyDown = rawKey.isShiftPressed;
