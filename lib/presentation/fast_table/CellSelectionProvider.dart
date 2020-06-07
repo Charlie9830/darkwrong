@@ -7,6 +7,9 @@ typedef void IsCellSelectedCallback(int xIndex, int yIndex);
 
 class CellSelectionProvider extends InheritedWidget {
   final Widget child;
+  final bool isActiveCellOpen;
+  final String activeCellInitialCharacter;
+  final dynamic onEditingComplete;
   final CellClickedCallback onCellClicked;
   final CellSelectionAdjustmentCallback onAdjustmentRequested;
   final CellSelectionConstraint selectionConstraint;
@@ -14,6 +17,9 @@ class CellSelectionProvider extends InheritedWidget {
   CellSelectionProvider(
       {Key key,
       this.child,
+      this.onEditingComplete,
+      this.isActiveCellOpen,
+      this.activeCellInitialCharacter,
       this.onCellClicked,
       this.onAdjustmentRequested,
       this.selectionConstraint})
@@ -25,6 +31,9 @@ class CellSelectionProvider extends InheritedWidget {
 
   @override
   bool updateShouldNotify(CellSelectionProvider oldWidget) {
-    return oldWidget.selectionConstraint != selectionConstraint;
+    return oldWidget.selectionConstraint != selectionConstraint ||
+        oldWidget.isActiveCellOpen != isActiveCellOpen ||
+        oldWidget.activeCellInitialCharacter != activeCellInitialCharacter ||
+        oldWidget.onEditingComplete != onEditingComplete;
   }
 }

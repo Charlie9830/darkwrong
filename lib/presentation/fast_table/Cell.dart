@@ -23,8 +23,6 @@ class Cell extends StatefulWidget {
 }
 
 class _CellState extends State<Cell> {
-  bool open = false;
-
   @override
   void initState() {
     super.initState();
@@ -39,6 +37,8 @@ class _CellState extends State<Cell> {
 
     final isActive =
         widget.index == cellSelectionProvider.selectionConstraint.anchor;
+
+    final isOpen = isActive && cellSelectionProvider.isActiveCellOpen;
 
     final borderState =
         cellSelectionProvider.selectionConstraint.getBorderState(widget.index);
@@ -57,70 +57,61 @@ class _CellState extends State<Cell> {
             cellSelectionProvider.onAdjustmentRequested(widget.index);
           }
         },
-        child: GestureDetector(
-          onDoubleTap: () {
-            setState(() {
-              open = true;
-            });
-          },
-          child: SizedBox(
-            width: _getWidth(context),
-            height: 40.0,
-            child: Container(
-              padding: EdgeInsets.only(left: 4, right: 4),
-              decoration: BoxDecoration(
-                  color:
-                      isActive ? Theme.of(context).colorScheme.surface : null,
-                  border: Border(
-                    right: BorderSide(
-                        width: borderState.right && isSelected
-                            ? _selectedDividerWidth
-                            : _defaultDividerWidth,
-                        color: borderState.right && isSelected
-                            ? borderAccentColor
-                            : dividerColor),
-                    bottom: BorderSide(
-                        width: borderState.bottom && isSelected
-                            ? _selectedDividerWidth
-                            : _defaultDividerWidth,
-                        color: borderState.bottom && isSelected
-                            ? borderAccentColor
-                            : dividerColor),
-                    left: BorderSide(
-                        width: borderState.left && isSelected
-                            ? _selectedDividerWidth
-                            : _defaultDividerWidth,
-                        color: borderState.left && isSelected
-                            ? borderAccentColor
-                            : dividerColor),
-                    top: BorderSide(
-                        width: borderState.top && isSelected
-                            ? _selectedDividerWidth
-                            : _defaultDividerWidth,
-                        color: borderState.top && isSelected
-                            ? borderAccentColor
-                            : dividerColor),
-                  )),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  if (isActive)
-                    Expanded(
-                      child: _Open(
-                        text: widget.text,
-                        onChanged: (newValue) {
-                          setState(() {
-                            open = false;
-                          });
-                          if (widget.onChanged != null) {
-                            widget.onChanged(newValue);
-                          }
-                        },
-                      ),
+        child: SizedBox(
+          width: _getWidth(context),
+          height: 40.0,
+          child: Container(
+            padding: EdgeInsets.only(left: 4, right: 4),
+            decoration: BoxDecoration(
+                color: isActive ? Theme.of(context).colorScheme.surface : null,
+                border: Border(
+                  right: BorderSide(
+                      width: borderState.right && isSelected
+                          ? _selectedDividerWidth
+                          : _defaultDividerWidth,
+                      color: borderState.right && isSelected
+                          ? borderAccentColor
+                          : dividerColor),
+                  bottom: BorderSide(
+                      width: borderState.bottom && isSelected
+                          ? _selectedDividerWidth
+                          : _defaultDividerWidth,
+                      color: borderState.bottom && isSelected
+                          ? borderAccentColor
+                          : dividerColor),
+                  left: BorderSide(
+                      width: borderState.left && isSelected
+                          ? _selectedDividerWidth
+                          : _defaultDividerWidth,
+                      color: borderState.left && isSelected
+                          ? borderAccentColor
+                          : dividerColor),
+                  top: BorderSide(
+                      width: borderState.top && isSelected
+                          ? _selectedDividerWidth
+                          : _defaultDividerWidth,
+                      color: borderState.top && isSelected
+                          ? borderAccentColor
+                          : dividerColor),
+                )),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                if (isActive && isOpen)
+                  Expanded(
+                    child: _Open(
+                      text: cellSelectionProvider.activeCellInitialCharacter,
+                      onChanged: (newValue) {
+                        cellSelectionProvider?.onEditingComplete();
+                        if (widget.onChanged != null) {
+                          
+                          widget.onChanged(newValue);
+                        }
+                      },
                     ),
-                  if (!isActive) Text(widget.text ?? '-'),
-                ],
-              ),
+                  ),
+                if (!isOpen) Text(widget.text ?? '-'),
+              ],
             ),
           ),
         ),
@@ -149,10 +140,13 @@ class _Open extends StatefulWidget {
 
 class _OpenState extends State<_Open> {
   TextEditingController _controller;
+  FocusNode _focusNode;
 
   @override
   void initState() {
     _controller = TextEditingController(text: widget.text);
+    _focusNode = FocusNode();
+    _focusNode.requestFocus();
     super.initState();
   }
 
@@ -160,7 +154,7 @@ class _OpenState extends State<_Open> {
   Widget build(BuildContext context) {
     return TextField(
       controller: _controller,
-      autofocus: true,
+      focusNode: _focusNode,
       onEditingComplete: () => _handleSubmit(),
       textAlignVertical: TextAlignVertical.center,
       style: Theme.of(context).textTheme.bodyText2,
@@ -175,6 +169,8 @@ class _OpenState extends State<_Open> {
   }
 
   void _handleSubmit() {
+    print('Submitting');
+    _focusNode.unfocus();
     widget.onChanged(_controller.text);
   }
 }

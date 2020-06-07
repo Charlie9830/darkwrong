@@ -61,6 +61,7 @@ class _DarkwrongState extends State<Darkwrong> {
                         return Cell(
                           '($i, $j)',
                           index: cellIndex,
+                          
                         );
                       },
                     ),

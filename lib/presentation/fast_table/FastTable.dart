@@ -21,25 +21,38 @@ class FastTable extends StatefulWidget {
 class _FastTableState extends State<FastTable> {
   FocusNode _focusNode;
   CellSelectionConstraint _selectionConstraint = CellSelectionConstraint.zero();
+  bool _isActiveCellOpen = false;
+  String _activeCellInitialCharacter = '';
   bool _isShiftKeyDown = false;
 
   @override
   void initState() {
     _focusNode = FocusNode();
+    _focusNode.requestFocus();
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
     final _columnWidths = widget.headers.map((item) => item.width).toList();
-    return RawKeyboardListener(
+    return Focus(
       focusNode: _focusNode,
-      onKey: (rawKey) {
+      onKey: (focusNode, rawKey) {
+        print('rawKey');
         if (_isShiftKeyDown != rawKey.isShiftPressed) {
           setState(() {
             _isShiftKeyDown = rawKey.isShiftPressed;
           });
         }
+
+        if (rawKey.logicalKey.keyLabel != null) {
+          setState(() {
+            _isActiveCellOpen = true;
+            _activeCellInitialCharacter = rawKey.logicalKey.keyLabel;
+          });
+        }
+
+        return true;
       },
       child: Column(
         children: [
@@ -54,6 +67,9 @@ class _FastTableState extends State<FastTable> {
                 itemCount: widget.rows.length,
                 itemBuilder: (context, index) {
                   return CellSelectionProvider(
+                    isActiveCellOpen: _isActiveCellOpen,
+                    onEditingComplete: _handleCellEditingComplete,
+                    activeCellInitialCharacter: _activeCellInitialCharacter,
                     onCellClicked: _handleCellClicked,
                     onAdjustmentRequested: _handleCellAdjustmentRequested,
                     selectionConstraint: _selectionConstraint,
@@ -70,12 +86,25 @@ class _FastTableState extends State<FastTable> {
     );
   }
 
+  void _handleCellEditingComplete() {
+    // Restore keyboard focus.
+    _focusNode.requestFocus();
+
+    // Reset Active Cell State.
+    setState(() {
+      _isActiveCellOpen = false;
+      _activeCellInitialCharacter = '';
+    });
+  }
+
   void _handleCellClicked(CellIndex index) {
     if (_isShiftKeyDown == false) {
       // Exclusive Selection. Re Anchor.
       final newConstraint = CellSelectionConstraint.singleExclusive(index);
       setState(() {
         _selectionConstraint = newConstraint;
+        _isActiveCellOpen = false;
+        _activeCellInitialCharacter = '';
       });
 
       _notifyCellSelections(newConstraint.getAllPossibleIndexes());
@@ -105,6 +134,12 @@ class _FastTableState extends State<FastTable> {
     });
 
     _notifyCellSelections(newConstraint.getAllPossibleIndexes());
+  }
+
+  @override
+  void dispose() {
+    _focusNode.dispose();
+    super.dispose();
   }
 }
 
