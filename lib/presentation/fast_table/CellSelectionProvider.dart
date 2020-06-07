@@ -1,7 +1,7 @@
 import 'package:darkwrong/presentation/fast_table/FastTable.dart';
 import 'package:flutter/material.dart';
 
-typedef void CellClickedCallback(CellIndex index);
+typedef void CellClickedCallback(CellIndex index, FocusNode focusNode);
 typedef void CellSelectionAdjustmentCallback(CellIndex index);
 typedef void IsCellSelectedCallback(int xIndex, int yIndex);
 
