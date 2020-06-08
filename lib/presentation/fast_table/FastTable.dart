@@ -100,7 +100,7 @@ class _FastTableState extends State<FastTable> {
           _openActiveCell(initialText);
         }
 
-        if (_isActiveCellOpen == true) {
+        else {
           // User has concluded editing and wants to Commit value.
           _focusNode.requestFocus();
           setState(() {
