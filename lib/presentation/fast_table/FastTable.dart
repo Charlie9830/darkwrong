@@ -11,8 +11,14 @@ typedef void CellSelectionChangedCallback(Set<CellIndex> indexes);
 class FastTable extends StatefulWidget {
   final List<FastRow> rows;
   final List<TableHeader> headers;
+  final TraversalDirection cellTraverseDirection;
   final CellSelectionChangedCallback onSelectionChanged;
-  FastTable({Key key, this.rows, this.headers, this.onSelectionChanged})
+  FastTable(
+      {Key key,
+      this.rows,
+      this.headers,
+      this.cellTraverseDirection = TraversalDirection.down,
+      this.onSelectionChanged})
       : super(key: key);
 
   @override
@@ -81,6 +87,9 @@ class _FastTableState extends State<FastTable> {
     _setShiftState(rawKey);
 
     if (rawKey is RawKeyDownEvent) {
+      // Arrow Key Presses.
+      _handleArrowKeysPress(rawKey);
+
       // Enter Press
       if (_enterDown(rawKey)) {
         if (_isActiveCellOpen == false) {
@@ -93,8 +102,11 @@ class _FastTableState extends State<FastTable> {
 
         if (_isActiveCellOpen == true) {
           // User has concluded editing and wants to Commit value.
-          print(_openCellTextController.text);
           _focusNode.requestFocus();
+          setState(() {
+            _isActiveCellOpen = false;
+          });
+          _traverseActiveCell(widget.cellTraverseDirection);
         }
       }
 
@@ -123,6 +135,108 @@ class _FastTableState extends State<FastTable> {
     }
 
     return true;
+  }
+
+  void _traverseActiveCell(TraversalDirection direction) {
+    final current = _selectionConstraint.anchor;
+    switch (direction) {
+      case TraversalDirection.up:
+        if (_canTraverseUp(current)) {
+          setState(() {
+            _selectionConstraint =
+                CellSelectionConstraint.singleExclusive(current.movedUp());
+          });
+        }
+        break;
+      case TraversalDirection.right:
+        if (_canTraverseRight(current)) {
+          setState(() {
+            _selectionConstraint =
+                CellSelectionConstraint.singleExclusive(current.movedRight());
+          });
+        }
+        break;
+      case TraversalDirection.down:
+        if (_canTraverseDown(current)) {
+          setState(() {
+            _selectionConstraint =
+                CellSelectionConstraint.singleExclusive(current.movedDown());
+          });
+        }
+        break;
+      case TraversalDirection.left:
+        if (_canTraverseLeft(current)) {
+          setState(() {
+            _selectionConstraint =
+                CellSelectionConstraint.singleExclusive(current.movedLeft());
+          });
+        }
+        break;
+    }
+  }
+
+  void _handleArrowKeysPress(RawKeyDownEvent rawKey) {
+    if (_isActiveCellOpen == false) {
+      // Arrow Down
+      if (rawKey.logicalKey == LogicalKeyboardKey.arrowDown &&
+          _canTraverseDown(_selectionConstraint.anchor)) {
+        setState(() {
+          _selectionConstraint = CellSelectionConstraint.singleExclusive(
+              _selectionConstraint.anchor.movedDown());
+        });
+
+        return;
+      }
+
+      // Arrow Up
+      if (rawKey.logicalKey == LogicalKeyboardKey.arrowUp &&
+          _canTraverseUp(_selectionConstraint.anchor)) {
+        setState(() {
+          _selectionConstraint = CellSelectionConstraint.singleExclusive(
+              _selectionConstraint.anchor.movedUp());
+        });
+
+        return;
+      }
+
+      // Arrow Left
+      if (rawKey.logicalKey == LogicalKeyboardKey.arrowLeft &&
+          _canTraverseLeft(_selectionConstraint.anchor)) {
+        setState(() {
+          _selectionConstraint = CellSelectionConstraint.singleExclusive(
+              _selectionConstraint.anchor.movedLeft());
+        });
+
+        return;
+      }
+
+      // Arrow Right
+      if (rawKey.logicalKey == LogicalKeyboardKey.arrowRight &&
+          _canTraverseRight(_selectionConstraint.anchor)) {
+        setState(() {
+          _selectionConstraint = CellSelectionConstraint.singleExclusive(
+              _selectionConstraint.anchor.movedRight());
+        });
+
+        return;
+      }
+    }
+  }
+
+  bool _canTraverseDown(CellIndex current) {
+    return current.rowIndex < widget.rows.length - 1;
+  }
+
+  bool _canTraverseUp(CellIndex current) {
+    return current.rowIndex > 0;
+  }
+
+  bool _canTraverseLeft(CellIndex current) {
+    return current.columnIndex > 0;
+  }
+
+  bool _canTraverseRight(CellIndex current) {
+    return current.columnIndex < widget.headers.length - 1;
   }
 
   void _revertActiveCell() {
@@ -247,6 +361,34 @@ class CellIndex {
   const CellIndex.zero()
       : columnIndex = 0,
         rowIndex = 0;
+
+  CellIndex movedLeft() {
+    return CellIndex(
+      columnIndex: columnIndex - 1,
+      rowIndex: rowIndex,
+    );
+  }
+
+  CellIndex movedRight() {
+    return CellIndex(
+      columnIndex: columnIndex + 1,
+      rowIndex: rowIndex,
+    );
+  }
+
+  CellIndex movedDown() {
+    return CellIndex(
+      columnIndex: columnIndex,
+      rowIndex: rowIndex + 1,
+    );
+  }
+
+  CellIndex movedUp() {
+    return CellIndex(
+      columnIndex: columnIndex,
+      rowIndex: rowIndex - 1,
+    );
+  }
 
   operator ==(Object o) {
     return o is CellIndex &&
