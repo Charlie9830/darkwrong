@@ -278,7 +278,7 @@ class _FastTableState extends State<FastTable> {
   }
 
   void _handleCellClicked(CellIndex index) {
-    if (_isShiftKeyDown == false) {
+    if (_isShiftKeyDown == false && index != _selectionConstraint.anchor) {
       // Exclusive Selection.
       // Commit existing value if shifting focus from another open cell.
       if (_isActiveCellOpen) {
