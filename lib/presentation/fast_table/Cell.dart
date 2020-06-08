@@ -110,7 +110,14 @@ class _CellState extends State<Cell> {
                       controller: cellSelectionProvider.openCellTextController,
                     ),
                   ),
-                if (!isOpen) Text(widget.text ?? '-'),
+                if (!isOpen)
+                  Expanded(
+                    child: Text(
+                      widget.text ?? '-',
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                    ),
+                  ),
               ],
             ),
           ),
