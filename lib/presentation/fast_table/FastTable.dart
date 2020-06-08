@@ -1,3 +1,4 @@
+import 'package:darkwrong/presentation/fast_table/Cell.dart';
 import 'package:darkwrong/presentation/fast_table/CellSelectionProvider.dart';
 import 'package:darkwrong/presentation/fast_table/ColumnWidthsProvider.dart';
 import 'package:darkwrong/presentation/fast_table/FastRow.dart';
@@ -7,17 +8,21 @@ import 'package:quiver/core.dart' show hash2;
 import 'package:flutter/material.dart';
 
 typedef void CellSelectionChangedCallback(Set<CellIndex> indexes);
+typedef void CellValueChangedCallback(String newValue,
+    CellChangeData activeCell, List<CellChangeData> otherCells);
 
 class FastTable extends StatefulWidget {
   final List<FastRow> rows;
   final List<TableHeader> headers;
   final TraversalDirection cellTraverseDirection;
   final CellSelectionChangedCallback onSelectionChanged;
+  final CellValueChangedCallback onCellValueChanged;
   FastTable(
       {Key key,
       this.rows,
       this.headers,
       this.cellTraverseDirection = TraversalDirection.down,
+      this.onCellValueChanged,
       this.onSelectionChanged})
       : super(key: key);
 
@@ -98,14 +103,9 @@ class _FastTableState extends State<FastTable> {
           final initialText = widget.rows[_selectionConstraint.anchor.rowIndex]
               .children[_selectionConstraint.anchor.columnIndex].text;
           _openActiveCell(initialText);
-        }
-
-        else {
+        } else {
           // User has concluded editing and wants to Commit value.
-          _focusNode.requestFocus();
-          setState(() {
-            _isActiveCellOpen = false;
-          });
+          _commitValue(_openCellTextController.text, _selectionConstraint);
           _traverseActiveCell(widget.cellTraverseDirection);
         }
       }
@@ -135,6 +135,17 @@ class _FastTableState extends State<FastTable> {
     }
 
     return true;
+  }
+
+  void _commitValue(
+      String newValue, CellSelectionConstraint selectionConstraint) {
+    _focusNode.requestFocus();
+    setState(() {
+      _isActiveCellOpen = false;
+    });
+
+    _notifyCellValueChanges(newValue, selectionConstraint.anchor,
+        selectionConstraint.getAllPossibleIndexes());
   }
 
   void _traverseActiveCell(TraversalDirection direction) {
@@ -268,7 +279,13 @@ class _FastTableState extends State<FastTable> {
 
   void _handleCellClicked(CellIndex index) {
     if (_isShiftKeyDown == false) {
-      // Exclusive Selection. Re Anchor.
+      // Exclusive Selection.
+      // Commit existing value if shifting focus from another open cell.
+      if (_isActiveCellOpen) {
+        _commitValue(_openCellTextController.text, _selectionConstraint);
+      }
+
+      // Re anchor to new Cell.
       final newConstraint = CellSelectionConstraint.singleExclusive(index);
       setState(() {
         _selectionConstraint = newConstraint;
@@ -286,6 +303,29 @@ class _FastTableState extends State<FastTable> {
     });
 
     _notifyCellSelections(newConstraint.getAllPossibleIndexes());
+  }
+
+  void _notifyCellValueChanges(
+      String newValue, CellIndex anchor, Set<CellIndex> selectedCellIndex) {
+    if (widget.onCellValueChanged == null) {
+      return;
+    }
+
+    final activeCellChange = CellChangeData(
+      index: anchor,
+      id: _lookupCellId(anchor),
+    );
+
+    final otherCells = selectedCellIndex.toSet()..remove(anchor);
+    final otherCellChangeData = otherCells
+        .map((item) => CellChangeData(index: item, id: _lookupCellId(item)))
+        .toList();
+
+    widget.onCellValueChanged(newValue, activeCellChange, otherCellChangeData);
+  }
+
+  CellId _lookupCellId(CellIndex index) {
+    return widget.rows[index.rowIndex].children[index.columnIndex].id;
   }
 
   void _notifyCellSelections(Set<CellIndex> cellIndexes) {
@@ -547,4 +587,14 @@ class CellSelectionConstraint {
       return b;
     }
   }
+}
+
+class CellChangeData {
+  final CellIndex index;
+  final CellId id;
+
+  CellChangeData({
+    @required this.index,
+    @required this.id,
+  });
 }

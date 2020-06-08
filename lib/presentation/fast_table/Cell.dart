@@ -2,6 +2,7 @@ import 'package:darkwrong/constants.dart';
 import 'package:darkwrong/presentation/fast_table/CellSelectionProvider.dart';
 import 'package:darkwrong/presentation/fast_table/FastTable.dart';
 import 'package:flutter/material.dart';
+import 'package:quiver/core.dart' show hash2;
 
 typedef void CellClickedCallback(int xIndex, int yIndex);
 typedef void CellContentsChangedCallback(String newValue);
@@ -12,11 +13,16 @@ const double _selectedDividerWidth = 1.5;
 class Cell extends StatefulWidget {
   final String text;
   final CellIndex index;
+  final CellId id;
   final CellClickedCallback onClick;
   final CellContentsChangedCallback onChanged;
 
   const Cell(this.text,
-      {Key key, @required this.index, this.onClick, this.onChanged})
+      {Key key,
+      @required this.index,
+      @required this.id,
+      this.onClick,
+      this.onChanged})
       : super(key: key);
 
   @override
@@ -126,8 +132,7 @@ class _Open extends StatefulWidget {
   final TextEditingController controller;
   final dynamic onChanged;
 
-  _Open({Key key, this.onChanged, this.controller})
-      : super(key: key);
+  _Open({Key key, this.onChanged, this.controller}) : super(key: key);
 
   @override
   _OpenState createState() => _OpenState();
@@ -162,12 +167,19 @@ class _OpenState extends State<_Open> {
   }
 }
 
-class _Closed extends StatelessWidget {
-  final String text;
-  const _Closed({Key key, this.text}) : super(key: key);
+class CellId {
+  final String rowId;
+  final String columnId;
+
+  CellId({
+    @required this.rowId,
+    @required this.columnId,
+  });
+
+  operator ==(dynamic o) {
+    return o is CellId && o.rowId == rowId && o.columnId == columnId;
+  }
 
   @override
-  Widget build(BuildContext context) {
-    return Text(text);
-  }
+  int get hashCode => hash2(rowId, columnId);
 }

@@ -13,7 +13,7 @@ void main() {
 }
 
 const columnCount = 10;
-const rowCount = 50;
+const rowCount = 15;
 
 class Darkwrong extends StatefulWidget {
   @override
@@ -22,6 +22,7 @@ class Darkwrong extends StatefulWidget {
 
 class _DarkwrongState extends State<Darkwrong> {
   Set<CellIndex> _selectedCellIndexes = <CellIndex>{};
+  Map<CellId, String> _changedCells = <CellId, String>{};
 
   @override
   Widget build(BuildContext context) {
@@ -38,6 +39,14 @@ class _DarkwrongState extends State<Darkwrong> {
             home: Scaffold(
               appBar: AppBar(title: Text('FastTable')),
               body: FastTable(
+                onCellValueChanged:
+                    (newValue, activeCellChangeData, otherCells) {
+                  setState(() {
+                    _changedCells = Map<CellId, String>.from(_changedCells)
+                      ..update(activeCellChangeData.id, (value) => newValue,
+                          ifAbsent: () => newValue);
+                  });
+                },
                 onSelectionChanged: (Set<CellIndex> cellIndexes) {
                   setState(() {
                     _selectedCellIndexes = cellIndexes;
@@ -58,10 +67,13 @@ class _DarkwrongState extends State<Darkwrong> {
                       (j) {
                         final cellIndex =
                             CellIndex(columnIndex: j, rowIndex: i);
+                        final cellId = CellId(rowId: '$i', columnId: '$j');
                         return Cell(
-                          '($i, $j)',
+                          _changedCells.containsKey(cellId)
+                              ? _changedCells[cellId]
+                              : '($i, $j)',
                           index: cellIndex,
-
+                          id: CellId(rowId: '$i', columnId: '$j'),
                         );
                       },
                     ),
