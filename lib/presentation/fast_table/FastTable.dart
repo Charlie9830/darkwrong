@@ -2,6 +2,7 @@ import 'package:darkwrong/presentation/fast_table/CellSelectionProvider.dart';
 import 'package:darkwrong/presentation/fast_table/ColumnWidthsProvider.dart';
 import 'package:darkwrong/presentation/fast_table/FastRow.dart';
 import 'package:darkwrong/presentation/fast_table/TableHeader.dart';
+import 'package:flutter/services.dart';
 import 'package:quiver/core.dart' show hash2;
 import 'package:flutter/material.dart';
 
@@ -22,14 +23,16 @@ class _FastTableState extends State<FastTable> {
   FocusNode _focusNode;
   ScrollController _scrollController;
   CellSelectionConstraint _selectionConstraint = CellSelectionConstraint.zero();
+  TextEditingController _openCellTextController;
   bool _isActiveCellOpen = false;
-  String _activeCellInitialCharacter = '';
   bool _isShiftKeyDown = false;
 
   @override
   void initState() {
     _focusNode = FocusNode();
     _focusNode.requestFocus();
+
+    _openCellTextController = TextEditingController();
 
     _scrollController = ScrollController();
     super.initState();
@@ -41,22 +44,7 @@ class _FastTableState extends State<FastTable> {
 
     return Focus(
       focusNode: _focusNode,
-      onKey: (focusNode, rawKey) {
-        if (_isShiftKeyDown != rawKey.isShiftPressed) {
-          setState(() {
-            _isShiftKeyDown = rawKey.isShiftPressed;
-          });
-        }
-
-        if (rawKey.logicalKey.keyLabel != null) {
-          setState(() {
-            _isActiveCellOpen = true;
-            _activeCellInitialCharacter = rawKey.logicalKey.keyLabel;
-          });
-        }
-
-        return true;
-      },
+      onKey: _handleOnKey,
       child: Column(
         children: [
           Container(
@@ -72,8 +60,7 @@ class _FastTableState extends State<FastTable> {
                 itemBuilder: (context, index) {
                   return CellSelectionProvider(
                     isActiveCellOpen: _isActiveCellOpen,
-                    onEditingComplete: _handleCellEditingComplete,
-                    activeCellInitialCharacter: _activeCellInitialCharacter,
+                    openCellTextController: _openCellTextController,
                     onCellClicked: _handleCellClicked,
                     onAdjustmentRequested: _handleCellAdjustmentRequested,
                     selectionConstraint: _selectionConstraint,
@@ -90,14 +77,78 @@ class _FastTableState extends State<FastTable> {
     );
   }
 
-  void _handleCellEditingComplete() {
-    // Restore keyboard focus.
-    _focusNode.requestFocus();
+  bool _handleOnKey(FocusNode focusNode, RawKeyEvent rawKey) {
+    _setShiftState(rawKey);
 
-    // Reset Active Cell State.
+    if (rawKey is RawKeyDownEvent) {
+      // Enter Press
+      if (_enterDown(rawKey)) {
+        if (_isActiveCellOpen == false) {
+          // User wants to open the cell and edit the existing Value.
+          // Extract the value from the Cells being passed through (Is this dodgy?).
+          final initialText = widget.rows[_selectionConstraint.anchor.rowIndex]
+              .children[_selectionConstraint.anchor.columnIndex].text;
+          _openActiveCell(initialText);
+        }
+
+        if (_isActiveCellOpen == true) {
+          // User has concluded editing and wants to Commit value.
+          print(_openCellTextController.text);
+          _focusNode.requestFocus();
+        }
+      }
+
+      // Backspace Press
+      else if (_backspaceDown(rawKey)) {
+        if (_isActiveCellOpen == false) {
+          _openActiveCell('');
+        }
+      }
+
+      // Valid Character Press (User started typing a new Value)
+      else if (rawKey.logicalKey.keyLabel != null) {
+        if (_isActiveCellOpen == false) {
+          // User wants to Open cell with a fresh value. ie: They have just started typing the new Value.
+          _openActiveCell(rawKey.logicalKey.keyLabel);
+        }
+      }
+
+      // Escape key
+      else if (_escapeDown(rawKey)) {
+        if (_isActiveCellOpen == true) {
+          // Revert Field.
+          _revertActiveCell();
+        }
+      }
+    }
+
+    return true;
+  }
+
+  void _revertActiveCell() {
+    _focusNode.requestFocus();
     setState(() {
       _isActiveCellOpen = false;
-      _activeCellInitialCharacter = '';
+    });
+  }
+
+  bool _escapeDown(RawKeyDownEvent rawKey) {
+    return rawKey.logicalKey == LogicalKeyboardKey.escape;
+  }
+
+  bool _backspaceDown(RawKeyDownEvent rawKey) {
+    return rawKey.logicalKey == LogicalKeyboardKey.backspace;
+  }
+
+  bool _enterDown(RawKeyDownEvent rawKey) {
+    return rawKey.logicalKey == LogicalKeyboardKey.enter ||
+        rawKey.logicalKey == LogicalKeyboardKey.numpadEnter;
+  }
+
+  void _openActiveCell(String initialText) {
+    _openCellTextController.text = initialText;
+    setState(() {
+      _isActiveCellOpen = true;
     });
   }
 
@@ -108,7 +159,6 @@ class _FastTableState extends State<FastTable> {
       setState(() {
         _selectionConstraint = newConstraint;
         _isActiveCellOpen = false;
-        _activeCellInitialCharacter = '';
       });
 
       _notifyCellSelections(newConstraint.getAllPossibleIndexes());
@@ -140,9 +190,36 @@ class _FastTableState extends State<FastTable> {
     _notifyCellSelections(newConstraint.getAllPossibleIndexes());
   }
 
+  void _setShiftState(RawKeyEvent rawKey) {
+    if (rawKey is RawKeyDownEvent) {
+      if (rawKey.logicalKey == LogicalKeyboardKey.shiftLeft ||
+          rawKey.logicalKey == LogicalKeyboardKey.shiftRight) {
+        if (_isShiftKeyDown == false) {
+          setState(() {
+            _isShiftKeyDown = true;
+          });
+          return;
+        }
+      }
+    }
+
+    if (rawKey is RawKeyUpEvent) {
+      if (rawKey.logicalKey == LogicalKeyboardKey.shiftLeft ||
+          rawKey.logicalKey == LogicalKeyboardKey.shiftRight) {
+        if (_isShiftKeyDown == true) {
+          setState(() {
+            _isShiftKeyDown = false;
+          });
+          return;
+        }
+      }
+    }
+  }
+
   @override
   void dispose() {
     _focusNode.dispose();
+    _openCellTextController.dispose();
     super.dispose();
   }
 }

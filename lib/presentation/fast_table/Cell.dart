@@ -101,14 +101,7 @@ class _CellState extends State<Cell> {
                 if (isActive && isOpen)
                   Expanded(
                     child: _Open(
-                      text: cellSelectionProvider.activeCellInitialCharacter,
-                      onChanged: (newValue) {
-                        cellSelectionProvider?.onEditingComplete();
-                        if (widget.onChanged != null) {
-                          
-                          widget.onChanged(newValue);
-                        }
-                      },
+                      controller: cellSelectionProvider.openCellTextController,
                     ),
                   ),
                 if (!isOpen) Text(widget.text ?? '-'),
@@ -130,22 +123,21 @@ class _CellState extends State<Cell> {
 }
 
 class _Open extends StatefulWidget {
-  final String text;
+  final TextEditingController controller;
   final dynamic onChanged;
 
-  _Open({Key key, this.text, this.onChanged}) : super(key: key);
+  _Open({Key key, this.onChanged, this.controller})
+      : super(key: key);
 
   @override
   _OpenState createState() => _OpenState();
 }
 
 class _OpenState extends State<_Open> {
-  TextEditingController _controller;
   FocusNode _focusNode;
 
   @override
   void initState() {
-    _controller = TextEditingController(text: widget.text);
     _focusNode = FocusNode();
     _focusNode.requestFocus();
 
@@ -155,9 +147,8 @@ class _OpenState extends State<_Open> {
   @override
   Widget build(BuildContext context) {
     return TextField(
-      controller: _controller,
+      controller: widget.controller,
       focusNode: _focusNode,
-      onEditingComplete: () => _handleSubmit(),
       textAlignVertical: TextAlignVertical.center,
       style: Theme.of(context).textTheme.bodyText2,
       enableInteractiveSelection: false,
@@ -168,11 +159,6 @@ class _OpenState extends State<_Open> {
             borderSide: BorderSide(style: BorderStyle.none)),
       ),
     );
-  }
-
-  void _handleSubmit() {
-    _focusNode.unfocus();
-    widget.onChanged(_controller.text);
   }
 }
 

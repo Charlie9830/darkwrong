@@ -8,8 +8,8 @@ typedef void IsCellSelectedCallback(int xIndex, int yIndex);
 class CellSelectionProvider extends InheritedWidget {
   final Widget child;
   final bool isActiveCellOpen;
-  final String activeCellInitialCharacter;
-  final dynamic onEditingComplete;
+  final TextEditingController openCellTextController;
+  final FocusNode openCellFocusNode;
   final CellClickedCallback onCellClicked;
   final CellSelectionAdjustmentCallback onAdjustmentRequested;
   final CellSelectionConstraint selectionConstraint;
@@ -17,9 +17,9 @@ class CellSelectionProvider extends InheritedWidget {
   CellSelectionProvider(
       {Key key,
       this.child,
-      this.onEditingComplete,
+      this.openCellFocusNode,
+      this.openCellTextController,
       this.isActiveCellOpen,
-      this.activeCellInitialCharacter,
       this.onCellClicked,
       this.onAdjustmentRequested,
       this.selectionConstraint})
@@ -34,7 +34,6 @@ class CellSelectionProvider extends InheritedWidget {
     // TODO: This returns true a lot. Comparing the functions may not be requried. Perhaps making selectionContraint Value equatable will stop this from having to notify
     // as much.
     return oldWidget.selectionConstraint != selectionConstraint ||
-        oldWidget.isActiveCellOpen != isActiveCellOpen ||
-        oldWidget.activeCellInitialCharacter != activeCellInitialCharacter;
+        oldWidget.isActiveCellOpen != isActiveCellOpen;
   }
 }
