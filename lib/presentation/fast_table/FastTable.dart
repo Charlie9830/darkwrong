@@ -213,31 +213,59 @@ class _FastTableState extends State<FastTable> {
     };
 
     // Naked Arrow Right.
-    if (rawKey.logicalKey == LogicalKeyboardKey.arrowRight &&
-        _canTraverseRight(anchor)) {
-      updateConstraint(anchor.movedRight());
-      return;
+    if (rawKey.logicalKey == LogicalKeyboardKey.arrowRight) {
+      if (_canTraverseRight(anchor)) {
+        updateConstraint(anchor.movedRight());
+        return;
+      }
+
+      if (!_selectionConstraint.isSingleExclusive) {
+        // Shrink down to Exclusive Selection.
+        updateConstraint(anchor);
+        return;
+      }
     }
 
     // Naked Arrow Left.
-    if (rawKey.logicalKey == LogicalKeyboardKey.arrowLeft &&
-        _canTraverseLeft(anchor)) {
-      updateConstraint(anchor.movedLeft());
-      return;
+    if (rawKey.logicalKey == LogicalKeyboardKey.arrowLeft) {
+      if (_canTraverseLeft(anchor)) {
+        updateConstraint(anchor.movedLeft());
+        return;
+      }
+
+      if (!_selectionConstraint.isSingleExclusive) {
+        // Shrink down to Exclusive Selection.
+        updateConstraint(anchor);
+        return;
+      }
     }
 
     // Naked Arrow Up.
-    if (rawKey.logicalKey == LogicalKeyboardKey.arrowUp &&
-        _canTraverseUp(anchor)) {
-      updateConstraint(anchor.movedUp());
-      return;
+    if (rawKey.logicalKey == LogicalKeyboardKey.arrowUp) {
+      if (_canTraverseUp(anchor)) {
+        updateConstraint(anchor.movedUp());
+        return;
+      }
+
+      if (!_selectionConstraint.isSingleExclusive) {
+        // Shrink down to Exclusive Selection.
+        updateConstraint(anchor);
+        return;
+      }
     }
 
     // Naked Arrow Down.
-    if (rawKey.logicalKey == LogicalKeyboardKey.arrowDown &&
-        _canTraverseDown(anchor)) {
-      updateConstraint(anchor.movedDown());
-      return;
+    if (rawKey.logicalKey == LogicalKeyboardKey.arrowDown) {
+      if (_canTraverseDown(anchor)) {
+        updateConstraint(anchor.movedDown());
+        return;
+      }
+
+      if (!_selectionConstraint.isSingleExclusive) {
+        // Shrink down to Exclusive Selection.
+        updateConstraint(anchor);
+        return;
+      }
     }
   }
 
@@ -677,6 +705,8 @@ class CellSelectionConstraint {
 
     return CellSelectionConstraint.singleExclusive(incoming);
   }
+
+  bool get isSingleExclusive => topLeft == anchor && anchor == bottomRight;
 
   _RelativeAnchorLocation getRelativeAnchorLocation() {
     if (topLeft == bottomRight && topLeft == anchor) {
