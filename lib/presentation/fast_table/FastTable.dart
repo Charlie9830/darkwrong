@@ -319,7 +319,8 @@ class _FastTableState extends State<FastTable> {
     final otherCells = selectedCellIndex.toSet()..remove(anchor);
     final otherCellChangeData = otherCells
         .map((item) => CellChangeData(index: item, id: _lookupCellId(item)))
-        .toList();
+        .toList()
+          ..sort();
 
     widget.onCellValueChanged(newValue, activeCellChange, otherCellChangeData);
   }
@@ -571,25 +572,9 @@ class CellSelectionConstraint {
   List<int> _buildRange(int from, int to) {
     return List<int>.generate((to - from) + 1, (index) => from + index);
   }
-
-  static CellIndex _getUpperLeft(CellIndex a, CellIndex b) {
-    if (a.columnIndex <= b.columnIndex && a.rowIndex <= b.rowIndex) {
-      return a;
-    } else {
-      return b;
-    }
-  }
-
-  static CellIndex _getLowerRight(CellIndex a, CellIndex b) {
-    if (a.columnIndex >= b.columnIndex && a.rowIndex >= b.rowIndex) {
-      return a;
-    } else {
-      return b;
-    }
-  }
 }
 
-class CellChangeData {
+class CellChangeData implements Comparable {
   final CellIndex index;
   final CellId id;
 
@@ -597,4 +582,17 @@ class CellChangeData {
     @required this.index,
     @required this.id,
   });
+
+  @override
+  int compareTo(other) {
+    if (other is CellChangeData) {
+      if (other.index.rowIndex != this.index.rowIndex) {
+        return this.index.rowIndex - other.index.rowIndex;
+      }
+
+      return this.index.columnIndex - other.index.columnIndex;
+    }
+
+    throw FormatException('Other is not of type CellChangeData');
+  }
 }

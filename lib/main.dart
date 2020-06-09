@@ -42,9 +42,12 @@ class _DarkwrongState extends State<Darkwrong> {
                 onCellValueChanged:
                     (newValue, activeCellChangeData, otherCells) {
                   setState(() {
+                    int enumerator = 1;
                     _changedCells = Map<CellId, String>.from(_changedCells)
-                      ..update(activeCellChangeData.id, (value) => newValue,
-                          ifAbsent: () => newValue);
+                      ..addAll(Map<CellId, String>.fromEntries(otherCells.map(
+                          (item) =>
+                              MapEntry(item.id, '$newValue ${enumerator++}')))
+                        ..addAll({activeCellChangeData.id: newValue}));
                   });
                 },
                 onSelectionChanged: (Set<CellIndex> cellIndexes) {
