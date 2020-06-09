@@ -187,48 +187,205 @@ class _FastTableState extends State<FastTable> {
   }
 
   void _handleArrowKeysPress(RawKeyDownEvent rawKey) {
-    if (_isActiveCellOpen == false) {
-      // Arrow Down
-      if (rawKey.logicalKey == LogicalKeyboardKey.arrowDown &&
-          _canTraverseDown(_selectionConstraint.anchor)) {
-        setState(() {
-          _selectionConstraint = CellSelectionConstraint.singleExclusive(
-              _selectionConstraint.anchor.movedDown());
-        });
+    // Adjusts the Selection Constraints based on which Arrow Key was pressed and if the Shift key was down at the time.
+    // If no shift key is down we re anchor the Cell towards the direction of pressed arrow (If Travsersal is possible).
+    // If the shift key is down we adjust the size of the Selection constraint based on which side of the Anchor the selection contraint extends from.
+    // Eg if the selection box extends to the right of the Anchor and a Right arrow is pressed, we Expand the box (if Traversal is Possible), if the box extends to the left
+    // of the Anchor, we shrink the constraint.
 
+    if (_isActiveCellOpen == true) {
+      return;
+    }
+
+    final CellIndex anchor = _selectionConstraint.anchor;
+    if (rawKey.isShiftPressed) {
+      // Shift + Arrow Key
+      _handleShiftArrowKeysPressed(rawKey, anchor);
+      return;
+    }
+
+    final updateConstraint = (CellIndex incoming) {
+      setState(() {
+        _selectionConstraint = CellSelectionConstraint.singleExclusive(
+          incoming,
+        );
+      });
+    };
+
+    // Naked Arrow Right.
+    if (rawKey.logicalKey == LogicalKeyboardKey.arrowRight &&
+        _canTraverseRight(anchor)) {
+      updateConstraint(anchor.movedRight());
+      return;
+    }
+
+    // Naked Arrow Left.
+    if (rawKey.logicalKey == LogicalKeyboardKey.arrowLeft &&
+        _canTraverseLeft(anchor)) {
+      updateConstraint(anchor.movedLeft());
+      return;
+    }
+
+    // Naked Arrow Up.
+    if (rawKey.logicalKey == LogicalKeyboardKey.arrowUp &&
+        _canTraverseUp(anchor)) {
+      updateConstraint(anchor.movedUp());
+      return;
+    }
+
+    // Naked Arrow Down.
+    if (rawKey.logicalKey == LogicalKeyboardKey.arrowDown &&
+        _canTraverseDown(anchor)) {
+      updateConstraint(anchor.movedDown());
+      return;
+    }
+  }
+
+  void _handleShiftArrowKeysPressed(
+    RawKeyDownEvent rawKey,
+    CellIndex anchor,
+  ) {
+    final CellIndex topLeft = _selectionConstraint.topLeft;
+    final CellIndex topRight = _selectionConstraint.topRight;
+    final CellIndex bottomRight = _selectionConstraint.bottomRight;
+    final CellIndex bottomLeft = _selectionConstraint.bottomLeft;
+    final _RelativeAnchorLocation anchorLocation =
+        _selectionConstraint.getRelativeAnchorLocation();
+    final key = rawKey.logicalKey;
+
+    final updateConstraint = (CellIndex incoming) {
+      setState(() {
+        _selectionConstraint = _selectionConstraint.adjustWith(
+          incoming: incoming,
+        );
+      });
+    };
+
+    // Arrow Up
+    if (key == LogicalKeyboardKey.arrowUp) {
+      // Expanding
+      if (anchorLocation == _RelativeAnchorLocation.centered &&
+          _canTraverseUp(anchor)) {
+        updateConstraint(anchor.movedUp());
         return;
       }
 
-      // Arrow Up
-      if (rawKey.logicalKey == LogicalKeyboardKey.arrowUp &&
-          _canTraverseUp(_selectionConstraint.anchor)) {
-        setState(() {
-          _selectionConstraint = CellSelectionConstraint.singleExclusive(
-              _selectionConstraint.anchor.movedUp());
-        });
-
+      if (anchorLocation == _RelativeAnchorLocation.bottomRight &&
+          _canTraverseUp(topLeft)) {
+        updateConstraint(topLeft.movedUp());
         return;
       }
 
-      // Arrow Left
-      if (rawKey.logicalKey == LogicalKeyboardKey.arrowLeft &&
-          _canTraverseLeft(_selectionConstraint.anchor)) {
-        setState(() {
-          _selectionConstraint = CellSelectionConstraint.singleExclusive(
-              _selectionConstraint.anchor.movedLeft());
-        });
-
+      if (anchorLocation == _RelativeAnchorLocation.bottomLeft &&
+          _canTraverseUp(topRight)) {
+        updateConstraint(topRight.movedUp());
         return;
       }
 
-      // Arrow Right
-      if (rawKey.logicalKey == LogicalKeyboardKey.arrowRight &&
-          _canTraverseRight(_selectionConstraint.anchor)) {
-        setState(() {
-          _selectionConstraint = CellSelectionConstraint.singleExclusive(
-              _selectionConstraint.anchor.movedRight());
-        });
+      // Shrinking.
+      if (anchorLocation == _RelativeAnchorLocation.topRight) {
+        updateConstraint(bottomLeft.movedUp());
+        return;
+      }
 
+      if (anchorLocation == _RelativeAnchorLocation.topLeft) {
+        updateConstraint(bottomRight.movedUp());
+        return;
+      }
+    }
+
+    // Arrow Down
+    if (key == LogicalKeyboardKey.arrowDown) {
+      // Expanding
+      if (anchorLocation == _RelativeAnchorLocation.centered &&
+          _canTraverseDown(anchor)) {
+        updateConstraint(anchor.movedDown());
+        return;
+      }
+
+      if (anchorLocation == _RelativeAnchorLocation.topRight &&
+          _canTraverseDown(bottomLeft)) {
+        updateConstraint(bottomLeft.movedDown());
+        return;
+      }
+
+      if (anchorLocation == _RelativeAnchorLocation.topLeft &&
+          _canTraverseDown(bottomRight)) {
+        updateConstraint(bottomRight.movedDown());
+        return;
+      }
+
+      // Shrinking.
+      if (anchorLocation == _RelativeAnchorLocation.bottomRight) {
+        updateConstraint(topLeft.movedDown());
+        return;
+      }
+
+      if (anchorLocation == _RelativeAnchorLocation.bottomLeft) {
+        updateConstraint(topRight.movedDown());
+        return;
+      }
+    }
+
+    // Arrow Left
+    if (key == LogicalKeyboardKey.arrowLeft) {
+      // Expanding
+      if (anchorLocation == _RelativeAnchorLocation.centered &&
+          _canTraverseLeft(anchor)) {
+        updateConstraint(anchor.movedLeft());
+        return;
+      }
+
+      if (anchorLocation == _RelativeAnchorLocation.topRight &&
+          _canTraverseLeft(bottomLeft)) {
+        updateConstraint(bottomLeft.movedLeft());
+        return;
+      }
+
+      if (anchorLocation == _RelativeAnchorLocation.bottomRight &&
+          _canTraverseLeft(topLeft)) {
+        updateConstraint(topLeft.movedLeft());
+        return;
+      }
+
+      // Shrinking.
+      if (anchorLocation == _RelativeAnchorLocation.topLeft) {
+        updateConstraint(bottomRight.movedLeft());
+        return;
+      }
+      if (anchorLocation == _RelativeAnchorLocation.bottomLeft) {
+        updateConstraint(topRight.movedLeft());
+        return;
+      }
+    }
+
+    // Arrow Right
+    if (key == LogicalKeyboardKey.arrowRight) {
+      // Expansion
+      if (anchorLocation == _RelativeAnchorLocation.centered &&
+          _canTraverseRight(anchor)) {
+        updateConstraint(anchor.movedRight());
+        return;
+      }
+      if (anchorLocation == _RelativeAnchorLocation.topLeft &&
+          _canTraverseRight(bottomRight)) {
+        updateConstraint(bottomRight.movedRight());
+        return;
+      }
+      if (anchorLocation == _RelativeAnchorLocation.bottomLeft &&
+          _canTraverseRight(topRight)) {
+        updateConstraint(topRight.movedRight());
+        return;
+      }
+
+      // Shrinking.
+      if (anchorLocation == _RelativeAnchorLocation.topRight) {
+        updateConstraint(bottomLeft.movedRight());
+        return;
+      }
+
+      if (anchorLocation == _RelativeAnchorLocation.bottomRight) {
+        updateConstraint(topLeft.movedRight());
         return;
       }
     }
@@ -441,10 +598,23 @@ class CellIndex {
   int get hashCode => hash2(columnIndex, rowIndex);
 }
 
+enum _RelativeAnchorLocation {
+  topLeft,
+  topRight,
+  bottomRight,
+  bottomLeft,
+  centered
+}
+
 class CellSelectionConstraint {
   final CellIndex topLeft;
   final CellIndex bottomRight;
   final CellIndex anchor;
+
+  CellIndex get bottomLeft => CellIndex(
+      columnIndex: topLeft.columnIndex, rowIndex: bottomRight.rowIndex);
+  CellIndex get topRight => CellIndex(
+      columnIndex: bottomRight.columnIndex, rowIndex: topLeft.rowIndex);
 
   CellSelectionConstraint({this.anchor, this.topLeft, this.bottomRight});
 
@@ -506,6 +676,27 @@ class CellSelectionConstraint {
     }
 
     return CellSelectionConstraint.singleExclusive(incoming);
+  }
+
+  _RelativeAnchorLocation getRelativeAnchorLocation() {
+    if (topLeft == bottomRight && topLeft == anchor) {
+      // Single Exclusive.
+      return _RelativeAnchorLocation.centered;
+    }
+
+    if (topLeft == anchor) {
+      return _RelativeAnchorLocation.topLeft;
+    }
+
+    if (bottomRight == anchor) {
+      return _RelativeAnchorLocation.bottomRight;
+    }
+
+    if (topRight == anchor) {
+      return _RelativeAnchorLocation.topRight;
+    } else {
+      return _RelativeAnchorLocation.bottomLeft;
+    }
   }
 
   BorderState getBorderState(CellIndex cellIndex) {
