@@ -96,6 +96,13 @@ class _FastTableState extends State<FastTable> {
     );
   }
 
+  void clearSelections() {
+    setState(() {
+      _selectionConstraint = CellSelectionConstraint.zero();
+      _isActiveCellOpen = false;
+    });
+  }
+
   bool _handleOnKey(FocusNode focusNode, RawKeyEvent rawKey) {
     _setShiftState(rawKey);
     _setControlState(rawKey);
