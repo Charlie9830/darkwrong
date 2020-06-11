@@ -1,4 +1,5 @@
 import 'package:darkwrong/enums.dart';
+import 'package:darkwrong/presentation/fast_table/BorderState.dart';
 import 'package:darkwrong/presentation/fast_table/Cell.dart';
 import 'package:darkwrong/presentation/fast_table/CellIndex.dart';
 import 'package:darkwrong/presentation/fast_table/CellSelectionProvider.dart';
@@ -631,20 +632,6 @@ class _FastTableState extends State<FastTable> {
     _openCellTextController.dispose();
     super.dispose();
   }
-}
-
-class BorderState {
-  final bool top;
-  final bool right;
-  final bool bottom;
-  final bool left;
-
-  BorderState({
-    this.top = false,
-    this.right = false,
-    this.bottom = false,
-    this.left = false,
-  });
 }
 
 enum _RelativeAnchorLocation {
