@@ -8,12 +8,15 @@ class CellTextEditingController extends TextEditingController {
 
   @override
   TextSpan buildTextSpan({TextStyle style, bool withComposing}) {
-    if (text.contains(positiveValueEnumerationIndicator)) {
-      final enumerationValue =
-          text.substring(text.indexOf(positiveValueEnumerationIndicator));
+    if (text.contains(positiveValueEnumerationIndicator) ||
+        text.contains(negativeValueEnumerationIndicator)) {
+      final indicator = text.contains(positiveValueEnumerationIndicator)
+          ? positiveValueEnumerationIndicator
+          : negativeValueEnumerationIndicator;
 
-      final value =
-          text.substring(0, text.indexOf(positiveValueEnumerationIndicator));
+      final enumerationValue = text.substring(text.indexOf(indicator));
+
+      final value = text.substring(0, text.indexOf(indicator));
 
       return TextSpan(children: <InlineSpan>[
         TextSpan(
