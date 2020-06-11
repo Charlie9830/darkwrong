@@ -1,4 +1,5 @@
 import 'package:darkwrong/constants.dart';
+import 'package:darkwrong/presentation/fast_table/CellId.dart';
 import 'package:darkwrong/presentation/fast_table/CellIndex.dart';
 import 'package:darkwrong/presentation/fast_table/CellSelectionProvider.dart';
 import 'package:darkwrong/presentation/fast_table/BorderState.dart';
@@ -176,19 +177,3 @@ class _OpenState extends State<_Open> {
   }
 }
 
-class CellId {
-  final String rowId;
-  final String columnId;
-
-  CellId({
-    @required this.rowId,
-    @required this.columnId,
-  });
-
-  operator ==(dynamic o) {
-    return o is CellId && o.rowId == rowId && o.columnId == columnId;
-  }
-
-  @override
-  int get hashCode => hash2(rowId, columnId);
-}

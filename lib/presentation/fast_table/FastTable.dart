@@ -1,6 +1,7 @@
 import 'package:darkwrong/enums.dart';
 import 'package:darkwrong/presentation/fast_table/BorderState.dart';
-import 'package:darkwrong/presentation/fast_table/Cell.dart';
+import 'package:darkwrong/presentation/fast_table/CellChangeData.dart';
+import 'package:darkwrong/presentation/fast_table/CellId.dart';
 import 'package:darkwrong/presentation/fast_table/CellIndex.dart';
 import 'package:darkwrong/presentation/fast_table/CellSelectionProvider.dart';
 import 'package:darkwrong/presentation/fast_table/CellTextEditingController.dart';
@@ -8,7 +9,6 @@ import 'package:darkwrong/presentation/fast_table/ColumnWidthsProvider.dart';
 import 'package:darkwrong/presentation/fast_table/FastRow.dart';
 import 'package:darkwrong/presentation/fast_table/TableHeader.dart';
 import 'package:flutter/services.dart';
-import 'package:quiver/core.dart' show hash2;
 import 'package:flutter/material.dart';
 
 typedef void CellSelectionChangedCallback(Set<CellIndex> indexes);
@@ -870,28 +870,5 @@ class CellSelectionConstraint {
 
   List<int> _buildRange(int from, int to) {
     return List<int>.generate((to - from) + 1, (index) => from + index);
-  }
-}
-
-class CellChangeData implements Comparable {
-  final CellIndex index;
-  final CellId id;
-
-  CellChangeData({
-    @required this.index,
-    @required this.id,
-  });
-
-  @override
-  int compareTo(other) {
-    if (other is CellChangeData) {
-      if (other.index.rowIndex != this.index.rowIndex) {
-        return this.index.rowIndex - other.index.rowIndex;
-      }
-
-      return this.index.columnIndex - other.index.columnIndex;
-    }
-
-    throw FormatException('Other is not of type CellChangeData');
   }
 }
