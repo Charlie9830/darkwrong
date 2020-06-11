@@ -1,4 +1,4 @@
-import 'package:darkwrong/presentation/fast_table/FastTable.dart';
+import 'package:darkwrong/presentation/fast_table/CellIndex.dart';
 import 'package:flutter/foundation.dart';
 
 class WorksheetCellModel {
