@@ -42,6 +42,7 @@ class _FastTableState extends State<FastTable> {
   CellTextEditingController _openCellTextController;
   bool _isActiveCellOpen = false;
   bool _isShiftKeyDown = false;
+  bool _isControlDown = false;
 
   @override
   void initState() {
@@ -95,6 +96,7 @@ class _FastTableState extends State<FastTable> {
 
   bool _handleOnKey(FocusNode focusNode, RawKeyEvent rawKey) {
     _setShiftState(rawKey);
+    _setControlState(rawKey);
 
     if (rawKey is RawKeyDownEvent) {
       // Arrow Key Presses.
@@ -471,6 +473,33 @@ class _FastTableState extends State<FastTable> {
   }
 
   void _handleCellClicked(CellIndex index) {
+    if (_isControlDown == true && index != _selectionConstraint.anchor) {
+      if (_selectionConstraint.satisfiesConstraints(index)) {
+        // Selection was made inside existing constraints. Just Adjust contraints to Match clicked cell.
+        setState(() {
+          _selectionConstraint =
+              _selectionConstraint.adjustWith(incoming: index);
+        });
+        return;
+      } else {
+        if (_selectionConstraint.foreignIndexes.contains(index)) {
+          // Remove cell from foreignIndexes.
+          setState(() {
+            _selectionConstraint =
+                _selectionConstraint.withRemovedForeignIndex(index);
+          });
+        } else {
+          // Add cell to foreignIndexes.
+          setState(() {
+            _selectionConstraint =
+                _selectionConstraint.withAddedForeignIndex(index);
+          });
+        }
+      }
+
+      return;
+    }
+
     if (_isShiftKeyDown == false && index != _selectionConstraint.anchor) {
       // Exclusive Selection.
       // Commit existing value if shifting focus from another open cell.
@@ -540,6 +569,33 @@ class _FastTableState extends State<FastTable> {
     });
 
     _notifyCellSelections(newConstraint.getAllPossibleIndexes());
+  }
+
+  void _setControlState(RawKeyEvent rawKey) {
+    // TODO: Quering for LogicalKeyboardKey.controlLeft or Right is almost certainly leaving out MacOSX users pressing the Apple Command key.
+    if (rawKey is RawKeyDownEvent) {
+      if (rawKey.logicalKey == LogicalKeyboardKey.controlLeft ||
+          rawKey.logicalKey == LogicalKeyboardKey.controlRight) {
+        if (_isControlDown == false) {
+          setState(() {
+            _isControlDown = true;
+          });
+          return;
+        }
+      }
+    }
+
+    if (rawKey is RawKeyUpEvent) {
+      if (rawKey.logicalKey == LogicalKeyboardKey.controlLeft ||
+          rawKey.logicalKey == LogicalKeyboardKey.controlRight) {
+        if (_isControlDown == true) {
+          setState(() {
+            _isControlDown = false;
+          });
+          return;
+        }
+      }
+    }
   }
 
   void _setShiftState(RawKeyEvent rawKey) {
@@ -650,23 +706,31 @@ class CellSelectionConstraint {
   final CellIndex topLeft;
   final CellIndex bottomRight;
   final CellIndex anchor;
+  final Set<CellIndex> foreignIndexes;
 
   CellIndex get bottomLeft => CellIndex(
       columnIndex: topLeft.columnIndex, rowIndex: bottomRight.rowIndex);
   CellIndex get topRight => CellIndex(
       columnIndex: bottomRight.columnIndex, rowIndex: topLeft.rowIndex);
 
-  CellSelectionConstraint({this.anchor, this.topLeft, this.bottomRight});
+  CellSelectionConstraint({
+    this.anchor,
+    this.topLeft,
+    this.bottomRight,
+    this.foreignIndexes = const <CellIndex>{},
+  });
 
   const CellSelectionConstraint.zero()
       : topLeft = const CellIndex.zero(),
         bottomRight = const CellIndex.zero(),
-        anchor = const CellIndex.zero();
+        anchor = const CellIndex.zero(),
+        foreignIndexes = const <CellIndex>{};
 
   CellSelectionConstraint.singleExclusive(CellIndex cellIndex)
       : topLeft = cellIndex,
         bottomRight = cellIndex,
-        anchor = cellIndex;
+        anchor = cellIndex,
+        foreignIndexes = const <CellIndex>{};
 
   CellSelectionConstraint adjustWith({CellIndex incoming}) {
     if (incoming == anchor) {
@@ -718,10 +782,42 @@ class CellSelectionConstraint {
     return CellSelectionConstraint.singleExclusive(incoming);
   }
 
-  bool get isSingleExclusive => topLeft == anchor && anchor == bottomRight;
+  CellSelectionConstraint withAddedForeignIndex(CellIndex foreignIndex) {
+    return _copyWith(
+      foreignIndexes: Set<CellIndex>.from(foreignIndexes)..add(foreignIndex),
+    );
+  }
+
+  CellSelectionConstraint withRemovedForeignIndex(CellIndex foreignIndex) {
+    return _copyWith(
+      foreignIndexes: Set<CellIndex>.from(foreignIndexes)..remove(foreignIndex),
+    );
+  }
+
+  CellSelectionConstraint _copyWith({
+    CellIndex topLeft,
+    CellIndex bottomRight,
+    CellIndex anchor,
+    Set<CellIndex> foreignIndexes,
+  }) {
+    return CellSelectionConstraint(
+      topLeft: topLeft ?? this.topLeft,
+      bottomRight: bottomRight ?? this.bottomRight,
+      anchor: anchor ?? this.anchor,
+      foreignIndexes: foreignIndexes ?? this.foreignIndexes,
+    );
+  }
+
+  bool get isSingleExclusive =>
+      topLeft == anchor && anchor == bottomRight && foreignIndexes.isEmpty;
 
   CellSelectionDirectionality getSelectionDirectionality() {
     if (isSingleExclusive) {
+      return CellSelectionDirectionality.none;
+    }
+
+    if (foreignIndexes.isNotEmpty) {
+      // Cell Selection direction is undefined with foreign indexes present.
       return CellSelectionDirectionality.none;
     }
 
@@ -740,6 +836,10 @@ class CellSelectionConstraint {
     }
 
     return CellSelectionDirectionality.none;
+  }
+
+  bool isForeignSelection(CellIndex index) {
+    return foreignIndexes.contains(index);
   }
 
   _RelativeAnchorLocation getRelativeAnchorLocation() {
@@ -764,6 +864,10 @@ class CellSelectionConstraint {
   }
 
   BorderState getBorderState(CellIndex cellIndex) {
+    if (isForeignSelection(cellIndex)) {
+      return BorderState();
+    }
+
     bool top = false;
     bool right = false;
     bool left = false;
@@ -806,7 +910,7 @@ class CellSelectionConstraint {
   Set<CellIndex> getAllPossibleIndexes() {
     final returnSet = <CellIndex>{};
 
-    if (topLeft == bottomRight) {
+    if (topLeft == bottomRight && foreignIndexes.isEmpty) {
       // Single selection.
       return <CellIndex>{
         CellIndex(columnIndex: topLeft.columnIndex, rowIndex: topLeft.rowIndex)
@@ -821,7 +925,7 @@ class CellSelectionConstraint {
           CellIndex(columnIndex: columnIndex, rowIndex: rowIndex)));
     }
 
-    return returnSet;
+    return returnSet..addAll(foreignIndexes);
   }
 
   List<int> _buildRange(int from, int to) {

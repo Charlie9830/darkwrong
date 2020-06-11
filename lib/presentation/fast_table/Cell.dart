@@ -39,19 +39,20 @@ class _CellState extends State<Cell> {
   Widget build(BuildContext context) {
     final CellSelectionProvider cellSelectionProvider =
         CellSelectionProvider.of(context);
-    final isSelected = cellSelectionProvider.selectionConstraint
-        .satisfiesConstraints(widget.index);
+    final selectionConstraint = cellSelectionProvider.selectionConstraint;
+    final isSelected = selectionConstraint.satisfiesConstraints(widget.index) ||
+        selectionConstraint.isForeignSelection(widget.index);
 
-    final isActive =
-        widget.index == cellSelectionProvider.selectionConstraint.anchor;
-
+    final isActive = widget.index == selectionConstraint.anchor;
     final isOpen = isActive && cellSelectionProvider.isActiveCellOpen;
-
-    final borderState =
-        cellSelectionProvider.selectionConstraint.getBorderState(widget.index);
-
+    final isForeign = selectionConstraint.isForeignSelection(widget.index);
+    final borderState = selectionConstraint.getBorderState(widget.index);
     final dividerColor = Theme.of(context).dividerColor;
     final borderAccentColor = Theme.of(context).accentColor;
+
+    final backgroundColor = isActive
+        ? Theme.of(context).focusColor
+        : isForeign ? Theme.of(context).focusColor: null;
 
     return Listener(
       onPointerDown: (_) {
@@ -70,7 +71,7 @@ class _CellState extends State<Cell> {
           child: Container(
             padding: EdgeInsets.only(left: 4, right: 4),
             decoration: BoxDecoration(
-                color: isActive ? Theme.of(context).colorScheme.surface : null,
+                color: backgroundColor,
                 border: Border(
                   right: BorderSide(
                       width: borderState.right && isSelected
