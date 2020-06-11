@@ -1,5 +1,7 @@
+import 'package:darkwrong/enums.dart';
 import 'package:darkwrong/presentation/fast_table/Cell.dart';
 import 'package:darkwrong/presentation/fast_table/CellSelectionProvider.dart';
+import 'package:darkwrong/presentation/fast_table/CellTextEditingController.dart';
 import 'package:darkwrong/presentation/fast_table/ColumnWidthsProvider.dart';
 import 'package:darkwrong/presentation/fast_table/FastRow.dart';
 import 'package:darkwrong/presentation/fast_table/TableHeader.dart';
@@ -8,8 +10,11 @@ import 'package:quiver/core.dart' show hash2;
 import 'package:flutter/material.dart';
 
 typedef void CellSelectionChangedCallback(Set<CellIndex> indexes);
-typedef void CellValueChangedCallback(String newValue,
-    CellChangeData activeCell, List<CellChangeData> otherCells);
+typedef void CellValueChangedCallback(
+    String newValue,
+    CellChangeData activeCell,
+    List<CellChangeData> otherCells,
+    CellSelectionDirectionality directionality);
 
 class FastTable extends StatefulWidget {
   final List<FastRow> rows;
@@ -34,7 +39,7 @@ class _FastTableState extends State<FastTable> {
   FocusNode _focusNode;
   ScrollController _scrollController;
   CellSelectionConstraint _selectionConstraint = CellSelectionConstraint.zero();
-  TextEditingController _openCellTextController;
+  CellTextEditingController _openCellTextController;
   bool _isActiveCellOpen = false;
   bool _isShiftKeyDown = false;
 
@@ -43,7 +48,7 @@ class _FastTableState extends State<FastTable> {
     _focusNode = FocusNode();
     _focusNode.requestFocus();
 
-    _openCellTextController = TextEditingController();
+    _openCellTextController = CellTextEditingController();
 
     _scrollController = ScrollController();
     super.initState();
@@ -144,8 +149,11 @@ class _FastTableState extends State<FastTable> {
       _isActiveCellOpen = false;
     });
 
-    _notifyCellValueChanges(newValue, selectionConstraint.anchor,
-        selectionConstraint.getAllPossibleIndexes());
+    _notifyCellValueChanges(
+        newValue,
+        selectionConstraint.anchor,
+        selectionConstraint.getAllPossibleIndexes(),
+        selectionConstraint.getSelectionDirectionality());
   }
 
   void _traverseActiveCell(TraversalDirection direction) {
@@ -491,7 +499,10 @@ class _FastTableState extends State<FastTable> {
   }
 
   void _notifyCellValueChanges(
-      String newValue, CellIndex anchor, Set<CellIndex> selectedCellIndex) {
+      String newValue,
+      CellIndex anchor,
+      Set<CellIndex> selectedCellIndexes,
+      CellSelectionDirectionality directionality) {
     if (widget.onCellValueChanged == null) {
       return;
     }
@@ -501,13 +512,14 @@ class _FastTableState extends State<FastTable> {
       id: _lookupCellId(anchor),
     );
 
-    final otherCells = selectedCellIndex.toSet()..remove(anchor);
+    final otherCells = selectedCellIndexes.toSet()..remove(anchor);
     final otherCellChangeData = otherCells
         .map((item) => CellChangeData(index: item, id: _lookupCellId(item)))
         .toList()
           ..sort();
 
-    widget.onCellValueChanged(newValue, activeCellChange, otherCellChangeData);
+    widget.onCellValueChanged(
+        newValue, activeCellChange, otherCellChangeData, directionality);
   }
 
   CellId _lookupCellId(CellIndex index) {
@@ -707,6 +719,28 @@ class CellSelectionConstraint {
   }
 
   bool get isSingleExclusive => topLeft == anchor && anchor == bottomRight;
+
+  CellSelectionDirectionality getSelectionDirectionality() {
+    if (isSingleExclusive) {
+      return CellSelectionDirectionality.none;
+    }
+
+    if (topLeft.rowIndex == bottomRight.rowIndex) {
+      // Single row Selection.
+      return anchor == topLeft
+          ? CellSelectionDirectionality.leftToRight
+          : CellSelectionDirectionality.rightToLeft;
+    }
+
+    if (topLeft.columnIndex == bottomRight.columnIndex) {
+      // Single Column Selection.
+      return anchor == topLeft
+          ? CellSelectionDirectionality.topToBottom
+          : CellSelectionDirectionality.bottomToTop;
+    }
+
+    return CellSelectionDirectionality.none;
+  }
 
   _RelativeAnchorLocation getRelativeAnchorLocation() {
     if (topLeft == bottomRight && topLeft == anchor) {

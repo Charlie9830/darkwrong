@@ -1,10 +1,12 @@
 import 'package:darkwrong/containers/HomeScreenContainer.dart';
+import 'package:darkwrong/enums.dart';
 import 'package:darkwrong/presentation/fast_table/Cell.dart';
 import 'package:darkwrong/presentation/fast_table/FastRow.dart';
 import 'package:darkwrong/presentation/fast_table/FastTable.dart';
 import 'package:darkwrong/presentation/fast_table/TableHeader.dart';
 import 'package:darkwrong/redux/AppStore.dart';
 import 'package:darkwrong/redux/state/AppState.dart';
+import 'package:darkwrong/util/valueEnumerators.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:flutter/material.dart';
 
@@ -39,17 +41,7 @@ class _DarkwrongState extends State<Darkwrong> {
             home: Scaffold(
               appBar: AppBar(title: Text('FastTable')),
               body: FastTable(
-                onCellValueChanged:
-                    (newValue, activeCellChangeData, otherCells) {
-                  setState(() {
-                    int enumerator = 1;
-                    _changedCells = Map<CellId, String>.from(_changedCells)
-                      ..addAll(Map<CellId, String>.fromEntries(otherCells.map(
-                          (item) =>
-                              MapEntry(item.id, '$newValue ${enumerator++}')))
-                        ..addAll({activeCellChangeData.id: newValue}));
-                  });
-                },
+                onCellValueChanged: _handleCellValueChanged,
                 onSelectionChanged: (Set<CellIndex> cellIndexes) {
                   setState(() {
                     _selectedCellIndexes = cellIndexes;
@@ -84,5 +76,76 @@ class _DarkwrongState extends State<Darkwrong> {
                 }),
               ),
             )));
+  }
+
+  void _handleCellValueChanged(
+      String newValue,
+      CellChangeData activeCellChangeData,
+      List<CellChangeData> otherCells,
+      CellSelectionDirectionality directionality) {
+    final cleanValue = newValue.replaceAll(RegExp(r'\+\+|\-\-/g'), '');
+
+    if (otherCells.isEmpty) {
+      // Single Update.
+      setState(() {
+        _changedCells = Map<CellId, String>.from(_changedCells)
+          ..update(activeCellChangeData.id, (value) => cleanValue,
+              ifAbsent: () => cleanValue);
+      });
+      return;
+    }
+
+    if (directionality == CellSelectionDirectionality.none) {
+      // Value enumeration unavailable.
+      final changedCells = Map<CellId, String>.from(_changedCells);
+      changedCells[activeCellChangeData.id] = cleanValue;
+
+      changedCells
+          .addEntries(otherCells.map((item) => MapEntry(item.id, cleanValue)));
+
+      setState(() {
+        _changedCells = changedCells;
+      });
+    }
+
+    if (directionality == CellSelectionDirectionality.leftToRight ||
+        directionality == CellSelectionDirectionality.topToBottom) {
+      final changes = [activeCellChangeData, ...otherCells];
+      final changedCells = Map<CellId, String>.from(_changedCells);
+
+      int count = 1;
+      for (var change in changes) {
+        final value = needsEnumeration(newValue)
+            ? enumerateValue(newValue, count++)
+            : newValue;
+
+        changedCells[change.id] = value;
+      }
+
+      setState(() {
+        _changedCells = changedCells;
+      });
+      return;
+    }
+
+    if (directionality == CellSelectionDirectionality.rightToLeft ||
+        directionality == CellSelectionDirectionality.bottomToTop) {
+      final changes = [...otherCells, activeCellChangeData].reversed;
+      final changedCells = Map<CellId, String>.from(_changedCells);
+
+      int count = 1;
+      for (var change in changes) {
+        final value = needsEnumeration(newValue)
+            ? enumerateValue(newValue, count++)
+            : newValue;
+
+        changedCells[change.id] = value;
+      }
+
+      setState(() {
+        _changedCells = changedCells;
+      });
+      return;
+    }
   }
 }

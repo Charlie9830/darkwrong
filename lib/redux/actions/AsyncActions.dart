@@ -15,6 +15,7 @@ import 'package:darkwrong/redux/state/AppState.dart';
 import 'package:darkwrong/redux/state/WorksheetState.dart';
 import 'package:darkwrong/util/getCellId.dart';
 import 'package:darkwrong/util/getUid.dart';
+import 'package:darkwrong/util/valueEnumerators.dart';
 import 'package:redux/redux.dart';
 import 'package:redux_thunk/redux_thunk.dart';
 
@@ -78,8 +79,8 @@ ThunkAction<AppState> addNewFixtures(NewFixturesRequest request) {
 
         // Enumerate value if it needs to be enumerated.
         // TODO: value became unused when switching to new Field System.
-        final value = _needsEnumeration(rawValue)
-            ? _enumerateValue(rawValue, count)
+        final value = needsEnumeration(rawValue)
+            ? enumerateValue(rawValue, count)
             : rawValue;
 
         // Check if the newValues key already exists within fieldValues.
@@ -106,57 +107,6 @@ ThunkAction<AppState> addNewFixtures(NewFixturesRequest request) {
         fieldValues: store.state.fixtureState.fieldValues
             .copyWithNewValues(updatedFieldValues)));
   };
-}
-
-String _enumerateValue(String value, int count) {
-  // Positive Enumeration
-  if (value.contains(positiveValueEnumerationIndicator)) {
-    final int enumerationStepQuanity =
-        _getEnumerationStepQuantity(value, FieldEnumeration.postive);
-    final int baseNumber = int.tryParse(
-        value.substring(0, value.indexOf(positiveValueEnumerationIndicator)));
-    return (baseNumber * count * enumerationStepQuanity).toString();
-  }
-
-  // Negative enumeration.
-  if (value.contains(negativeValueEnumerationIndicator)) {
-    final int enumerationStepQuanity =
-        _getEnumerationStepQuantity(value, FieldEnumeration.negative);
-
-    final int baseNumber = int.tryParse(
-        value.substring(0, value.indexOf(negativeValueEnumerationIndicator)));
-    return (baseNumber * count * enumerationStepQuanity).toString();
-  }
-
-  return 'fail';
-}
-
-int _getEnumerationStepQuantity(
-    String value, FieldEnumeration fieldEnumeration) {
-  if (fieldEnumeration == FieldEnumeration.none) {
-    return 1;
-  }
-
-  final String enumerationIndicator =
-      fieldEnumeration == FieldEnumeration.postive
-          ? positiveValueEnumerationIndicator
-          : negativeValueEnumerationIndicator;
-
-  final stepQuanitySection =
-      value.substring(value.indexOf(enumerationIndicator));
-
-  return int.tryParse(stepQuanitySection) ?? 1;
-}
-
-bool _needsEnumeration(String value) {
-  // Checks if value provided contains a '++', then if '++' is removed checks if only digits are left over. Repeats process again for '--'.
-  final regex = RegExp(r"^\d+$"); // Match only Digits.
-  return (value.contains(positiveValueEnumerationIndicator) &&
-          regex.hasMatch(
-              value.replaceAll(positiveValueEnumerationIndicator, ''))) ||
-      (value.contains(negativeValueEnumerationIndicator) &&
-          regex.hasMatch(
-              value.replaceAll(negativeValueEnumerationIndicator, '')));
 }
 
 ThunkAction<AppState> removeFixtures(Set<String> fixtureIds) {

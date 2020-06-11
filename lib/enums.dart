@@ -28,3 +28,11 @@ enum MetadataEncoding {
   number,
   instrumentType,
 }
+
+enum CellSelectionDirectionality {
+  leftToRight,
+  rightToLeft,
+  topToBottom,
+  bottomToTop,
+  none,
+}
