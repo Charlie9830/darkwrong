@@ -1,15 +1,8 @@
-import 'dart:math';
-
 import 'package:darkwrong/config/FieldMetadataDescriptors.dart';
 import 'package:darkwrong/enums.dart';
 import 'package:darkwrong/mock_data/mockFieldNames.dart';
 import 'package:darkwrong/models/Field.dart';
-import 'package:darkwrong/models/field_values/FieldValue.dart';
-import 'package:darkwrong/models/FieldValueKey.dart';
-import 'package:darkwrong/models/FieldValuesStore.dart';
-import 'package:darkwrong/models/Fixture.dart';
 import 'package:darkwrong/redux/state/AppState.dart';
-import 'package:darkwrong/redux/state/FixtureState.dart';
 import 'package:darkwrong/util/getUid.dart';
 import 'package:random_words/random_words.dart';
 

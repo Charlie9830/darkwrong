@@ -5,7 +5,6 @@ import 'package:darkwrong/containers/WorksheetContainer.dart';
 import 'package:darkwrong/keys.dart';
 import 'package:darkwrong/presentation/DarkwrongScaffold/DarkwrongScaffold.dart';
 import 'package:darkwrong/presentation/FixtureEditTextField.dart';
-import 'package:darkwrong/presentation/field_editor/FieldAndValuesEditor.dart';
 import 'package:darkwrong/presentation/tool_rail/ToolRail.dart';
 import 'package:darkwrong/presentation/tool_rail/ToolRailDrawerScaffold.dart';
 import 'package:darkwrong/presentation/tool_rail/ToolRailOption.dart';

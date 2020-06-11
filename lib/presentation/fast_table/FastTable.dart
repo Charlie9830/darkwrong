@@ -1,5 +1,4 @@
 import 'package:darkwrong/enums.dart';
-import 'package:darkwrong/presentation/fast_table/BorderState.dart';
 import 'package:darkwrong/presentation/fast_table/CellChangeData.dart';
 import 'package:darkwrong/presentation/fast_table/CellId.dart';
 import 'package:darkwrong/presentation/fast_table/CellIndex.dart';

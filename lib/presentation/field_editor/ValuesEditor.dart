@@ -1,4 +1,3 @@
-import 'package:darkwrong/enums.dart';
 import 'package:darkwrong/models/Field.dart';
 import 'package:darkwrong/models/FieldValueKey.dart';
 import 'package:darkwrong/models/FieldValuesStore.dart';
@@ -9,7 +8,6 @@ import 'package:darkwrong/presentation/fast_table/FastRow.dart';
 import 'package:darkwrong/presentation/fast_table/FastTable.dart';
 import 'package:darkwrong/presentation/fast_table/TableHeader.dart';
 import 'package:darkwrong/presentation/field_editor/FieldSelector.dart';
-import 'package:darkwrong/util/getCellId.dart';
 import 'package:darkwrong/view_models/FieldAndValuesEditorViewModel.dart';
 import 'package:flutter/material.dart';
 

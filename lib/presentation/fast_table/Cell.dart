@@ -2,9 +2,7 @@ import 'package:darkwrong/constants.dart';
 import 'package:darkwrong/presentation/fast_table/CellId.dart';
 import 'package:darkwrong/presentation/fast_table/CellIndex.dart';
 import 'package:darkwrong/presentation/fast_table/CellSelectionProvider.dart';
-import 'package:darkwrong/presentation/fast_table/BorderState.dart';
 import 'package:flutter/material.dart';
-import 'package:quiver/core.dart' show hash2;
 
 typedef void CellClickedCallback(int xIndex, int yIndex);
 typedef void CellContentsChangedCallback(String newValue);

@@ -1,6 +1,5 @@
 import 'package:darkwrong/models/Field.dart';
 import 'package:darkwrong/presentation/field_editor/FieldAndValuesEditor.dart';
-import 'package:darkwrong/presentation/field_editor/FieldListTile.dart';
 import 'package:darkwrong/redux/actions/AsyncActions.dart';
 import 'package:darkwrong/redux/actions/SyncActions.dart';
 import 'package:darkwrong/redux/state/AppState.dart';
