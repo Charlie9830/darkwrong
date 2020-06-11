@@ -11,7 +11,7 @@ import 'package:darkwrong/presentation/fast_table/TableHeader.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 
-typedef void CellSelectionChangedCallback(Set<CellIndex> indexes);
+typedef void CellSelectionChangedCallback(Set<CellId> ids);
 typedef void CellValueChangedCallback(
     String newValue,
     CellChangeData activeCell,
@@ -566,7 +566,8 @@ class _FastTableState extends State<FastTable> {
 
   void _notifyCellSelections(Set<CellIndex> cellIndexes) {
     if (widget.onSelectionChanged != null) {
-      widget.onSelectionChanged(cellIndexes);
+      widget.onSelectionChanged(
+          cellIndexes.map((index) => _lookupCellId(index)).toSet());
     }
   }
 
@@ -640,4 +641,3 @@ class _FastTableState extends State<FastTable> {
     super.dispose();
   }
 }
-
