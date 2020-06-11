@@ -1,5 +1,5 @@
 import 'package:darkwrong/presentation/fast_table/CellIndex.dart';
-import 'package:darkwrong/presentation/fast_table/FastTable.dart';
+import 'package:darkwrong/presentation/fast_table/CellSelectionConstraint.dart';
 import 'package:flutter/material.dart';
 
 typedef void CellClickedCallback(CellIndex index);

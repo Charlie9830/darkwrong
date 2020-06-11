@@ -36,3 +36,11 @@ enum CellSelectionDirectionality {
   bottomToTop,
   none,
 }
+
+enum RelativeAnchorLocation {
+  topLeft,
+  topRight,
+  bottomRight,
+  bottomLeft,
+  centered
+}
