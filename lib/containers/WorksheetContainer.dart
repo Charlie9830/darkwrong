@@ -1,4 +1,6 @@
 import 'package:darkwrong/presentation/Worksheet.dart';
+import 'package:darkwrong/presentation/fast_table/CellId.dart';
+import 'package:darkwrong/redux/actions/AsyncActions.dart';
 import 'package:darkwrong/redux/actions/SyncActions.dart';
 import 'package:darkwrong/redux/state/AppState.dart';
 import 'package:darkwrong/view_models/WorksheetViewModel.dart';
@@ -19,9 +21,12 @@ class WorksheetContainer extends StatelessWidget {
 
   WorksheetViewModel _converter(Store<AppState> store, BuildContext context) {
     return WorksheetViewModel(
-      state: store.state.worksheetState,
-      onCellSelect: (String rowId, String columnId, String cellId) => store.dispatch(SelectWorksheetCell(rowId: rowId, columnId: columnId, cellId: cellId)),
-      onCellDeselect: (String rowId, String columnId, String cellId) => store.dispatch(DeselectWorksheetCell(rowId: rowId, columnId: columnId, cellId: cellId))
-    );
+        state: store.state.worksheetState,
+        onCellSelectionChanged: (Set<CellId> cellIds) =>
+            store.dispatch(SetWorksheetSelectedCellIds(selectedIds: cellIds)),
+        onCellValueChanged: (newValue, activeCellChange, otherCellChanges,
+                directionality) =>
+            store.dispatch(updateFixtureValues(
+                newValue, activeCellChange, otherCellChanges, directionality)));
   }
 }

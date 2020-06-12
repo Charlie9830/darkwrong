@@ -46,12 +46,6 @@ class HomeScreen extends StatelessWidget {
                         value: allFieldQueryId,
                       )),
           ),
-          Expanded(
-            child: FixtureEditTextField(
-              enabled: viewModel.isFixtureEditEnabled,
-              onSubmitted: (newValue) => viewModel.onValueUpdate(newValue),
-            ),
-          ),
           IconButton(
             icon: Icon(Icons.delete),
             onPressed: () => viewModel.onDeleteFixtures(),

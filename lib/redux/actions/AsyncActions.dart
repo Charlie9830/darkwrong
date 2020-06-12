@@ -1,3 +1,4 @@
+import 'package:darkwrong/enums.dart';
 import 'package:darkwrong/models/Field.dart';
 import 'package:darkwrong/models/field_values/FieldValue.dart';
 import 'package:darkwrong/models/FieldValueKey.dart';
@@ -8,6 +9,8 @@ import 'package:darkwrong/models/SelectedCell.dart';
 import 'package:darkwrong/models/WorksheetCell.dart';
 import 'package:darkwrong/models/WorksheetHeader.dart';
 import 'package:darkwrong/models/WorksheetRow.dart';
+import 'package:darkwrong/presentation/fast_table/CellChangeData.dart';
+import 'package:darkwrong/presentation/fast_table/CellId.dart';
 import 'package:darkwrong/redux/actions/SyncActions.dart';
 import 'package:darkwrong/redux/state/AppState.dart';
 import 'package:darkwrong/redux/state/WorksheetState.dart';
@@ -138,48 +141,49 @@ ThunkAction<AppState> removeFieldValueQueries(
 }
 
 ThunkAction<AppState> updateFixtureValues(
-    Map<String, SelectedCellModel> selectedCells, String incomingValue) {
+    String newValue,
+    CellChangeData activeCellChangeData,
+    List<CellChangeData> otherCells,
+    CellSelectionDirectionality directionality) {
   return (Store<AppState> store) async {
-    // Iterate through selectedCells, build new updated fixtures and fieldValues as required.
-    // If a matching value doesn't already exist within fieldValues, create it. Then attach the fixture to that value.
     final fieldValues = store.state.fixtureState.fieldValues;
     final updatedFieldValues = <String, Map<FieldValueKey, FieldValue>>{};
     final updatedFixtures = <String, FixtureModel>{};
+    final cellChanges = [activeCellChangeData, ...otherCells];
 
-    for (var cell in selectedCells.values) {
-      final fixtureId = cell.rowId;
-      final fieldId = cell.columnId;
+    for (var cellChange in cellChanges) {
+      final fixtureId = cellChange.id.rowId;
+      final fieldId = cellChange.id.columnId;
       final fixture = store.state.fixtureState.fixtures[fixtureId];
       final oldValue =
           fieldValues.getValue(fieldId, fixture.valueKeys[fieldId]);
       final associatedField = store.state.fixtureState.fields[fieldId];
-      final newValue = FieldValue(
-        primaryValue: incomingValue,
+      final newFieldValue = FieldValue(
+        primaryValue: newValue,
         type: associatedField.type,
       );
 
-      if (oldValue.asText == incomingValue) {
-        // No update required.
-        continue;
+      if (oldValue.asText == newValue) {
+        return;
       }
 
       // If fieldValues doesn't already contain the new value we add it.
-      if (fieldValues.containsValue(fieldId, newValue.key) == false) {
+      if (fieldValues.containsValue(fieldId, newFieldValue.key) == false) {
         // Ensure a map exists at the fieldId location first.
         if (updatedFieldValues[fieldId] == null) {
           updatedFieldValues[fieldId] = <FieldValueKey, FieldValue>{};
         }
 
-        updatedFieldValues[fieldId][newValue.key] = newValue;
+        updatedFieldValues[fieldId][newFieldValue.key] = newFieldValue;
       }
 
       // Create a new updated Fixture or use an existing one if we have already updated this fixture previously in the loop.
       if (updatedFixtures.containsKey(fixtureId)) {
         updatedFixtures[fixtureId] = updatedFixtures[fixtureId]
-            .copyWithUpdatedValueKey(fieldId, newValue.key);
+            .copyWithUpdatedValueKey(fieldId, newFieldValue.key);
       } else {
         updatedFixtures[fixtureId] =
-            fixture.copyWithUpdatedValueKey(fieldId, newValue.key);
+            fixture.copyWithUpdatedValueKey(fieldId, newFieldValue.key);
       }
     }
 

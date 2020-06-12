@@ -5,6 +5,7 @@ import 'package:darkwrong/models/SelectedCell.dart';
 import 'package:darkwrong/models/WorksheetCell.dart';
 import 'package:darkwrong/models/WorksheetHeader.dart';
 import 'package:darkwrong/models/WorksheetRow.dart';
+import 'package:darkwrong/presentation/fast_table/CellId.dart';
 import 'package:darkwrong/redux/actions/SyncActions.dart';
 import 'package:darkwrong/redux/state/WorksheetState.dart';
 import 'package:darkwrong/util/getCellId.dart';
@@ -17,21 +18,9 @@ WorksheetState worksheetStateReducer(WorksheetState state, dynamic action) {
     );
   }
 
-  if (action is SelectWorksheetCell) {
+  if (action is SetWorksheetSelectedCellIds) {
     return state.copyWith(
-        selectedCells: Map<String, SelectedCellModel>.from(state.selectedCells)
-          ..addAll({
-            action.cellId: SelectedCellModel(
-              rowId: action.rowId,
-              columnId: action.columnId,
-            )
-          }));
-  }
-
-  if (action is DeselectWorksheetCell) {
-    return state.copyWith(
-      selectedCells: Map<String, SelectedCellModel>.from(state.selectedCells)
-        ..removeWhere((key, value) => key == action.cellId),
+      selectedCellIds: action.selectedIds,
     );
   }
 
@@ -65,7 +54,7 @@ WorksheetState worksheetStateReducer(WorksheetState state, dynamic action) {
 
     return state.copyWith(
       rows: rows,
-      selectedCells: <String, SelectedCellModel>{},
+      selectedCellIds: <CellId>{},
     );
   }
 

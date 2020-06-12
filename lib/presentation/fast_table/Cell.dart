@@ -14,15 +14,8 @@ class Cell extends StatefulWidget {
   final String text;
   final CellIndex index;
   final CellId id;
-  final CellClickedCallback onClick;
-  final CellContentsChangedCallback onChanged;
 
-  const Cell(this.text,
-      {Key key,
-      @required this.index,
-      @required this.id,
-      this.onClick,
-      this.onChanged})
+  const Cell(this.text, {Key key, @required this.index, @required this.id})
       : super(key: key);
 
   @override
@@ -52,7 +45,7 @@ class _CellState extends State<Cell> {
 
     final backgroundColor = isActive
         ? Theme.of(context).focusColor
-        : isForeign ? Theme.of(context).focusColor: null;
+        : isForeign ? Theme.of(context).focusColor : null;
 
     return Listener(
       onPointerDown: (_) {
@@ -174,4 +167,3 @@ class _OpenState extends State<_Open> {
     );
   }
 }
-

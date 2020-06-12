@@ -61,37 +61,44 @@ class _FastTableState extends State<FastTable> {
   Widget build(BuildContext context) {
     final _columnWidths = widget.headers.map((item) => item.width).toList();
 
-    return Focus(
-      focusNode: _focusNode,
-      onKey: _handleOnKey,
-      child: Column(
-        children: [
-          Container(
-            color: Theme.of(context).colorScheme.surface,
-            child: Row(
-              children: widget.headers,
+    return Listener(
+      onPointerDown: (_) {
+        if (_isActiveCellOpen == false) {
+          _focusNode.requestFocus();
+        }
+      },
+      child: Focus(
+        focusNode: _focusNode,
+        onKey: _handleOnKey,
+        child: Column(
+          children: [
+            Container(
+              color: Theme.of(context).colorScheme.surface,
+              child: Row(
+                children: widget.headers,
+              ),
             ),
-          ),
-          Expanded(
-            child: ListView.builder(
-                controller: _scrollController,
-                itemCount: widget.rows.length,
-                itemBuilder: (context, index) {
-                  return CellSelectionProvider(
-                    isActiveCellOpen: _isActiveCellOpen,
-                    openCellTextController: _openCellTextController,
-                    onCellClicked: _handleCellClicked,
-                    onAdjustmentRequested: _handleCellAdjustmentRequested,
-                    selectionConstraint: _selectionConstraint,
-                    child: ColumnWidthsProvider(
-                      key: widget.rows[index].key,
-                      widths: _columnWidths,
-                      child: widget.rows[index],
-                    ),
-                  );
-                }),
-          ),
-        ],
+            Expanded(
+              child: ListView.builder(
+                  controller: _scrollController,
+                  itemCount: widget.rows.length,
+                  itemBuilder: (context, index) {
+                    return CellSelectionProvider(
+                      isActiveCellOpen: _isActiveCellOpen,
+                      openCellTextController: _openCellTextController,
+                      onCellClicked: _handleCellClicked,
+                      onAdjustmentRequested: _handleCellAdjustmentRequested,
+                      selectionConstraint: _selectionConstraint,
+                      child: ColumnWidthsProvider(
+                        key: widget.rows[index].key,
+                        widths: _columnWidths,
+                        child: widget.rows[index],
+                      ),
+                    );
+                  }),
+            ),
+          ],
+        ),
       ),
     );
   }

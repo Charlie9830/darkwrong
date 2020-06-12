@@ -8,7 +8,6 @@ class HomeScreenViewModel {
   final WorksheetLeftRailViewModel worksheetLeftRailViewModel;
   final dynamic onDebugButtonPressed;
   final dynamic onAddFixtureButtonPressed;
-  final dynamic onValueUpdate;
   final dynamic onFieldFilterSelect;
   final dynamic onDeleteFixtures;
 
@@ -19,7 +18,6 @@ class HomeScreenViewModel {
     this.worksheetLeftRailViewModel,
     this.onDebugButtonPressed,
     this.onAddFixtureButtonPressed,
-    this.onValueUpdate,
     this.onFieldFilterSelect,
     this.onDeleteFixtures,
   });

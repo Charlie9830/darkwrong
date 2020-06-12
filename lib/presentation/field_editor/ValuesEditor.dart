@@ -4,6 +4,8 @@ import 'package:darkwrong/models/FieldValuesStore.dart';
 import 'package:darkwrong/models/MetadataDescriptor.dart';
 import 'package:darkwrong/models/field_values/FieldValue.dart';
 import 'package:darkwrong/presentation/fast_table/Cell.dart';
+import 'package:darkwrong/presentation/fast_table/CellId.dart';
+import 'package:darkwrong/presentation/fast_table/CellIndex.dart';
 import 'package:darkwrong/presentation/fast_table/FastRow.dart';
 import 'package:darkwrong/presentation/fast_table/FastTable.dart';
 import 'package:darkwrong/presentation/fast_table/TableHeader.dart';
@@ -79,40 +81,8 @@ class _ValueTable extends StatelessWidget {
         field.valueMetadataDescriptors.values.toList();
     final List<FieldValue> values =
         fieldValues.getFieldContents(field.uid).values.toList();
-
-    return FastTable(
-      headers: _buildDescriptorHeaders(descriptors)
-        ..insert(
-            0,
-            TableHeader(
-              Text('Value'),
-              width: 100,
-            )),
-      rows: values
-          .map((value) => FastRow(
-                key: ValueKey(value.key),
-                children: descriptors
-                    .map(
-                      (descriptor) => Cell(
-                        fieldValues
-                            .getMetadataValue(
-                                value.key, descriptor.propertyName)
-                            ?.primaryValue,
-                        onChanged: (newValue) {
-                          onMetadataValueChanged(
-                              value.key, descriptor.propertyName, newValue);
-                        },
-                      ),
-                    )
-                    .toList()
-                      ..insert(
-                          0,
-                          Cell(value.asText,
-                              onChanged: (newValue) =>
-                                  onFieldValueChanged(value.key, newValue))),
-              ))
-          .toList(),
-    );
+    int rowIndex = 0;
+    return Text('Finish Me');
   }
 
   List<TableHeader> _buildDescriptorHeaders(

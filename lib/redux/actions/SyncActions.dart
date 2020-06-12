@@ -2,6 +2,7 @@ import 'package:darkwrong/enums.dart';
 import 'package:darkwrong/models/FieldValueKey.dart';
 import 'package:darkwrong/models/FieldValuesStore.dart';
 import 'package:darkwrong/models/Fixture.dart';
+import 'package:darkwrong/presentation/fast_table/CellId.dart';
 import 'package:darkwrong/presentation/field_editor/FieldListTile.dart';
 import 'package:darkwrong/redux/state/WorksheetState.dart';
 
@@ -174,26 +175,10 @@ class AddBlankFixture {
   AddBlankFixture();
 }
 
-class SelectWorksheetCell {
-  final String cellId;
-  final String rowId;
-  final String columnId;
+class SetWorksheetSelectedCellIds {
+  final Set<CellId> selectedIds;
 
-  SelectWorksheetCell({
-    this.cellId,
-    this.rowId,
-    this.columnId,
-  });
-}
-
-class DeselectWorksheetCell {
-  final String cellId;
-  final String rowId;
-  final String columnId;
-
-  DeselectWorksheetCell({
-    this.cellId,
-    this.rowId,
-    this.columnId,
+  SetWorksheetSelectedCellIds({
+    this.selectedIds,
   });
 }
