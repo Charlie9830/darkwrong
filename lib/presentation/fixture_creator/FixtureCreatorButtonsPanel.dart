@@ -2,13 +2,13 @@ import 'package:darkwrong/presentation/fixture_creator/FixtureCreatorMultiplier.
 import 'package:flutter/material.dart';
 
 class FixtureCreatorButtonsPanel extends StatelessWidget {
-  final dynamic onMultiplierChanged;
+  final TextEditingController multiplierController;
   final dynamic onAddButtonPressed;
   final dynamic onCancelButtonPressed;
 
   const FixtureCreatorButtonsPanel(
       {Key key,
-      this.onMultiplierChanged,
+      this.multiplierController,
       this.onAddButtonPressed,
       this.onCancelButtonPressed})
       : super(key: key);
@@ -17,13 +17,12 @@ class FixtureCreatorButtonsPanel extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.end,
+      crossAxisAlignment: CrossAxisAlignment.end,
       children: [
         Padding(
           padding: const EdgeInsets.only(top: 8.0, bottom: 8.0),
           child: FixtureCreatorMultiplier(
-            defaultValue: '',
-            onChanged: onMultiplierChanged,
+            controller: multiplierController,
           ),
         ),
         Row(

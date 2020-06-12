@@ -28,5 +28,11 @@ WorksheetNavigationState worksheetNavigationStateReducer(
     return state.copyWith(isLeftRailPersistent: action.persist);
   }
 
+  if (action is AddNewFixtures) {
+    return state.copyWith(
+      selectedLeftRailTool: state.isLeftRailPersistent ? state.selectedLeftRailTool : WorksheetToolOptions.noSelection,
+    );
+  }
+
   return state;
 }

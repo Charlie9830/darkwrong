@@ -65,7 +65,7 @@ class HomeScreen extends StatelessWidget {
       persistentLeftRail: viewModel.worksheetLeftRailViewModel.isPersistent,
       onLeftRailPersistButtonPressed: viewModel.worksheetLeftRailViewModel.onPersistButtonPressed,
       drawerClosedWidth: 40.0,
-      drawerOpenedWidth: 900.0,
+      drawerOpenedWidth: 400.0,
 
     );
   }

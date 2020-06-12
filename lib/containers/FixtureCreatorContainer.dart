@@ -1,4 +1,3 @@
-import 'package:darkwrong/models/NewFixturesRequest.dart';
 import 'package:darkwrong/presentation/fixture_creator/FixtureCreator.dart';
 import 'package:darkwrong/redux/state/AppState.dart';
 import 'package:darkwrong/view_models/FixtureCreatorViewModel.dart';
@@ -18,12 +17,13 @@ class FixtureCreatorContainer extends StatelessWidget {
     );
   }
 
-  FixtureCreatorViewModel _converter(Store<AppState> store, BuildContext context) {
+  FixtureCreatorViewModel _converter(
+      Store<AppState> store, BuildContext context) {
     final fixtureState = store.state.fixtureState;
     return FixtureCreatorViewModel(
-      fieldValues: fixtureState.fieldValues,
-      fields: fixtureState.fields.values.toList(),
-      onAddButtonPressed: (NewFixturesRequest request) => store.dispatch(addNewFixtures(request))
-    );
+        fieldValues: fixtureState.fieldValues,
+        fields: fixtureState.fields.values.toList(),
+        onAddButtonPressed: (Map<String, String> values, int multiplier) =>
+            store.dispatch(addNewFixtures(values, multiplier)));
   }
 }

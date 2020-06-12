@@ -51,3 +51,11 @@ bool needsEnumeration(String value) {
           regex.hasMatch(
               value.replaceAll(negativeValueEnumerationIndicator, '')));
 }
+
+String enumerateValueIfRequired(String value, int count) {
+  if (needsEnumeration(value)) {
+    return enumerateValue(value, count);
+  } else {
+    return value;
+  }
+}

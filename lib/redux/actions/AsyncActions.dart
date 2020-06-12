@@ -5,7 +5,6 @@ import 'package:darkwrong/models/field_values/FieldValue.dart';
 import 'package:darkwrong/models/FieldValueKey.dart';
 import 'package:darkwrong/models/FieldValuesStore.dart';
 import 'package:darkwrong/models/Fixture.dart';
-import 'package:darkwrong/models/NewFixturesRequest.dart';
 import 'package:darkwrong/models/WorksheetCell.dart';
 import 'package:darkwrong/models/WorksheetHeader.dart';
 import 'package:darkwrong/models/WorksheetRow.dart';
@@ -23,15 +22,12 @@ ThunkAction<AppState> initMockData() {
   return (Store<AppState> store) async {
     store.dispatch(InitMockData());
 
-    store.dispatch(addNewFixtures(NewFixturesRequest(
-        existingValueKeys: <String, FieldValueKey>{},
-        multiplier: 10,
-        newValues: <String, String>{
-          'instrument-name': 'Martin Mac Viper',
-          'unit-number': '1++',
-          'channel': '101++',
-          'position': 'Advance'
-        })));
+    store.dispatch(addNewFixtures(<String, String>{
+      'instrument-name': 'Martin Mac Viper',
+      'unit-number': '1++',
+      'channel': '101++',
+      'position': 'Advance'
+    }, 10));
 
     store.dispatch(buildWorksheet());
   };
@@ -99,53 +95,41 @@ ThunkAction<AppState> updateFieldValue(
   };
 }
 
-ThunkAction<AppState> addNewFixtures(NewFixturesRequest request) {
+ThunkAction<AppState> addNewFixtures(
+    Map<String, String> enteredValues, int enteredMultiplier) {
   return (Store<AppState> store) async {
-    if (request.isBlank) {
+    if (enteredValues.values
+        .every((element) => element == null || element == '')) {
       return;
     }
 
     FieldValuesStore existingFieldValues = store.state.fixtureState.fieldValues;
-    // Process the request object into new Fixtures.
     Map<String, FixtureModel> fixtures = {};
     Map<String, Map<FieldValueKey, FieldValue>> updatedFieldValues = {};
 
-    final int multiplier = request.multiplier == 0 ? 1 : request.multiplier;
+    final int multiplier = enteredMultiplier == 0 ? 1 : enteredMultiplier;
     for (int count = 1; count <= multiplier; count++) {
-      // Add existingValues.
-      final valueKeys =
-          Map<String, FieldValueKey>.from(request.existingValueKeys);
+      final Map<String, FieldValueKey> fixtureValueKeys = {};
 
-      // Add new Values (Checking that they are indeed still new even after enumeration).
-      for (var entry in request.newValues.entries) {
-        // TODO: The code in this loop seems to be very similar to the code inside the UpdateFixturesAndFields reducer.
-        final fieldId = entry.key;
-        final associatedField = store.state.fixtureState.fields[fieldId];
-        final rawValue = entry.value;
-        final newValue =
-            FieldValue(primaryValue: rawValue, type: associatedField.type);
+      enteredValues.forEach((fieldId, rawValue) {
+        final currentValue = enumerateValueIfRequired(rawValue, count);
+        final fieldValueKey = FieldValueKey.fromText(currentValue);
 
-        // Enumerate value if it needs to be enumerated.
-        // TODO: value became unused when switching to new Field System.
-        final value = needsEnumeration(rawValue)
-            ? enumerateValue(rawValue, count)
-            : rawValue;
-
-        // Check if the newValues key already exists within fieldValues.
-        if (existingFieldValues.containsValue(fieldId, newValue.key) == false) {
-          // It is definately a new value, add it to updatedFieldValues.
-          if (updatedFieldValues[fieldId] == null) {
-            updatedFieldValues[fieldId] = <FieldValueKey, FieldValue>{};
-          }
-          updatedFieldValues[fieldId][newValue.key] = newValue;
+        if (existingFieldValues.containsValue(fieldId, fieldValueKey) ==
+            false) {
+          // An FieldValue does not already exist. So we need to create one.
+          updatedFieldValues.putIfAbsent(
+              fieldId, () => <FieldValueKey, FieldValue>{});
+          updatedFieldValues[fieldId][fieldValueKey] = FieldValue(
+              primaryValue: currentValue,
+              type: store.state.fixtureState.fields[fieldId].type);
         }
 
-        // Add a reference to the fixture valueKeys.
-        valueKeys[fieldId] = newValue.key;
-      }
+        // Attach Field reference to Fixture's valueKeys.
+        fixtureValueKeys[fieldId] = fieldValueKey;
+      });
 
-      final fixture = FixtureModel(uid: getUid(), valueKeys: valueKeys);
-
+      final fixture = FixtureModel(uid: getUid(), valueKeys: fixtureValueKeys);
       // Add to fixtures.
       fixtures[fixture.uid] = fixture;
     }
