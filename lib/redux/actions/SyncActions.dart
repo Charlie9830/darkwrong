@@ -1,4 +1,5 @@
 import 'package:darkwrong/enums.dart';
+import 'package:darkwrong/models/Field.dart';
 import 'package:darkwrong/models/FieldValueKey.dart';
 import 'package:darkwrong/models/FieldValuesStore.dart';
 import 'package:darkwrong/models/Fixture.dart';
@@ -54,10 +55,11 @@ class DeleteCustomField {
 }
 
 class AddCustomField {
-  final String fieldName;
-  final ValueEncoding encoding;
+  final FieldModel newField;
 
-  AddCustomField({this.fieldName, this.encoding});
+  AddCustomField({
+    this.newField,
+  });
 }
 
 class UpdateField {
@@ -91,6 +93,16 @@ class AddNewFixtures {
   final FieldValuesStore fieldValues;
 
   AddNewFixtures({this.fixtures, this.fieldValues});
+}
+
+class SetDisplayedFields {
+  final List<FieldModel> displayedFields;
+  final Map<String, int> maxFieldLengths;
+
+  SetDisplayedFields({
+    this.displayedFields,
+    this.maxFieldLengths,
+  });
 }
 
 class UpdateFixturesAndFieldValues {

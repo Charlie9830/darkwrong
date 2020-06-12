@@ -1,3 +1,4 @@
+import 'package:darkwrong/config/FieldMetadataDescriptors.dart';
 import 'package:darkwrong/enums.dart';
 import 'package:darkwrong/models/Field.dart';
 import 'package:darkwrong/models/field_values/FieldValue.dart';
@@ -5,12 +6,10 @@ import 'package:darkwrong/models/FieldValueKey.dart';
 import 'package:darkwrong/models/FieldValuesStore.dart';
 import 'package:darkwrong/models/Fixture.dart';
 import 'package:darkwrong/models/NewFixturesRequest.dart';
-import 'package:darkwrong/models/SelectedCell.dart';
 import 'package:darkwrong/models/WorksheetCell.dart';
 import 'package:darkwrong/models/WorksheetHeader.dart';
 import 'package:darkwrong/models/WorksheetRow.dart';
 import 'package:darkwrong/presentation/fast_table/CellChangeData.dart';
-import 'package:darkwrong/presentation/fast_table/CellId.dart';
 import 'package:darkwrong/redux/actions/SyncActions.dart';
 import 'package:darkwrong/redux/state/AppState.dart';
 import 'package:darkwrong/redux/state/WorksheetState.dart';
@@ -19,6 +18,36 @@ import 'package:darkwrong/util/getUid.dart';
 import 'package:darkwrong/util/valueEnumerators.dart';
 import 'package:redux/redux.dart';
 import 'package:redux_thunk/redux_thunk.dart';
+
+ThunkAction<AppState> addCustomField(String fieldName, ValueEncoding encoding) {
+  return (Store<AppState> store) async {
+    final newField = FieldModel(
+      name: fieldName,
+      encoding: encoding,
+      type: FieldType.custom,
+      uid: getUid(),
+      valueMetadataDescriptors: FieldMetadataDescriptors.custom,
+    );
+
+    store.dispatch(AddCustomField(
+      newField: newField,
+    ));
+
+    store.dispatch(SetDisplayedFields(
+        displayedFields: store.state.worksheetState.displayedFields.toList()
+          ..add(newField)));
+  };
+}
+
+ThunkAction<AppState> deleteCustomField({String fieldId}) {
+  return (Store<AppState> store) async {
+    store.dispatch(DeleteCustomField(fieldId: fieldId));
+    store.dispatch(SetDisplayedFields(
+        displayedFields: store.state.worksheetState.displayedFields
+            .where((item) => item.uid != fieldId)
+            .toList()));
+  };
+}
 
 ThunkAction<AppState> updateFieldValue(
     String fieldId, FieldValueKey existingValueKey, String newValue) {

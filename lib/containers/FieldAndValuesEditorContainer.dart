@@ -30,12 +30,12 @@ class FieldAndValuesEditorContainer extends StatelessWidget {
         fieldValues: store.state.fixtureState.fieldValues,
         tabIndex: store.state.worksheetNavState.fieldsAndValuesEditorTabIndex,
         onAddNewField: (fieldName, encoding) => store
-            .dispatch(AddCustomField(fieldName: fieldName, encoding: encoding)),
+            .dispatch(addCustomField(fieldName, encoding)),
         fieldViewModels: store.state.fixtureState.fields.values
             .map((item) => FieldViewModel(
                   data: item,
                   onDeletePressed: () =>
-                      store.dispatch(DeleteCustomField(fieldId: item.uid)),
+                      store.dispatch(deleteCustomField(fieldId: item.uid)),
                   onViewValuesPressed: () {},
                   onChanged: (request) => store.dispatch(
                       UpdateField(fieldId: item.uid, request: request)),

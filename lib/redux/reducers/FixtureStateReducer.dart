@@ -27,17 +27,9 @@ FixtureState fixtureStateReducer(FixtureState state, dynamic action) {
   }
 
   if (action is AddCustomField) {
-    final newField = FieldModel(
-      uid: getUid(),
-      name: action.fieldName,
-      encoding: action.encoding,
-      type: FieldType.custom,
-      valueMetadataDescriptors: FieldMetadataDescriptors.custom,
-    );
-
     return state.copyWith(
         fields: Map<String, FieldModel>.from(state.fields)
-          ..addAll({newField.uid: newField}));
+          ..addAll({action.newField.uid: action.newField}));
   }
 
   if (action is UpdateFieldMetadataValue) {

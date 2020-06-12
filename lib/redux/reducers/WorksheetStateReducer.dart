@@ -1,3 +1,4 @@
+import 'package:darkwrong/models/Field.dart';
 import 'package:darkwrong/models/FieldValueKey.dart';
 import 'package:darkwrong/models/FieldValuesStore.dart';
 import 'package:darkwrong/models/Fixture.dart';
@@ -27,25 +28,33 @@ WorksheetState worksheetStateReducer(WorksheetState state, dynamic action) {
   if (action is AddNewFixtures) {
     return state.copyWith(
         rows: Map<String, WorksheetRowModel>.from(state.rows)
-          ..addAll(_buildRows(action.fixtures, action.fieldValues)));
+          ..addAll(_buildRows(
+              action.fixtures, action.fieldValues, state.displayedFields)));
   }
 
   if (action is UpdateFixturesAndFieldValues) {
     final watch = Stopwatch()..start();
     final newState = state.copyWith(
         headers: _mergeHeaderUpdates(state.headers, action.fieldValues),
-        rows: _mergeRowUpdates(
-            state.rows, action.fixtureUpdates, action.fieldValues));
+        rows: _mergeRowUpdates(state.rows, action.fixtureUpdates,
+            action.fieldValues, state.displayedFields));
 
     watch.stop();
 
     return newState;
   }
 
+  if (action is SetDisplayedFields) {
+    return state.copyWith(
+        displayedFields: action.displayedFields,
+        headers: _buildHeaders(action.displayedFields, action.maxFieldLengths));
+  }
+
   if (action is AddWorksheetRows) {
     return state.copyWith(
         rows: Map<String, WorksheetRowModel>.from(state.rows)
-          ..addAll(_buildRows(action.fixtures, action.fieldValues)));
+          ..addAll(_buildRows(
+              action.fixtures, action.fieldValues, state.displayedFields)));
   }
 
   if (action is RemoveWorksheetRows) {
@@ -75,7 +84,8 @@ WorksheetState worksheetStateReducer(WorksheetState state, dynamic action) {
 
     return state.copyWith(
       fieldValueQueries: fieldValueQueries,
-      rows: _buildRows(fixturesToAdd, action.fieldValues),
+      rows:
+          _buildRows(fixturesToAdd, action.fieldValues, state.displayedFields),
     );
   }
 
@@ -87,7 +97,8 @@ WorksheetState worksheetStateReducer(WorksheetState state, dynamic action) {
     if (fieldValueQueries.isEmpty) {
       return state.copyWith(
         fieldValueQueries: fieldValueQueries,
-        rows: _buildRows(action.fixtures, action.fieldValues),
+        rows: _buildRows(
+            action.fixtures, action.fieldValues, state.displayedFields),
       );
     }
 
@@ -101,6 +112,19 @@ WorksheetState worksheetStateReducer(WorksheetState state, dynamic action) {
   }
 
   return state;
+}
+
+Map<String, WorksheetHeaderModel> _buildHeaders(List<FieldModel> displayedFields, Map<String, int> maxFieldLengths) {
+  return Map<String, WorksheetHeaderModel>.fromEntries(
+          displayedFields.map((field) {
+        return MapEntry(
+            field.uid,
+            WorksheetHeaderModel(
+              uid: field.uid,
+              title: field.name,
+              maxFieldLength: maxFieldLengths[field.uid] ?? 0,
+            ));
+      }));
 }
 
 Map<String, WorksheetRowModel> _removeRows(
@@ -126,30 +150,33 @@ Set<String> _queryFixtures(Map<String, FixtureModel> fixtures,
 }
 
 Map<String, WorksheetRowModel> _buildRows(
-    Map<String, FixtureModel> fixtures, FieldValuesStore fieldValues) {
+  Map<String, FixtureModel> fixtures,
+  FieldValuesStore fieldValues,
+  List<FieldModel> displayedFields,
+) {
   return Map<String, WorksheetRowModel>.fromEntries(
       fixtures.values.map((fixture) {
     return MapEntry(
       fixture.uid,
       WorksheetRowModel(
         rowId: fixture.uid,
-        cells: _buildCells(fixture, fieldValues),
+        cells: _buildCells(fixture, fieldValues, displayedFields),
       ),
     );
   }));
 }
 
-Map<String, WorksheetCellModel> _buildCells(
-    FixtureModel fixture, FieldValuesStore fieldValues) {
+Map<String, WorksheetCellModel> _buildCells(FixtureModel fixture,
+    FieldValuesStore fieldValues, List<FieldModel> displayedFields) {
   return Map<String, WorksheetCellModel>.fromEntries(
-      fixture.valueKeys.entries.map((valueEntry) {
+      displayedFields.map((field) {
     final rowId = fixture.uid;
-    final fieldId = valueEntry.key;
+    final fieldId = field.uid;
     final cellValue =
-        fieldValues.getValue(valueEntry.key, valueEntry.value).asText;
+        fieldValues.getValue(field.uid, fixture.valueKeys[field.uid]).asText;
 
     return MapEntry(
-        valueEntry.key,
+        field.uid,
         WorksheetCellModel(
             cellId: getCellId(rowId, fieldId),
             rowId: rowId,
@@ -178,13 +205,16 @@ Map<String, WorksheetHeaderModel> _mergeHeaderUpdates(
 Map<String, WorksheetRowModel> _mergeRowUpdates(
     Map<String, WorksheetRowModel> rows,
     Map<String, FixtureModel> fixtureUpdates,
-    FieldValuesStore fieldValues) {
+    FieldValuesStore fieldValues,
+    List<FieldModel> displayedFields) {
   return rows.map((rowKey, rowValue) {
     // Map through rows and merge in updated fixtures.
     if (fixtureUpdates.containsKey(rowKey)) {
       final fixture = fixtureUpdates[rowKey];
       return MapEntry(
-          rowKey, rowValue.copyWith(cells: _buildCells(fixture, fieldValues)));
+          rowKey,
+          rowValue.copyWith(
+              cells: _buildCells(fixture, fieldValues, displayedFields)));
     }
 
     return MapEntry(rowKey, rowValue);
