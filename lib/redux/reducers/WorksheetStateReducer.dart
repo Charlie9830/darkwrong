@@ -2,7 +2,6 @@ import 'package:darkwrong/models/Field.dart';
 import 'package:darkwrong/models/FieldValueKey.dart';
 import 'package:darkwrong/models/FieldValuesStore.dart';
 import 'package:darkwrong/models/Fixture.dart';
-import 'package:darkwrong/models/SelectedCell.dart';
 import 'package:darkwrong/models/WorksheetCell.dart';
 import 'package:darkwrong/models/WorksheetHeader.dart';
 import 'package:darkwrong/models/WorksheetRow.dart';
@@ -13,10 +12,7 @@ import 'package:darkwrong/util/getCellId.dart';
 
 WorksheetState worksheetStateReducer(WorksheetState state, dynamic action) {
   if (action is BuildWorksheetState) {
-    return state.copyWith(
-      headers: action.state.headers,
-      rows: action.state.rows,
-    );
+    return action.state;
   }
 
   if (action is SetWorksheetSelectedCellIds) {
@@ -27,6 +23,7 @@ WorksheetState worksheetStateReducer(WorksheetState state, dynamic action) {
 
   if (action is AddNewFixtures) {
     return state.copyWith(
+        headers: _buildHeaders(state.displayedFields, <String, int>{}),
         rows: Map<String, WorksheetRowModel>.from(state.rows)
           ..addAll(_buildRows(
               action.fixtures, action.fieldValues, state.displayedFields)));

@@ -19,6 +19,24 @@ import 'package:darkwrong/util/valueEnumerators.dart';
 import 'package:redux/redux.dart';
 import 'package:redux_thunk/redux_thunk.dart';
 
+ThunkAction<AppState> initMockData() {
+  return (Store<AppState> store) async {
+    store.dispatch(InitMockData());
+
+    store.dispatch(addNewFixtures(NewFixturesRequest(
+        existingValueKeys: <String, FieldValueKey>{},
+        multiplier: 10,
+        newValues: <String, String>{
+          'instrument-name': 'Martin Mac Viper',
+          'unit-number': '1++',
+          'channel': '101++',
+          'position': 'Advance'
+        })));
+
+    store.dispatch(buildWorksheet());
+  };
+}
+
 ThunkAction<AppState> addCustomField(String fieldName, ValueEncoding encoding) {
   return (Store<AppState> store) async {
     final newField = FieldModel(
@@ -234,7 +252,6 @@ ThunkAction<AppState> buildWorksheet() {
         store.state.fixtureState.fixtures,
         store.state.fixtureState.fieldValues,
         store.state.fixtureState.fields);
-
     print('Completed in ${watch.elapsedMilliseconds}ms');
     watch.stop();
     watch.reset();
@@ -289,6 +306,7 @@ WorksheetState _buildWorksheet(
 
   return existingWorksheet.copyWith(
       rows: rows,
+      displayedFields: fields.values.toList(),
       headers: Map<String, WorksheetHeaderModel>.fromEntries(fields.entries.map(
           (entry) => MapEntry(
               entry.key,

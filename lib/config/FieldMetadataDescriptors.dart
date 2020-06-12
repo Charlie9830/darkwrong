@@ -22,6 +22,19 @@ class FieldMetadataDescriptors {
     ..._commonProperties
   };
 
+  static Map<String, MetadataDescriptor> position = {
+    ..._commonProperties,
+  };
+
+  static Map<String, MetadataDescriptor> channel = {
+    ..._commonProperties,
+  };
+
+  static Map<String, MetadataDescriptor> unitNumber = {
+    ..._commonProperties,
+  };
+
+  
   static Map<String, MetadataDescriptor> instrumentName = {
     ..._commonProperties,
     "instrumentType": MetadataDescriptor(

@@ -6,6 +6,9 @@ enum ValueEncoding {
 enum FieldType {
   custom,
   instrumentName,
+  position,
+  channel,
+  unitNumber,
 }
 
 enum FieldEnumeration {

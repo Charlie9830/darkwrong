@@ -38,6 +38,10 @@ class WorksheetState {
     String selectedFieldQueryId,
     List<FieldModel> displayedFields,
   }) {
+    if (displayedFields != null) {
+      print(displayedFields.length);
+    }
+
     return WorksheetState(
       rows: rows ?? this.rows,
       headers: headers ?? this.headers,
