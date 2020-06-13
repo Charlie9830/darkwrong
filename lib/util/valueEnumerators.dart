@@ -6,9 +6,10 @@ String enumerateValue(String value, int count) {
   if (value.contains(positiveValueEnumerationIndicator)) {
     final int enumerationStepQuanity =
         _getEnumerationStepQuantity(value, FieldEnumeration.postive);
+
     final int baseNumber = int.tryParse(
         value.substring(0, value.indexOf(positiveValueEnumerationIndicator)));
-    return (baseNumber * count * enumerationStepQuanity).toString();
+    return (baseNumber + (count * enumerationStepQuanity)).toString();
   }
 
   // Negative enumeration.
@@ -18,7 +19,7 @@ String enumerateValue(String value, int count) {
 
     final int baseNumber = int.tryParse(
         value.substring(0, value.indexOf(negativeValueEnumerationIndicator)));
-    return (baseNumber * count * enumerationStepQuanity).toString();
+    return (baseNumber - (count * enumerationStepQuanity)).toString();
   }
 
   return 'fail';
@@ -35,21 +36,33 @@ int _getEnumerationStepQuantity(
           ? positiveValueEnumerationIndicator
           : negativeValueEnumerationIndicator;
 
-  final stepQuanitySection =
-      value.substring(value.indexOf(enumerationIndicator));
+  final stepQuanitySection = value
+      .substring(value.indexOf(enumerationIndicator))
+      .replaceAll(enumerationIndicator, '')
+      .trim();
 
-  return int.tryParse(stepQuanitySection) ?? 1;
+  final parsedInt = int.tryParse(stepQuanitySection);
+
+  if (parsedInt == null) {
+    return 1;
+  }
+
+  return parsedInt > 0 ? parsedInt : 1;
 }
 
 bool needsEnumeration(String value) {
   // Checks if value provided contains a '++', then if '++' is removed checks if only digits are left over. Repeats process again for '--'.
-  final regex = RegExp(r"^\d+$"); // Match only Digits.
+  final digitPattern = RegExp(r"^\d+$"); // Match only Digits.
+  final whitespacePattern = RegExp(r'\s');
+
   return (value.contains(positiveValueEnumerationIndicator) &&
-          regex.hasMatch(
-              value.replaceAll(positiveValueEnumerationIndicator, ''))) ||
+          digitPattern.hasMatch(value
+              .replaceAll(positiveValueEnumerationIndicator, '')
+              .replaceAll(whitespacePattern, ''))) ||
       (value.contains(negativeValueEnumerationIndicator) &&
-          regex.hasMatch(
-              value.replaceAll(negativeValueEnumerationIndicator, '')));
+          digitPattern.hasMatch(value
+              .replaceAll(negativeValueEnumerationIndicator, '')
+              .replaceAll(whitespacePattern, '')));
 }
 
 String enumerateValueIfRequired(String value, int count) {
