@@ -64,8 +64,10 @@ class DarkwrongScaffoldState extends State<DarkwrongScaffold> {
               rightDrawerOpen: widget.rightDrawerOpen,
               drawerClosedWidth: widget.drawerClosedWidth,
               drawerOpenedWidth: widget.drawerOpenedWidth,
-              onLeftRailPersistButtonPressed: widget.onLeftRailPersistButtonPressed,
-              onRightRailPersistButtonPressed: widget.onRightRailPersistButtonPressed,
+              onLeftRailPersistButtonPressed:
+                  widget.onLeftRailPersistButtonPressed,
+              onRightRailPersistButtonPressed:
+                  widget.onRightRailPersistButtonPressed,
               body: body,
             ))
           ],
@@ -108,28 +110,34 @@ class _BodyBuilder extends StatelessWidget {
       top: 0,
       left: 0,
       bottom: 0,
-      child: ToolRailController(
-          persistent: persistentLeftRail,
-          open: leftDrawerOpen,
-          drawerClosedWidth: drawerClosedWidth,
-          drawerOpenedWidth: drawerOpenedWidth,
-          drawerMoveDuration: _drawerMoveDuration,
-          onPersistButtonPressed: onLeftRailPersistButtonPressed,
-          child: leftRail),
+      child: MouseRegion(
+        opaque: true,
+        child: ToolRailController(
+            persistent: persistentLeftRail,
+            open: leftDrawerOpen,
+            drawerClosedWidth: drawerClosedWidth,
+            drawerOpenedWidth: drawerOpenedWidth,
+            drawerMoveDuration: _drawerMoveDuration,
+            onPersistButtonPressed: onLeftRailPersistButtonPressed,
+            child: leftRail),
+      ),
     );
 
     final positionedRightRail = Positioned(
       top: 0,
       right: 0,
       bottom: 0,
-      child: ToolRailController(
-          persistent: persistentRightRail,
-          open: rightDrawerOpen,
-          drawerClosedWidth: drawerClosedWidth,
-          drawerOpenedWidth: drawerOpenedWidth,
-          drawerMoveDuration: _drawerMoveDuration,
-          onPersistButtonPressed: onRightRailPersistButtonPressed,
-          child: rightRail),
+      child: MouseRegion(
+        opaque: true,
+        child: ToolRailController(
+            persistent: persistentRightRail,
+            open: rightDrawerOpen,
+            drawerClosedWidth: drawerClosedWidth,
+            drawerOpenedWidth: drawerOpenedWidth,
+            drawerMoveDuration: _drawerMoveDuration,
+            onPersistButtonPressed: onRightRailPersistButtonPressed,
+            child: rightRail),
+      ),
     );
 
     final bodyLeftOffset = _getBodyOffset(leftRail, persistentLeftRail,
