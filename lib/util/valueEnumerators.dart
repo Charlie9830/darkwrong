@@ -1,7 +1,15 @@
 import 'package:darkwrong/constants.dart';
 import 'package:darkwrong/enums.dart';
 
-String enumerateValue(String value, int count) {
+String enumerateValueIfRequired(String value, int count) {
+  if (_needsEnumeration(value)) {
+    return _enumerateValue(value, count);
+  } else {
+    return value;
+  }
+}
+
+String _enumerateValue(String value, int count) {
   // Positive Enumeration
   if (value.contains(positiveValueEnumerationIndicator)) {
     final int enumerationStepQuanity =
@@ -50,7 +58,7 @@ int _getEnumerationStepQuantity(
   return parsedInt > 0 ? parsedInt : 1;
 }
 
-bool needsEnumeration(String value) {
+bool _needsEnumeration(String value) {
   // Checks if value provided contains a '++', then if '++' is removed checks if only digits are left over. Repeats process again for '--'.
   final digitPattern = RegExp(r"^\d+$"); // Match only Digits.
   final whitespacePattern = RegExp(r'\s');
@@ -63,12 +71,4 @@ bool needsEnumeration(String value) {
           digitPattern.hasMatch(value
               .replaceAll(negativeValueEnumerationIndicator, '')
               .replaceAll(whitespacePattern, '')));
-}
-
-String enumerateValueIfRequired(String value, int count) {
-  if (needsEnumeration(value)) {
-    return enumerateValue(value, count);
-  } else {
-    return value;
-  }
 }

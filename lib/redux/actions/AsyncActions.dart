@@ -108,7 +108,7 @@ ThunkAction<AppState> addNewFixtures(
     Map<String, Map<FieldValueKey, FieldValue>> updatedFieldValues = {};
 
     final int multiplier = enteredMultiplier == 0 ? 1 : enteredMultiplier;
-    for (int count = 1; count <= multiplier; count++) {
+    for (int count = 0; count < multiplier; count++) {
       final Map<String, FieldValueKey> fixtureValueKeys = {};
 
       enteredValues.forEach((fieldId, rawValue) {
@@ -180,8 +180,16 @@ ThunkAction<AppState> updateFixtureValues(
     final fieldValues = store.state.fixtureState.fieldValues;
     final updatedFieldValues = <String, Map<FieldValueKey, FieldValue>>{};
     final updatedFixtures = <String, FixtureModel>{};
-    final cellChanges = [activeCellChangeData, ...otherCells];
 
+    final enumerationIndicatorPattern = RegExp(r'\+\+|\-\-');
+    final coercedValue = _isEnumerationAllowed(directionality)
+        ? newValue
+        : newValue.replaceAll(enumerationIndicatorPattern, '');
+
+    final cellChanges =
+        _concatCellChanegs(activeCellChangeData, otherCells, directionality);
+
+    int count = 0;
     for (var cellChange in cellChanges) {
       final fixtureId = cellChange.id.rowId;
       final fieldId = cellChange.id.columnId;
@@ -190,12 +198,12 @@ ThunkAction<AppState> updateFixtureValues(
           fieldValues.getValue(fieldId, fixture.valueKeys[fieldId]);
       final associatedField = store.state.fixtureState.fields[fieldId];
       final newFieldValue = FieldValue(
-        primaryValue: newValue,
+        primaryValue: enumerateValueIfRequired(coercedValue, count++),
         type: associatedField.type,
       );
 
-      if (oldValue.asText == newValue) {
-        return;
+      if (oldValue.asText == newFieldValue.asText) {
+        continue;
       }
 
       // If fieldValues doesn't already contain the new value we add it.
@@ -298,4 +306,36 @@ WorksheetState _buildWorksheet(
                   uid: entry.key,
                   maxFieldLength: maxFieldLengths[entry.key] ?? 0,
                   title: entry.value.name)))));
+}
+
+bool _isEnumerationAllowed(CellSelectionDirectionality directionality) {
+  switch (directionality) {
+    case CellSelectionDirectionality.leftToRight:
+      return false;
+    case CellSelectionDirectionality.rightToLeft:
+      return false;
+    case CellSelectionDirectionality.topToBottom:
+      return true;
+    case CellSelectionDirectionality.bottomToTop:
+      return true;
+    case CellSelectionDirectionality.none:
+      return false;
+    default:
+      return false;
+  }
+}
+
+List<CellChangeData> _concatCellChanegs(
+    CellChangeData activeCell,
+    List<CellChangeData> otherCells,
+    CellSelectionDirectionality directionality) {
+  if (directionality == CellSelectionDirectionality.topToBottom) {
+    return [activeCell, ...otherCells];
+  }
+
+  if (directionality == CellSelectionDirectionality.bottomToTop) {
+    return [...otherCells.reversed, activeCell];
+  }
+
+  return [activeCell, ...otherCells];
 }
