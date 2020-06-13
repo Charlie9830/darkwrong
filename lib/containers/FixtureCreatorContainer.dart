@@ -21,9 +21,14 @@ class FixtureCreatorContainer extends StatelessWidget {
       Store<AppState> store, BuildContext context) {
     final fixtureState = store.state.fixtureState;
     return FixtureCreatorViewModel(
-        fieldValues: fixtureState.fieldValues,
-        fields: fixtureState.fields.values.toList(),
-        onAddButtonPressed: (Map<String, String> values, int multiplier) =>
-            store.dispatch(addNewFixtures(values, multiplier)));
+      fieldValues: fixtureState.fieldValues,
+      fields: fixtureState.fields.values.toList(),
+      isPersistent: store.state.worksheetNavState.isLeftRailPersistent,
+      onAddButtonPressed: (Map<String, String> values, int multiplier) =>
+          store.dispatch(
+        addNewFixtures(values, multiplier),
+        
+      ),
+    );
   }
 }

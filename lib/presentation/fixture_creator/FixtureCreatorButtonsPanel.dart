@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 
 class FixtureCreatorButtonsPanel extends StatelessWidget {
   final TextEditingController multiplierController;
+  final FocusNode multiplierFocusNode;
+  final FocusNode addButtonFocusNode;
   final dynamic onAddButtonPressed;
   final dynamic onCancelButtonPressed;
 
@@ -10,7 +12,9 @@ class FixtureCreatorButtonsPanel extends StatelessWidget {
       {Key key,
       this.multiplierController,
       this.onAddButtonPressed,
-      this.onCancelButtonPressed})
+      this.onCancelButtonPressed,
+      this.multiplierFocusNode,
+      this.addButtonFocusNode})
       : super(key: key);
 
   @override
@@ -23,6 +27,7 @@ class FixtureCreatorButtonsPanel extends StatelessWidget {
           padding: const EdgeInsets.only(top: 8.0, bottom: 8.0),
           child: FixtureCreatorMultiplier(
             controller: multiplierController,
+            focusNode: multiplierFocusNode,
           ),
         ),
         Row(
@@ -37,6 +42,7 @@ class FixtureCreatorButtonsPanel extends StatelessWidget {
               child: RaisedButton(
                 child: Text('Add'),
                 onPressed: onAddButtonPressed,
+                focusNode: addButtonFocusNode,
               ),
             ),
           ],
