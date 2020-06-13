@@ -14,14 +14,14 @@ class FixtureCreatorMultiplier extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: 100.0,
+      width: 80.0,
       child: TextField(
         controller: controller,
         focusNode: focusNode,
-        textAlign: TextAlign.end,
         keyboardType: TextInputType.number,
         inputFormatters: [
           WhitelistingTextInputFormatter.digitsOnly,
+          BlacklistingTextInputFormatter(RegExp(r'^[^1-9]')),
         ],
         decoration: InputDecoration(
           hintText: 'Multiplier',

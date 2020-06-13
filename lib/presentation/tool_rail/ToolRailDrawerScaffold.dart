@@ -19,7 +19,7 @@ class ToolRailDrawerScaffold extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         return Padding(
-          padding: const EdgeInsets.only(left: 8.0, right: 8.0),
+          padding: const EdgeInsets.only(left: 8.0, right: 8.0, bottom: 8.0),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
@@ -39,7 +39,7 @@ class ToolRailDrawerScaffold extends StatelessWidget {
               ),
               ConstrainedBox(
                   constraints:
-                      BoxConstraints(maxHeight: constraints.maxHeight - 56),
+                      BoxConstraints(maxHeight: constraints.maxHeight - 56 - 8.0),
                   child: child)
             ],
           ),

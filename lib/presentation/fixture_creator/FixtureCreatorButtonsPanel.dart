@@ -6,46 +6,39 @@ class FixtureCreatorButtonsPanel extends StatelessWidget {
   final FocusNode multiplierFocusNode;
   final FocusNode addButtonFocusNode;
   final dynamic onAddButtonPressed;
-  final dynamic onCancelButtonPressed;
+  final dynamic onClearButtonPressed;
 
   const FixtureCreatorButtonsPanel(
       {Key key,
       this.multiplierController,
       this.onAddButtonPressed,
-      this.onCancelButtonPressed,
       this.multiplierFocusNode,
+      this.onClearButtonPressed,
       this.addButtonFocusNode})
       : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Container(
-        child: Column(
-      crossAxisAlignment: CrossAxisAlignment.end,
+        child: Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
+        OutlineButton(
+          child: Text('Clear'),
+          onPressed: onClearButtonPressed,
+        ),
+        Spacer(),
         Padding(
-          padding: const EdgeInsets.only(top: 8.0, bottom: 8.0),
+          padding: const EdgeInsets.only(bottom: 12.0, right: 8.0),
           child: FixtureCreatorMultiplier(
             controller: multiplierController,
             focusNode: multiplierFocusNode,
           ),
         ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: [
-            OutlineButton(
-              child: Text('Cancel'),
-              onPressed: onCancelButtonPressed,
-            ),
-            Padding(
-              padding: const EdgeInsets.only(left: 8.0),
-              child: RaisedButton(
-                child: Text('Add'),
-                onPressed: onAddButtonPressed,
-                focusNode: addButtonFocusNode,
-              ),
-            ),
-          ],
+        RaisedButton(
+          child: Text('Add'),
+          onPressed: onAddButtonPressed,
+          focusNode: addButtonFocusNode,
         ),
       ],
     ));

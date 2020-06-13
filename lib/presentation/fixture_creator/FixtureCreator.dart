@@ -1,9 +1,13 @@
 import 'package:darkwrong/models/FieldValuesStore.dart';
 import 'package:darkwrong/presentation/fixture_creator/FixtureCreatorButtonsPanel.dart';
 import 'package:darkwrong/presentation/fixture_creator/FixtureTextField.dart';
+import 'package:darkwrong/util/KeyboardHelpers.dart';
 import 'package:darkwrong/view_models/FixtureCreatorViewModel.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+
+const _defaultMultiplierControllerText = '';
+const _defaultFieldControllerText = '';
 
 class FixtureCreator extends StatefulWidget {
   final FixtureCreatorViewModel viewModel;
@@ -19,30 +23,42 @@ class _FixtureCreatorState extends State<FixtureCreator> {
   Map<String, FocusNode> _fieldFocusNodes;
   FocusNode _multiplierFocusNode;
   FocusNode _addButtonFocusNode;
+  bool _canAdd;
 
   @override
   void initState() {
-    _fieldControllers = Map<String, TextEditingController>.fromEntries(widget
-        .viewModel.fields
-        .map((field) => MapEntry(field.uid, TextEditingController())));
+    _fieldControllers = Map<String, TextEditingController>.fromEntries(
+        widget.viewModel.fields.map((field) => MapEntry(field.uid,
+            TextEditingController(text: _defaultFieldControllerText))));
 
-    _multiplierController = TextEditingController(text: '1');
+    _fieldControllers.forEach((fieldId, controller) => controller
+        .addListener(() => _handleFieldControllerChange(fieldId, controller)));
+
+    _multiplierController =
+        TextEditingController(text: _defaultMultiplierControllerText);
 
     _fieldFocusNodes = Map<String, FocusNode>.fromEntries(widget
         .viewModel.fields
         .map((field) => MapEntry(field.uid, FocusNode())));
 
-    _fieldFocusNodes.values.first?.requestFocus();
+    if (_fieldFocusNodes.values.isNotEmpty) {
+      _fieldFocusNodes.values.first?.requestFocus();
+    }
 
     _multiplierFocusNode = FocusNode();
-
     _addButtonFocusNode = FocusNode();
+
+    _canAdd = false;
 
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
+    if (widget.viewModel.fields.isEmpty) {
+      return _NoFieldsFallback();
+    }
+
     return Focus(
       autofocus: true,
       onKey: _handleKeyPress,
@@ -50,18 +66,26 @@ class _FixtureCreatorState extends State<FixtureCreator> {
           child: Column(
         children: [
           Expanded(
-            child: ListView(
-                children: _buildFixtureTextFields(
-                    context, widget.viewModel.fieldValues)),
+            child: Card(
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: ListView(
+                    children: _buildFixtureTextFields(
+                        context, widget.viewModel.fieldValues)),
+              ),
+            ),
           ),
-          FixtureCreatorButtonsPanel(
-            multiplierController: _multiplierController,
-            multiplierFocusNode: _multiplierFocusNode,
-            addButtonFocusNode: _addButtonFocusNode,
-            onCancelButtonPressed: () {
-              throw UnimplementedError();
-            },
-            onAddButtonPressed: _handleAddButtonPressed,
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: FixtureCreatorButtonsPanel(
+                multiplierController: _multiplierController,
+                multiplierFocusNode: _multiplierFocusNode,
+                addButtonFocusNode: _addButtonFocusNode,
+                onClearButtonPressed: _handleClearButtonPressed,
+                onAddButtonPressed: _canAdd ? _handleAddButtonPressed : null,
+              ),
+            ),
           ),
         ],
       )),
@@ -97,10 +121,43 @@ class _FixtureCreatorState extends State<FixtureCreator> {
     }).toList();
   }
 
+  void _handleClearButtonPressed() {
+    for (var controller in _fieldControllers.values) {
+      controller.text = _defaultFieldControllerText;
+    }
+
+    _multiplierController.text = _defaultMultiplierControllerText;
+
+    if (_fieldFocusNodes.values.isNotEmpty) {
+      _fieldFocusNodes.values.first?.requestFocus();
+    }
+
+    setState(() {
+      _canAdd = false;
+    });
+  }
+
+  void _handleFieldControllerChange(
+      String fieldId, TextEditingController controller) {
+    final newCanAdd = _fieldControllers.values
+        .any((item) => item.text != null && item.text != '');
+
+    if (newCanAdd != _canAdd) {
+      setState(() {
+        _canAdd = newCanAdd;
+      });
+    }
+  }
+
   bool _handleKeyPress(FocusNode focusNode, RawKeyEvent rawKey) {
     if (rawKey is RawKeyDownEvent) {
-      if (rawKey.logicalKey == LogicalKeyboardKey.enter ||
-          rawKey.logicalKey == LogicalKeyboardKey.numpadEnter) {
+      if (enterDown(rawKey)) {
+        if (rawKey.isControlPressed) {
+          // Control + Enter pressed. Commit value.
+          _handleAddButtonPressed();
+          return false;
+        }
+
         if (_addButtonFocusNode.hasFocus) {
           if (widget.viewModel.isPersistent) {
             // Pass Focus to first Field.
@@ -120,8 +177,8 @@ class _FixtureCreatorState extends State<FixtureCreator> {
 
         // Determine which Field has Focus (if any).
         final focusNodes = _fieldFocusNodes.values.toList();
-        final currentFieldFocusNode =
-            focusNodes.firstWhere((node) => node.hasFocus == true);
+        final currentFieldFocusNode = focusNodes
+            .firstWhere((node) => node.hasFocus == true, orElse: () => null);
 
         if (currentFieldFocusNode == null) {
           return false;
@@ -153,6 +210,10 @@ class _FixtureCreatorState extends State<FixtureCreator> {
   }
 
   void _handleAddButtonPressed() {
+    if (_canAdd == false) {
+      return;
+    }
+
     final Map<String, String> values =
         Map<String, String>.from(_fieldControllers.map((fieldId, controller) {
       return MapEntry(fieldId, controller.text);
@@ -160,7 +221,8 @@ class _FixtureCreatorState extends State<FixtureCreator> {
 
     final int multiplier = int.tryParse(_multiplierController.text) ?? 1;
 
-    widget.viewModel.onAddButtonPressed(values, multiplier);
+    widget.viewModel
+        .onAddButtonPressed(values, multiplier == 0 ? 1 : multiplier);
   }
 
   @override
@@ -181,5 +243,16 @@ class _FixtureCreatorState extends State<FixtureCreator> {
 
     _addButtonFocusNode?.dispose();
     super.dispose();
+  }
+}
+
+class _NoFieldsFallback extends StatelessWidget {
+  const _NoFieldsFallback({Key key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      child: Text('No Fields'),
+    );
   }
 }

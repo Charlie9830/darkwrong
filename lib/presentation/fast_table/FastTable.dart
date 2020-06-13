@@ -8,6 +8,7 @@ import 'package:darkwrong/presentation/fast_table/CellTextEditingController.dart
 import 'package:darkwrong/presentation/fast_table/ColumnWidthsProvider.dart';
 import 'package:darkwrong/presentation/fast_table/FastRow.dart';
 import 'package:darkwrong/presentation/fast_table/TableHeader.dart';
+import 'package:darkwrong/util/KeyboardHelpers.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 
@@ -52,8 +53,8 @@ class _FastTableState extends State<FastTable> {
     _focusNode.requestFocus();
 
     _openCellTextController = CellTextEditingController();
-
     _scrollController = ScrollController();
+
     super.initState();
   }
 
@@ -119,7 +120,7 @@ class _FastTableState extends State<FastTable> {
       _handleArrowKeysPress(rawKey);
 
       // Enter Press
-      if (_enterDown(rawKey)) {
+      if (enterDown(rawKey)) {
         if (_isActiveCellOpen == false) {
           // User wants to open the cell and edit the existing Value.
           // Extract the value from the Cells being passed through (Is this dodgy?).
@@ -134,7 +135,7 @@ class _FastTableState extends State<FastTable> {
       }
 
       // Backspace Press
-      else if (_backspaceDown(rawKey)) {
+      else if (backspaceDown(rawKey)) {
         if (_isActiveCellOpen == false) {
           _openActiveCell('');
         }
@@ -149,7 +150,7 @@ class _FastTableState extends State<FastTable> {
       }
 
       // Escape key
-      else if (_escapeDown(rawKey)) {
+      else if (escapeDown(rawKey)) {
         if (_isActiveCellOpen == true) {
           // Revert Field.
           _revertActiveCell();
@@ -466,19 +467,6 @@ class _FastTableState extends State<FastTable> {
     setState(() {
       _isActiveCellOpen = false;
     });
-  }
-
-  bool _escapeDown(RawKeyDownEvent rawKey) {
-    return rawKey.logicalKey == LogicalKeyboardKey.escape;
-  }
-
-  bool _backspaceDown(RawKeyDownEvent rawKey) {
-    return rawKey.logicalKey == LogicalKeyboardKey.backspace;
-  }
-
-  bool _enterDown(RawKeyDownEvent rawKey) {
-    return rawKey.logicalKey == LogicalKeyboardKey.enter ||
-        rawKey.logicalKey == LogicalKeyboardKey.numpadEnter;
   }
 
   void _openActiveCell(String initialText) {
