@@ -9,6 +9,7 @@ import 'package:darkwrong/presentation/fast_table/ColumnWidthsProvider.dart';
 import 'package:darkwrong/presentation/fast_table/FastRow.dart';
 import 'package:darkwrong/presentation/fast_table/TableHeader.dart';
 import 'package:darkwrong/util/KeyboardHelpers.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 
@@ -65,6 +66,12 @@ class FastTableState extends State<FastTable> {
     final _columnWidths = widget.headers.map((item) => item.width).toList();
 
     return Listener(
+      onPointerSignal: (signal) {
+        if (signal is PointerScrollEvent) {
+          _scrollController
+              .jumpTo(_scrollController.offset + signal.scrollDelta.dy);
+        }
+      },
       onPointerDown: (_) {
         if (_isActiveCellOpen == false) {
           _focusNode.requestFocus();
@@ -82,23 +89,26 @@ class FastTableState extends State<FastTable> {
               ),
             ),
             Expanded(
-              child: ListView.builder(
-                  controller: _scrollController,
-                  itemCount: widget.rows.length,
-                  itemBuilder: (context, index) {
-                    return CellSelectionProvider(
-                      isActiveCellOpen: _isActiveCellOpen,
-                      openCellTextController: _openCellTextController,
-                      onCellClicked: _handleCellClicked,
-                      onAdjustmentRequested: _handleCellAdjustmentRequested,
-                      selectionConstraint: _selectionConstraint,
-                      child: ColumnWidthsProvider(
-                        key: widget.rows[index].key,
-                        widths: _columnWidths,
-                        child: widget.rows[index],
-                      ),
-                    );
-                  }),
+              child: Scrollbar(
+                child: ListView.builder(
+                    physics: NeverScrollableScrollPhysics(),
+                    controller: _scrollController,
+                    itemCount: widget.rows.length,
+                    itemBuilder: (context, index) {
+                      return CellSelectionProvider(
+                        isActiveCellOpen: _isActiveCellOpen,
+                        openCellTextController: _openCellTextController,
+                        onCellClicked: _handleCellClicked,
+                        onAdjustmentRequested: _handleCellAdjustmentRequested,
+                        selectionConstraint: _selectionConstraint,
+                        child: ColumnWidthsProvider(
+                          key: widget.rows[index].key,
+                          widths: _columnWidths,
+                          child: widget.rows[index],
+                        ),
+                      );
+                    }),
+              ),
             ),
           ],
         ),
