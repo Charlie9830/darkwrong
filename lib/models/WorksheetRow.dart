@@ -19,4 +19,8 @@ class WorksheetRowModel {
       cells: cells ?? this.cells,
     );
   }
+
+  String getValue(String fieldId) {
+    return cells[fieldId]?.value ?? '';
+  }
 }

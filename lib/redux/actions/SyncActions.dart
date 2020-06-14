@@ -183,6 +183,12 @@ class BuildWorksheetState {
   });
 }
 
+class SortWorksheet {
+  final String fieldId;
+
+  SortWorksheet({this.fieldId});
+}
+
 class AddBlankFixture {
   AddBlankFixture();
 }

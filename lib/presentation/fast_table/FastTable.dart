@@ -25,13 +25,15 @@ class FastTable extends StatefulWidget {
   final TraversalDirection cellTraverseDirection;
   final CellSelectionChangedCallback onSelectionChanged;
   final CellValueChangedCallback onCellValueChanged;
+  final dynamic onRequestSort;
   FastTable(
       {Key key,
       this.rows,
       this.headers,
       this.cellTraverseDirection = TraversalDirection.down,
       this.onCellValueChanged,
-      this.onSelectionChanged})
+      this.onSelectionChanged,
+      this.onRequestSort})
       : super(key: key);
 
   @override
@@ -116,6 +118,16 @@ class _FastTableState extends State<FastTable> {
     _setControlState(rawKey);
 
     if (rawKey is RawKeyDownEvent) {
+      // Control + Backslash
+      if (rawKey.isControlPressed &&
+          rawKey.logicalKey == LogicalKeyboardKey.backslash) {
+        if (widget.onRequestSort != null) {
+          widget.onRequestSort();
+        }
+
+        return true;
+      }
+
       // Arrow Key Presses.
       _handleArrowKeysPress(rawKey);
 

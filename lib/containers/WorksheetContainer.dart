@@ -22,6 +22,7 @@ class WorksheetContainer extends StatelessWidget {
   WorksheetViewModel _converter(Store<AppState> store, BuildContext context) {
     return WorksheetViewModel(
         state: store.state.worksheetState,
+        onRequestSort: () => store.dispatch(SortWorksheet(fieldId: 'position')),
         onCellSelectionChanged: (Set<CellId> cellIds) =>
             store.dispatch(SetWorksheetSelectedCellIds(selectedIds: cellIds)),
         onCellValueChanged: (newValue, activeCellChange, otherCellChanges,

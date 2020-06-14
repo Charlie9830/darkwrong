@@ -5,10 +5,12 @@ class WorksheetViewModel {
   final WorksheetState state;
   final CellValueChangedCallback onCellValueChanged;
   final CellSelectionChangedCallback onCellSelectionChanged;
+  final dynamic onRequestSort;
 
   WorksheetViewModel({
     this.state,
     this.onCellValueChanged,
     this.onCellSelectionChanged,
+    this.onRequestSort,
   });
 }

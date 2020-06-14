@@ -19,6 +19,7 @@ class Worksheet extends StatelessWidget {
     return FastTable(
       onCellValueChanged: viewModel.onCellValueChanged,
       onSelectionChanged: viewModel.onCellSelectionChanged,
+      onRequestSort: viewModel.onRequestSort,
       headers: viewModel.state.headers.values
           .map((item) => TableHeader(Text(item.title),
               key: Key(item.uid), width: 120.0 /* item.maxFieldLength * 8.0 */))

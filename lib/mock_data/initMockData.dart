@@ -10,18 +10,18 @@ import 'package:random_words/random_words.dart';
 AppState initMockData(AppState state) {
   final fields = <FieldModel>[
     FieldModel(
-      uid: 'instrument-name',
-      name: 'Instrument Name',
-      encoding: ValueEncoding.text,
-      type: FieldType.instrumentName,
-      valueMetadataDescriptors: FieldMetadataDescriptors.instrumentName,
-    ),
-    FieldModel(
       uid: 'position',
       name: 'Position',
       encoding: ValueEncoding.text,
       type: FieldType.position,
       valueMetadataDescriptors: FieldMetadataDescriptors.position,
+    ),
+    FieldModel(
+      uid: 'instrument-name',
+      name: 'Instrument Name',
+      encoding: ValueEncoding.text,
+      type: FieldType.instrumentName,
+      valueMetadataDescriptors: FieldMetadataDescriptors.instrumentName,
     ),
     FieldModel(
       uid: 'channel',
@@ -41,12 +41,12 @@ AppState initMockData(AppState state) {
 
   return state.copyWith(
       fixtureState: state.fixtureState.copyWith(
-    fields: Map<String, FieldModel>.fromEntries(
-        fields.map((item) => MapEntry(item.uid, item))),
-  ),
-  worksheet: state.worksheetState.copyWith(
-    displayedFields: fields,
-  ));
+        fields: Map<String, FieldModel>.fromEntries(
+            fields.map((item) => MapEntry(item.uid, item))),
+      ),
+      worksheet: state.worksheetState.copyWith(
+        displayedFields: fields,
+      ));
 }
 
 // AppState initMockData(AppState state) {

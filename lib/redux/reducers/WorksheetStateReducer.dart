@@ -108,20 +108,32 @@ WorksheetState worksheetStateReducer(WorksheetState state, dynamic action) {
         rows: _removeRows(state.rows, fixtureIds));
   }
 
+  if (action is SortWorksheet) {
+    final List<WorksheetRowModel> rows = state.rows.values.toList();
+    rows.sort((WorksheetRowModel a, WorksheetRowModel b) {
+      return a.getValue(action.fieldId).compareTo(b.getValue(action.fieldId));
+    });
+
+    return state.copyWith(
+        rows: Map<String, WorksheetRowModel>.fromEntries(
+            rows.map((row) => MapEntry(row.rowId, row))));
+  }
+
   return state;
 }
 
-Map<String, WorksheetHeaderModel> _buildHeaders(List<FieldModel> displayedFields, Map<String, int> maxFieldLengths) {
+Map<String, WorksheetHeaderModel> _buildHeaders(
+    List<FieldModel> displayedFields, Map<String, int> maxFieldLengths) {
   return Map<String, WorksheetHeaderModel>.fromEntries(
-          displayedFields.map((field) {
-        return MapEntry(
-            field.uid,
-            WorksheetHeaderModel(
-              uid: field.uid,
-              title: field.name,
-              maxFieldLength: maxFieldLengths[field.uid] ?? 0,
-            ));
-      }));
+      displayedFields.map((field) {
+    return MapEntry(
+        field.uid,
+        WorksheetHeaderModel(
+          uid: field.uid,
+          title: field.name,
+          maxFieldLength: maxFieldLengths[field.uid] ?? 0,
+        ));
+  }));
 }
 
 Map<String, WorksheetRowModel> _removeRows(
