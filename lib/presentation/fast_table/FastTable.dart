@@ -37,10 +37,10 @@ class FastTable extends StatefulWidget {
       : super(key: key);
 
   @override
-  _FastTableState createState() => _FastTableState();
+  FastTableState createState() => FastTableState();
 }
 
-class _FastTableState extends State<FastTable> {
+class FastTableState extends State<FastTable> {
   FocusNode _focusNode;
   ScrollController _scrollController;
   CellSelectionConstraint _selectionConstraint = CellSelectionConstraint.zero();

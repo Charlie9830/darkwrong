@@ -1,3 +1,4 @@
+import 'package:darkwrong/keys.dart';
 import 'package:darkwrong/models/WorksheetCell.dart';
 import 'package:darkwrong/presentation/fast_table/Cell.dart';
 import 'package:darkwrong/presentation/fast_table/CellId.dart';
@@ -17,6 +18,7 @@ class Worksheet extends StatelessWidget {
   Widget build(BuildContext context) {
     int rowIndex = 0;
     return FastTable(
+      key: worksheetTableKey,
       onCellValueChanged: viewModel.onCellValueChanged,
       onSelectionChanged: viewModel.onCellSelectionChanged,
       onRequestSort: viewModel.onRequestSort,
