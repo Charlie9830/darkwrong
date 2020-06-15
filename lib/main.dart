@@ -1,4 +1,7 @@
 import 'package:darkwrong/containers/HomeScreenContainer.dart';
+import 'package:darkwrong/presentation/layout_editor/DragContainer.dart';
+import 'package:darkwrong/presentation/layout_editor/DragHandle.dart';
+import 'package:darkwrong/presentation/layout_editor/LayoutCanvas.dart';
 import 'package:darkwrong/redux/AppStore.dart';
 import 'package:darkwrong/redux/state/AppState.dart';
 import 'package:flutter_redux/flutter_redux.dart';
@@ -15,20 +18,29 @@ class Darkwrong extends StatefulWidget {
 
 class _DarkwrongState extends State<Darkwrong> {
   String _selectedValue;
+  double xPos = 100;
+  double yPos = 100;
+  double width = 100;
+  double height = 100;
 
   @override
   Widget build(BuildContext context) {
     return StoreProvider<AppState>(
-        store: appStore,
-        child: MaterialApp(
-          title: 'Darkwrong',
-          theme: ThemeData(
-            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-            primarySwatch: Colors.blue,
-            brightness: Brightness.dark,
-            visualDensity: VisualDensity.compact,
-          ),
-          home: HomeScreenContainer(),
-        ));
+      store: appStore,
+      child: MaterialApp(
+        title: 'Darkwrong',
+        theme: ThemeData(
+          materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          primarySwatch: Colors.blue,
+          brightness: Brightness.dark,
+          visualDensity: VisualDensity.compact,
+        ),
+        home: Scaffold(
+          appBar: AppBar(title: Text('Layout Editor')),
+          body: LayoutCanvas(),
+        ),
+      ),
+    );
   }
 }
+
