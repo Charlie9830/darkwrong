@@ -9,6 +9,9 @@ class LayoutCanvas extends StatefulWidget {
   _LayoutCanvasState createState() => _LayoutCanvasState();
 }
 
+const double _minWidth = 20.0;
+const double _minHeight = 20.0;
+
 class _LayoutCanvasState extends State<LayoutCanvas> {
   Map<String, LayoutObject> _layoutObjects = {};
   Set<String> _selectedBlockIds = {};
@@ -100,16 +103,27 @@ class _LayoutCanvasState extends State<LayoutCanvas> {
   ) {
     final newMap = Map<String, LayoutObject>.from(_layoutObjects);
     final item = newMap[uid];
+    final shouldClampWidth =
+        _shouldClamp(_minWidth, double.maxFinite, item.width + widthDelta);
+    final shouldClampHeight =
+        _shouldClamp(_minHeight, double.maxFinite, item.height + heightDelta);
+    final xPos = shouldClampWidth ? item.xPos : item.xPos + xPosDelta;
+    final yPos = shouldClampHeight ? item.yPos : item.yPos + yPosDelta;
+
     newMap[uid] = item.copyWith(
-      width: item.width + widthDelta,
-      height: item.height + heightDelta,
-      xPos: item.xPos + xPosDelta,
-      yPos: item.yPos + yPosDelta,
+      width: shouldClampWidth ? item.width : item.width + widthDelta,
+      height: shouldClampHeight ? item.height : item.height + heightDelta,
+      xPos: xPos,
+      yPos: yPos,
     );
 
     setState(() {
       _layoutObjects = newMap;
     });
+  }
+
+  bool _shouldClamp(double min, double max, double value) {
+    return !(value > min && value < max);
   }
 }
 
