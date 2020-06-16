@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 
 typedef void OnDragCallback(double deltaX, double deltaY);
 
-const double dragHandleWidth = 20.0;
-const double dragHandleHeight = 20.0;
+const double dragHandleWidth = 12.0;
+const double dragHandleHeight = 12.0;
 
 class DragHandle extends StatelessWidget {
   final bool selected;
