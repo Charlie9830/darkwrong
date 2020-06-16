@@ -15,51 +15,66 @@ const double _minHeight = 20.0;
 class _LayoutCanvasState extends State<LayoutCanvas> {
   Map<String, LayoutObject> _layoutObjects = {};
   Set<String> _selectedBlockIds = {};
+  int _lastPointerId;
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        DragBoxLayer(
-          selectedBlockIds: _selectedBlockIds,
-          blocks: _buildBlocks(),
-          onPositionChange: (xPosDelta, yPosDelta, blockId) {
-            _handlePositionChange(blockId, xPosDelta, yPosDelta);
-          },
-          onSizeChange:
-              (widthDelta, heightDelta, xPosDelta, yPosDelta, blockId) {
-            _handleSizeChange(
-                blockId, widthDelta, heightDelta, xPosDelta, yPosDelta);
-          },
-          onDragBoxClick: (blockId) {
-            setState(() {
-              _selectedBlockIds = <String>{blockId};
-            });
-          },
-        ),
-        Positioned(
-            bottom: 0,
-            right: 0,
-            child: RaisedButton(
-              child: Text('New'),
-              onPressed: () {
+    return Listener(
+      onPointerDown: (pointerEvent) {
+        if (pointerEvent.pointer > _lastPointerId) {
+          // Clear Selections.
+          setState(() {
+            _selectedBlockIds = <String>{};
+          });
+        }
+      },
+      child: Container(
+        color: Colors.transparent, // If a color isn't set. Hit testing for the Parent Listener stops working.
+        child: Stack(
+          children: [
+            DragBoxLayer(
+              selectedBlockIds: _selectedBlockIds,
+              blocks: _buildBlocks(),
+              onPositionChange: (xPosDelta, yPosDelta, blockId) {
+                _handlePositionChange(blockId, xPosDelta, yPosDelta);
+              },
+              onSizeChange:
+                  (widthDelta, heightDelta, xPosDelta, yPosDelta, blockId, pointerId) {
+                _handleSizeChange(
+                    blockId, widthDelta, heightDelta, xPosDelta, yPosDelta, pointerId);
+              },
+              onDragBoxClick: (blockId, pointerId) {
                 setState(() {
-                  final uid = getUid();
-                  _layoutObjects =
-                      Map<String, LayoutObject>.from(_layoutObjects)
-                        ..addAll({
-                          uid: LayoutObject(
-                            uid: uid,
-                            height: 100,
-                            width: 100,
-                            xPos: 25,
-                            yPos: 25,
-                          )
-                        });
+                  _selectedBlockIds = <String>{blockId};
+                  _lastPointerId = pointerId;
                 });
               },
-            ))
-      ],
+            ),
+            Positioned(
+                bottom: 0,
+                right: 0,
+                child: RaisedButton(
+                  child: Text('New'),
+                  onPressed: () {
+                    setState(() {
+                      final uid = getUid();
+                      _layoutObjects =
+                          Map<String, LayoutObject>.from(_layoutObjects)
+                            ..addAll({
+                              uid: LayoutObject(
+                                uid: uid,
+                                height: 100,
+                                width: 100,
+                                xPos: 25,
+                                yPos: 25,
+                              )
+                            });
+                    });
+                  },
+                ))
+          ],
+        ),
+      ),
     );
   }
 
@@ -100,6 +115,7 @@ class _LayoutCanvasState extends State<LayoutCanvas> {
     double heightDelta,
     double xPosDelta,
     double yPosDelta,
+    int pointerId,
   ) {
     final newMap = Map<String, LayoutObject>.from(_layoutObjects);
     final item = newMap[uid];
@@ -119,6 +135,7 @@ class _LayoutCanvasState extends State<LayoutCanvas> {
 
     setState(() {
       _layoutObjects = newMap;
+      _lastPointerId = pointerId;
     });
   }
 

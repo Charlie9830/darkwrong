@@ -3,7 +3,7 @@ import 'package:darkwrong/presentation/layout_editor/DragHandle.dart';
 import 'package:darkwrong/presentation/layout_editor/LayoutCanvas.dart';
 import 'package:flutter/material.dart';
 
-typedef void OnDragBoxClickCallback(String blockId);
+typedef void OnDragBoxClickCallback(String blockId, int pointerId);
 
 class DragBoxLayer extends StatelessWidget {
   final Map<String, LayoutBlock> blocks;
@@ -47,10 +47,10 @@ class DragBoxLayer extends StatelessWidget {
           width: block.width + dragHandleWidth,
           onPositionChange: (xPosDelta, yPosDelta) =>
               _handlePositionChange(xPosDelta, yPosDelta, blockId),
-          onSizeChange: (widthDelta, heightDelta, xPosDelta, yPosDelta) =>
+          onSizeChange: (widthDelta, heightDelta, xPosDelta, yPosDelta, pointerId) =>
               _handleSizeChange(
-                  widthDelta, heightDelta, xPosDelta, yPosDelta, blockId),
-          onClick: () => onDragBoxClick?.call(blockId),
+                  widthDelta, heightDelta, xPosDelta, yPosDelta, blockId, pointerId),
+          onClick: (pointerId) => onDragBoxClick?.call(blockId, pointerId),
         ),
       );
     }).toList();
@@ -62,8 +62,8 @@ class DragBoxLayer extends StatelessWidget {
   }
 
   void _handleSizeChange(double widthDelta, double heightDelta,
-      double xPosDelta, double yPosDelta, String blockId) {
-    onSizeChange(widthDelta, heightDelta, xPosDelta, yPosDelta, blockId);
+      double xPosDelta, double yPosDelta, String blockId, int pointerId) {
+    onSizeChange(widthDelta, heightDelta, xPosDelta, yPosDelta, blockId, pointerId);
   }
 
   List<Widget> _positionBlocks() {
