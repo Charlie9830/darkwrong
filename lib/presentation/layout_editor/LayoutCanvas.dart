@@ -29,7 +29,8 @@ class _LayoutCanvasState extends State<LayoutCanvas> {
         }
       },
       child: Container(
-        color: Colors.transparent, // If a color isn't set. Hit testing for the Parent Listener stops working.
+        color: Colors
+            .transparent, // If a color isn't set. Hit testing for the Parent Listener stops working.
         child: Stack(
           children: [
             DragBoxLayer(
@@ -38,10 +39,10 @@ class _LayoutCanvasState extends State<LayoutCanvas> {
               onPositionChange: (xPosDelta, yPosDelta, blockId) {
                 _handlePositionChange(blockId, xPosDelta, yPosDelta);
               },
-              onSizeChange:
-                  (widthDelta, heightDelta, xPosDelta, yPosDelta, blockId, pointerId) {
-                _handleSizeChange(
-                    blockId, widthDelta, heightDelta, xPosDelta, yPosDelta, pointerId);
+              onSizeChange: (widthDelta, heightDelta, xPosDelta, yPosDelta,
+                  blockId, pointerId) {
+                _handleSizeChange(blockId, widthDelta, heightDelta, xPosDelta,
+                    yPosDelta, pointerId);
               },
               onDragBoxClick: (blockId, pointerId) {
                 setState(() {
@@ -90,9 +91,11 @@ class _LayoutCanvasState extends State<LayoutCanvas> {
             height: item.height,
             width: item.width,
             child: Container(
-                color: item.uid.hashCode.isEven
-                    ? Colors.deepOrange
-                    : Colors.deepPurple),
+                decoration: BoxDecoration(
+                    border: Border.all(color: Colors.white),
+                    color: item.uid.hashCode.isEven
+                        ? Colors.deepOrange
+                        : Colors.deepPurple)),
           ));
     }));
   }
