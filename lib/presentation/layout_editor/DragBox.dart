@@ -44,6 +44,15 @@ class DragBox extends StatelessWidget {
       ),
     );
 
+    final topCenter = Positioned(
+      top: 0,
+      left: width / 2 - dragHandleWidth / 2,
+      child: DragHandle(
+        selected: selected,
+        onDrag: _handleTopCenterDrag
+      )
+    );
+
     final topRight = Positioned(
       top: 0,
       left: width - dragHandleWidth,
@@ -51,6 +60,15 @@ class DragBox extends StatelessWidget {
         selected: selected,
         onDrag: _handleTopRightDrag,
       ),
+    );
+
+    final middleRight = Positioned(
+      top: height / 2 - dragHandleHeight / 2,
+      left: width - dragHandleWidth,
+      child: DragHandle(
+        selected: selected,
+        onDrag: _handleMiddleRightDrag,
+      )
     );
 
     final bottomRight = Positioned(
@@ -62,12 +80,30 @@ class DragBox extends StatelessWidget {
       ),
     );
 
+    final bottomCenter = Positioned(
+      top: height - dragHandleHeight,
+      left: width / 2 - dragHandleWidth / 2,
+      child: DragHandle(
+        selected: selected,
+        onDrag: _handleBottomCenterDrag,
+      ),
+    );
+
     final bottomLeft = Positioned(
       top: height - dragHandleHeight,
       left: 0,
       child: DragHandle(
         selected: selected,
         onDrag: _handleBottomLeftDrag,
+      ),
+    );
+
+    final middleLeft = Positioned(
+      top: height / 2 - dragHandleHeight / 2,
+      left: 0,
+      child: DragHandle(
+        selected: selected,
+        onDrag: _handleMiddleLeftDrag,
       ),
     );
 
@@ -98,9 +134,13 @@ class DragBox extends StatelessWidget {
                 ),
               )),
           topLeft,
+          topCenter,
           topRight,
+          middleRight,
           bottomRight,
+          bottomCenter,
           bottomLeft,
+          middleLeft,
         ],
       ),
     );
@@ -110,6 +150,20 @@ class DragBox extends StatelessWidget {
     final double widthDelta = _invertSign(deltaX);
     final double heightDelta = _invertSign(deltaY);
     final double xPosDelta = deltaX;
+    final double yPosDelta = deltaY;
+
+    onSizeChange(
+      widthDelta,
+      heightDelta,
+      xPosDelta,
+      yPosDelta,
+    );
+  }
+
+  void _handleTopCenterDrag(double deltaX, double deltaY) {
+    final double widthDelta = 0;
+    final double heightDelta = _invertSign(deltaY);
+    final double xPosDelta = 0;
     final double yPosDelta = deltaY;
 
     onSizeChange(
@@ -134,8 +188,36 @@ class DragBox extends StatelessWidget {
     );
   }
 
+  void _handleMiddleRightDrag(double deltaX, double deltaY) {
+    final double widthDelta = deltaX;
+    final double heightDelta = 0;
+    final double xPosDelta = 0;
+    final double yPosDelta = 0;
+
+    onSizeChange(
+      widthDelta,
+      heightDelta,
+      xPosDelta,
+      yPosDelta,
+    );
+  }
+
   void _handleBottomRightDrag(double deltaX, double deltaY) {
     final double widthDelta = deltaX;
+    final double heightDelta = deltaY;
+    final double xPosDelta = 0;
+    final double yPosDelta = 0;
+
+    onSizeChange(
+      widthDelta,
+      heightDelta,
+      xPosDelta,
+      yPosDelta,
+    );
+  }
+
+  void _handleBottomCenterDrag(double deltaX, double deltaY) {
+    final double widthDelta = 0;
     final double heightDelta = deltaY;
     final double xPosDelta = 0;
     final double yPosDelta = 0;
@@ -151,6 +233,20 @@ class DragBox extends StatelessWidget {
   void _handleBottomLeftDrag(double deltaX, double deltaY) {
     final double widthDelta = _invertSign(deltaX);
     final double heightDelta = deltaY;
+    final double xPosDelta = deltaX;
+    final double yPosDelta = 0;
+
+    onSizeChange(
+      widthDelta,
+      heightDelta,
+      xPosDelta,
+      yPosDelta,
+    );
+  }
+
+  void _handleMiddleLeftDrag(double deltaX, double deltaY) {
+    final double widthDelta = _invertSign(deltaX);
+    final double heightDelta = 0;
     final double xPosDelta = deltaX;
     final double yPosDelta = 0;
 
