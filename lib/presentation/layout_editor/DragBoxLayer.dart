@@ -1,5 +1,6 @@
 import 'package:darkwrong/presentation/layout_editor/DragBox.dart';
 import 'package:darkwrong/presentation/layout_editor/DragHandle.dart';
+import 'package:darkwrong/presentation/layout_editor/DragHandles.dart';
 import 'package:darkwrong/presentation/layout_editor/LayoutCanvas.dart';
 import 'package:flutter/material.dart';
 
@@ -27,8 +28,32 @@ class DragBoxLayer extends StatelessWidget {
       children: [
         ..._positionBlocks(),
         ..._drawDragBoxes(),
+        ..._drawDragHandles(),
       ],
     );
+  }
+
+  List<Widget> _drawDragHandles() {
+    return blocks.values.map((block) {
+      final blockId = block.id;
+      return Positioned(
+        left: block.xPos - dragHandleWidth / 2,
+        top: block.yPos - dragHandleHeight / 2,
+        width: block.width + dragHandleWidth,
+        height: block.height + dragHandleHeight,
+        child: DragHandles(
+          selected: selectedBlockIds.contains(blockId),
+          xPos: block.xPos,
+          yPos: block.yPos,
+          height: block.height + dragHandleHeight,
+          width: block.width + dragHandleWidth,
+          onSizeChange:
+              (widthDelta, heightDelta, xPosDelta, yPosDelta, pointerId) =>
+                  _handleSizeChange(widthDelta, heightDelta, xPosDelta,
+                      yPosDelta, blockId, pointerId),
+        ),
+      );
+    }).toList();
   }
 
   List<Widget> _drawDragBoxes() {
@@ -47,9 +72,6 @@ class DragBoxLayer extends StatelessWidget {
           width: block.width + dragHandleWidth,
           onPositionChange: (xPosDelta, yPosDelta) =>
               _handlePositionChange(xPosDelta, yPosDelta, blockId),
-          onSizeChange: (widthDelta, heightDelta, xPosDelta, yPosDelta, pointerId) =>
-              _handleSizeChange(
-                  widthDelta, heightDelta, xPosDelta, yPosDelta, blockId, pointerId),
           onClick: (pointerId) => onDragBoxClick?.call(blockId, pointerId),
         ),
       );
@@ -63,7 +85,8 @@ class DragBoxLayer extends StatelessWidget {
 
   void _handleSizeChange(double widthDelta, double heightDelta,
       double xPosDelta, double yPosDelta, String blockId, int pointerId) {
-    onSizeChange(widthDelta, heightDelta, xPosDelta, yPosDelta, blockId, pointerId);
+    onSizeChange(
+        widthDelta, heightDelta, xPosDelta, yPosDelta, blockId, pointerId);
   }
 
   List<Widget> _positionBlocks() {
