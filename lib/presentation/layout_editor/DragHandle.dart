@@ -27,7 +27,7 @@ class DragHandle extends StatelessWidget {
                 shape: BoxShape.circle,
                 border:
                     Border.all(color: Theme.of(context).accentColor, width: 2),
-                color: Theme.of(context).colorScheme.surface,
+                color: Theme.of(context).colorScheme.onBackground,
               )
             : null,
       ),
