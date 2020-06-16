@@ -1,5 +1,5 @@
 import 'package:darkwrong/containers/HomeScreenContainer.dart';
-import 'package:darkwrong/presentation/layout_editor/DragContainer.dart';
+import 'package:darkwrong/presentation/layout_editor/DragBox.dart';
 import 'package:darkwrong/presentation/layout_editor/DragHandle.dart';
 import 'package:darkwrong/presentation/layout_editor/LayoutCanvas.dart';
 import 'package:darkwrong/redux/AppStore.dart';

@@ -1,5 +1,4 @@
-import 'package:darkwrong/presentation/layout_editor/DragContainer.dart';
-import 'package:darkwrong/presentation/layout_editor/DragHandle.dart';
+import 'package:darkwrong/presentation/layout_editor/DragBoxLayer.dart';
 import 'package:darkwrong/util/getUid.dart';
 import 'package:flutter/material.dart';
 
@@ -12,13 +11,29 @@ class LayoutCanvas extends StatefulWidget {
 
 class _LayoutCanvasState extends State<LayoutCanvas> {
   Map<String, LayoutObject> _layoutObjects = {};
-  String _selectedObjectId = '';
+  Set<String> _selectedBlockIds = {};
 
   @override
   Widget build(BuildContext context) {
     return Stack(
       children: [
-        ..._buildObjects(),
+        DragBoxLayer(
+          selectedBlockIds: _selectedBlockIds,
+          blocks: _buildBlocks(),
+          onPositionChange: (xPosDelta, yPosDelta, blockId) {
+            _handlePositionChange(blockId, xPosDelta, yPosDelta);
+          },
+          onSizeChange:
+              (widthDelta, heightDelta, xPosDelta, yPosDelta, blockId) {
+            _handleSizeChange(
+                blockId, widthDelta, heightDelta, xPosDelta, yPosDelta);
+          },
+          onDragBoxClick: (blockId) {
+            setState(() {
+              _selectedBlockIds = <String>{blockId};
+            });
+          },
+        ),
         Positioned(
             bottom: 0,
             right: 0,
@@ -45,35 +60,23 @@ class _LayoutCanvasState extends State<LayoutCanvas> {
     );
   }
 
-  List<Widget> _buildObjects() {
-    return _layoutObjects.values.map((item) {
-      final isSelected = item.uid == _selectedObjectId;
-      final child = Container(color: Colors.pink);
-
-      return Positioned(
-          top: isSelected ? item.yPos - dragHandleHeight / 2 : item.yPos,
-          left: isSelected ? item.xPos - dragHandleWidth / 2 : item.xPos,
-          width: isSelected ? item.width + dragHandleWidth : item.width,
-          height: isSelected ? item.height + dragHandleHeight : item.height,
-          child: DragContainer(
-            child: child,
-            selected: isSelected,
-            height: item.height + dragHandleHeight,
-            width: item.width + dragHandleWidth,
-            onPositionChange: (xPosDelta, yPosDelta) =>
-                _handlePositionChange(item.uid, xPosDelta, yPosDelta),
-            onSizeChange: (widthDelta, heightDelta, xPosDelta, yPosDelta) =>
-                _handleSizeChange(
-                    item.uid, widthDelta, heightDelta, xPosDelta, yPosDelta),
-            onSelected: () {
-              if (isSelected == false) {
-                setState(() {
-                  _selectedObjectId = item.uid;
-                });
-              }
-            },
+  Map<String, LayoutBlock> _buildBlocks() {
+    return Map<String, LayoutBlock>.fromEntries(
+        _layoutObjects.values.map((item) {
+      return MapEntry(
+          item.uid,
+          LayoutBlock(
+            id: item.uid,
+            xPos: item.xPos,
+            yPos: item.yPos,
+            height: item.height,
+            width: item.width,
+            child: Container(
+                color: item.uid.hashCode.isEven
+                    ? Colors.deepOrange
+                    : Colors.deepPurple),
           ));
-    }).toList();
+    }));
   }
 
   void _handlePositionChange(String uid, double xPosDelta, double yPosDelta) {
@@ -88,8 +91,13 @@ class _LayoutCanvasState extends State<LayoutCanvas> {
     });
   }
 
-  void _handleSizeChange(String uid, double widthDelta, double heightDelta,
-      double xPosDelta, double yPosDelta) {
+  void _handleSizeChange(
+    String uid,
+    double widthDelta,
+    double heightDelta,
+    double xPosDelta,
+    double yPosDelta,
+  ) {
     final newMap = Map<String, LayoutObject>.from(_layoutObjects);
     final item = newMap[uid];
     newMap[uid] = item.copyWith(
@@ -102,6 +110,29 @@ class _LayoutCanvasState extends State<LayoutCanvas> {
     setState(() {
       _layoutObjects = newMap;
     });
+  }
+}
+
+class LayoutBlock extends StatelessWidget {
+  final String id;
+  final Widget child;
+  final double xPos;
+  final double yPos;
+  final double width;
+  final double height;
+  const LayoutBlock({
+    Key key,
+    @required this.id,
+    this.xPos,
+    this.yPos,
+    this.width,
+    this.height,
+    this.child,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return child;
   }
 }
 

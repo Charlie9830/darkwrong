@@ -8,6 +8,7 @@ const double dragHandleHeight = 20.0;
 class DragHandle extends StatelessWidget {
   final bool selected;
   final OnDragCallback onDrag;
+
   const DragHandle({Key key, this.onDrag, this.selected = false}) : super(key: key);
 
   @override
@@ -19,16 +20,17 @@ class DragHandle extends StatelessWidget {
         }
       },
       child: Container(
-          width: dragHandleWidth,
-          height: dragHandleHeight,
-          decoration: selected
-              ? BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                      color: Theme.of(context).accentColor, width: 2),
-                  color: Theme.of(context).colorScheme.surface,
-                )
-              : null),
+        width: dragHandleWidth,
+        height: dragHandleHeight,
+        decoration: selected
+            ? BoxDecoration(
+                shape: BoxShape.circle,
+                border:
+                    Border.all(color: Theme.of(context).accentColor, width: 2),
+                color: Theme.of(context).colorScheme.surface,
+              )
+            : null,
+      ),
     );
   }
 }

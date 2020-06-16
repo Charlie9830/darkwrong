@@ -4,30 +4,33 @@ import 'package:flutter/material.dart';
 typedef void OnSizeChangeCallback(
     double widthDelta, double heightDelta, double xPosDelta, double yPosDelta);
 
-typedef void OnSelectedCallback();
+typedef void OnClickCallback();
 
 typedef void OnPositionChangeCallback(
   double xDelta,
   double yDelta,
 );
 
-class DragContainer extends StatelessWidget {
-  final Widget child;
+class DragBox extends StatelessWidget {
+  final bool selected;
+  final double xPos;
+  final double yPos;
   final double width;
   final double height;
-  final bool selected;
-  final OnSelectedCallback onSelected;
+  final OnClickCallback onClick;
   final OnSizeChangeCallback onSizeChange;
   final OnPositionChangeCallback onPositionChange;
-  const DragContainer({
+
+  const DragBox({
     Key key,
-    this.child,
     this.width,
+    this.xPos,
+    this.yPos,
     this.height,
     this.onSizeChange,
     this.onPositionChange,
+    this.onClick,
     this.selected = false,
-    this.onSelected,
   }) : super(key: key);
 
   @override
@@ -69,38 +72,31 @@ class DragContainer extends StatelessWidget {
     );
 
     return Container(
-      width: width,
-      height: height,
       child: Stack(
+        alignment: Alignment.center,
         children: [
           Positioned(
-            top: dragHandleHeight / 2,
-            bottom: dragHandleHeight / 2,
-            left: dragHandleWidth / 2,
-            right: dragHandleWidth / 2,
-            child: Listener(
-              onPointerDown: (pointerEvent) {
-                if (selected == false) {
-                  onSelected?.call();
-                }
-              },
-              onPointerMove: (pointerEvent) {
-                if (pointerEvent.down) {
-                  onPositionChange?.call(
-                      pointerEvent.delta.dx, pointerEvent.delta.dy);
-                }
-              },
-              child: Container(
-                padding: selected ? EdgeInsets.all(8) : EdgeInsets.zero,
-                decoration: selected
-                    ? BoxDecoration(
-                        border:
-                            Border.all(color: Theme.of(context).accentColor))
-                    : null,
-                child: child,
-              ),
-            ),
-          ),
+              width: width - dragHandleWidth,
+              height: height - dragHandleHeight,
+              child: Listener(
+                onPointerDown: (pointerEvent) {
+                  onClick?.call();
+                },
+                onPointerMove: (pointerEvent) {
+                  if (pointerEvent.down) {
+                    onPositionChange?.call(
+                        pointerEvent.localDelta.dx, pointerEvent.localDelta.dy);
+                  }
+                },
+                child: Container(
+                  decoration: BoxDecoration(
+                      border: Border.all(
+                          color: Theme.of(context).accentColor,
+                          width: 2.0,
+                          style:
+                              selected ? BorderStyle.solid : BorderStyle.none)),
+                ),
+              )),
           topLeft,
           topRight,
           bottomRight,
