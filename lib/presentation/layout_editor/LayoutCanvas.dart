@@ -96,8 +96,8 @@ class _LayoutCanvasState extends State<LayoutCanvas> {
             id: item.uid,
             xPos: item.xPos,
             yPos: item.yPos,
-            height: item.height,
-            width: item.width,
+            height: item.renderHeight,
+            width: item.renderWidth,
             child: Container(
                 decoration: BoxDecoration(
                     border: Border.all(color: Colors.white),
@@ -211,12 +211,13 @@ class _LayoutCanvasState extends State<LayoutCanvas> {
         setState(() {
           _layoutObjects = Map<String, LayoutObject>.from(_layoutObjects)
             ..update(
-                blockId,
-                (existing) => existing.copyWith(
-                    width: newWidth,
-                    height: newHeight,
-                    xPos: newXPos,
-                    yPos: newYPos));
+              blockId,
+              (existing) => existing.copyWith(
+                  width: newWidth,
+                  height: newHeight,
+                  xPos: newXPos,
+                  yPos: newYPos),
+            );
 
           _lastPointerId = pointerId;
           _activeDragHandle = currentDragHandle;
@@ -289,6 +290,7 @@ class LayoutBlock extends StatelessWidget {
   final double yPos;
   final double width;
   final double height;
+
   const LayoutBlock({
     Key key,
     @required this.id,
@@ -339,6 +341,9 @@ class LayoutObject {
       color: color ?? this.color,
     );
   }
+
+  double get renderWidth => width.clamp(16.0, double.maxFinite);
+  double get renderHeight => height.clamp(16.0, double.maxFinite);
 
   Rect getRectangle() {
     return Rect.fromPoints(Offset(0, 0), Offset(width, height));
