@@ -5,13 +5,18 @@ import 'package:darkwrong/presentation/layout_editor/LayoutCanvas.dart';
 import 'package:flutter/material.dart';
 
 typedef void OnDragBoxClickCallback(String blockId, int pointerId);
+typedef void OnResizeDoneCallback(int pointerId);
+typedef void OnResizeStartCallback(DragHandlePosition handlePosition, int pointerId, String blockId);
 
 class DragBoxLayer extends StatelessWidget {
   final Map<String, LayoutBlock> blocks;
   final Set<String> selectedBlockIds;
   final dynamic onPositionChange;
   final dynamic onSizeChange;
+  final dynamic onDragHandleDragged;
+  final OnResizeDoneCallback onResizeDone;
   final OnDragBoxClickCallback onDragBoxClick;
+  final OnResizeStartCallback onResizeStart;
 
   const DragBoxLayer({
     Key key,
@@ -20,6 +25,9 @@ class DragBoxLayer extends StatelessWidget {
     this.selectedBlockIds,
     this.onDragBoxClick,
     this.onPositionChange,
+    this.onResizeDone,
+    this.onDragHandleDragged,
+    this.onResizeStart,
   }) : super(key: key);
 
   @override
@@ -47,10 +55,13 @@ class DragBoxLayer extends StatelessWidget {
           yPos: block.yPos,
           height: block.height + dragHandleHeight,
           width: block.width + dragHandleWidth,
-          onSizeChange:
-              (widthDelta, heightDelta, xPosDelta, yPosDelta, pointerId) =>
-                  _handleSizeChange(widthDelta, heightDelta, xPosDelta,
-                      yPosDelta, blockId, pointerId),
+          onSizeChange: (widthDelta, heightDelta, xPosDelta, yPosDelta, pointerId) =>
+              _handleSizeChange(widthDelta, heightDelta, xPosDelta, yPosDelta,
+                  blockId, pointerId),
+          onDrag: (deltaX, deltaY, pointerXPos, pointerYPos, position, pointerId) =>
+              onDragHandleDragged(deltaX, deltaY, pointerXPos, pointerYPos, position, pointerId, blockId),
+          onDragDone: (pointerId) => onResizeDone?.call(pointerId),
+          onDragStart: (handlePosition, pointerId) => onResizeStart?.call(handlePosition, pointerId, blockId),
         ),
       );
     }).toList();
@@ -83,10 +94,14 @@ class DragBoxLayer extends StatelessWidget {
     onPositionChange(xPosDelta, yPosDelta, blockId);
   }
 
-  void _handleSizeChange(double widthDelta, double heightDelta,
-      double xPosDelta, double yPosDelta, String blockId, int pointerId) {
-    onSizeChange(
-        widthDelta, heightDelta, xPosDelta, yPosDelta, blockId, pointerId);
+  void _handleSizeChange(
+      double widthDelta,
+      double heightDelta,
+      double xPosDelta,
+      double yPosDelta,
+      String blockId,
+      int pointerId) {
+    onSizeChange(widthDelta, heightDelta, xPosDelta, yPosDelta, blockId, pointerId);
   }
 
   List<Widget> _positionBlocks() {

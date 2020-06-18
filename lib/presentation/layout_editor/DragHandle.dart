@@ -1,15 +1,25 @@
 import 'package:flutter/material.dart';
 
-typedef void OnDragCallback(double deltaX, double deltaY, int pointerId);
+typedef void OnDragCallback(
+    double deltaX, double deltaY, double posX, double posY, int pointerId);
+typedef void OnDragDoneCallback(int pointerId);
+typedef void OnDragStartCallback(int pointerId);
 
 const double dragHandleWidth = 12.0;
 const double dragHandleHeight = 12.0;
 
 class DragHandle extends StatelessWidget {
   final bool selected;
+  final OnDragStartCallback onDragStart;
   final OnDragCallback onDrag;
+  final OnDragDoneCallback onDragDone;
 
-  const DragHandle({Key key, this.onDrag, this.selected = false})
+  const DragHandle(
+      {Key key,
+      this.onDrag,
+      this.onDragStart,
+      this.selected = false,
+      this.onDragDone})
       : super(key: key);
 
   @override
@@ -17,14 +27,19 @@ class DragHandle extends StatelessWidget {
     return Listener(
       onPointerMove: (pointerEvent) {
         if (pointerEvent.down) {
-          onDrag?.call(pointerEvent.localDelta.dx, pointerEvent.localDelta.dy,
+          onDrag?.call(
+              pointerEvent.localDelta.dx,
+              pointerEvent.localDelta.dy,
+              pointerEvent.position.dx,
+              pointerEvent.position.dy,
               pointerEvent.original.pointer);
         }
       },
+      onPointerUp: (pointerEvent) {
+        onDragDone?.call(pointerEvent.original.pointer);
+      },
       onPointerDown: (pointerEvent) {
-        // Dispatch a fake onDrag Call. This triggers an update to the _lastPointerId property opf the LayoutCanvas State whicb makes it possible to
-        // infer the difference between a Canvas Click and an Layout Block Click.
-        onDrag?.call(0, 0, pointerEvent.original.pointer);
+        onDragStart?.call(pointerEvent.original.pointer);
       },
       child: Container(
         width: dragHandleWidth,

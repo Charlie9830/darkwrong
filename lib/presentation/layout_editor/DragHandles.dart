@@ -1,8 +1,24 @@
 import 'package:darkwrong/presentation/layout_editor/DragHandle.dart';
 import 'package:flutter/material.dart';
 
-typedef void OnSizeChangeCallback(
-    double widthDelta, double heightDelta, double xPosDelta, double yPosDelta, int pointerId);
+enum DragHandlePosition {
+  topLeft,
+  topCenter,
+  topRight,
+  middleRight,
+  bottomRight,
+  bottomCenter,
+  bottomLeft,
+  middleLeft,
+}
+
+typedef void OnSizeChangeCallback(double widthDelta, double heightDelta,
+    double xPosDelta, double yPosDelta, int pointerId);
+
+typedef void OnHandleDragged(double deltaX, double deltaY, double pointerXPos,
+    double pointerYPos, DragHandlePosition position, int pointerId);
+
+typedef void OnDragHandlesDragStartCallback(DragHandlePosition handlePosition, int pointerId);
 
 class DragHandles extends StatelessWidget {
   final bool selected;
@@ -11,6 +27,9 @@ class DragHandles extends StatelessWidget {
   final double width;
   final double height;
   final OnSizeChangeCallback onSizeChange;
+  final OnDragHandlesDragStartCallback onDragStart;
+  final OnDragDoneCallback onDragDone;
+  final OnHandleDragged onDrag;
 
   const DragHandles({
     Key key,
@@ -19,6 +38,9 @@ class DragHandles extends StatelessWidget {
     this.yPos,
     this.height,
     this.onSizeChange,
+    this.onDrag,
+    this.onDragDone,
+    this.onDragStart,
     this.selected = false,
   }) : super(key: key);
 
@@ -30,13 +52,20 @@ class DragHandles extends StatelessWidget {
       child: DragHandle(
         selected: selected,
         onDrag: _handleTopLeftDrag,
+        onDragDone: _handleDragDone,
+        onDragStart: (pointerId) => _handleDragStart(DragHandlePosition.topLeft, pointerId),
       ),
     );
 
     final topCenter = Positioned(
         top: 0,
         left: width / 2 - dragHandleWidth / 2,
-        child: DragHandle(selected: selected, onDrag: _handleTopCenterDrag));
+        child: DragHandle(
+          selected: selected,
+          onDrag: _handleTopCenterDrag,
+          onDragDone: _handleDragDone,
+          onDragStart: (pointerId) => _handleDragStart(DragHandlePosition.topCenter, pointerId),
+        ));
 
     final topRight = Positioned(
       top: 0,
@@ -44,6 +73,8 @@ class DragHandles extends StatelessWidget {
       child: DragHandle(
         selected: selected,
         onDrag: _handleTopRightDrag,
+        onDragDone: _handleDragDone,
+        onDragStart: (pointerId) => _handleDragStart(DragHandlePosition.topRight, pointerId),
       ),
     );
 
@@ -53,6 +84,8 @@ class DragHandles extends StatelessWidget {
         child: DragHandle(
           selected: selected,
           onDrag: _handleMiddleRightDrag,
+          onDragDone: _handleDragDone,
+          onDragStart: (pointerId) => _handleDragStart(DragHandlePosition.middleRight, pointerId),
         ));
 
     final bottomRight = Positioned(
@@ -61,6 +94,8 @@ class DragHandles extends StatelessWidget {
       child: DragHandle(
         selected: selected,
         onDrag: _handleBottomRightDrag,
+        onDragDone: _handleDragDone,
+        onDragStart: (pointerId) => _handleDragStart(DragHandlePosition.bottomRight, pointerId),
       ),
     );
 
@@ -70,6 +105,8 @@ class DragHandles extends StatelessWidget {
       child: DragHandle(
         selected: selected,
         onDrag: _handleBottomCenterDrag,
+        onDragDone: _handleDragDone,
+        onDragStart: (pointerId) => _handleDragStart(DragHandlePosition.bottomCenter, pointerId),
       ),
     );
 
@@ -79,6 +116,8 @@ class DragHandles extends StatelessWidget {
       child: DragHandle(
         selected: selected,
         onDrag: _handleBottomLeftDrag,
+        onDragDone: _handleDragDone,
+        onDragStart: (pointerId) => _handleDragStart(DragHandlePosition.bottomLeft, pointerId),
       ),
     );
 
@@ -88,6 +127,8 @@ class DragHandles extends StatelessWidget {
       child: DragHandle(
         selected: selected,
         onDrag: _handleMiddleLeftDrag,
+        onDragDone: _handleDragDone,
+        onDragStart: (pointerId) => _handleDragStart(DragHandlePosition.middleLeft, pointerId),
       ),
     );
 
@@ -110,7 +151,19 @@ class DragHandles extends StatelessWidget {
     );
   }
 
-  void _handleTopLeftDrag(double deltaX, double deltaY, int pointerId) {
+  void _handleDragStart(DragHandlePosition position, int pointerId) {
+    onDragStart?.call(position, pointerId);
+  }
+
+  void _handleDragDone(int pointerId) {
+    onDragDone?.call(pointerId);
+  }
+
+  void _handleTopLeftDrag(double deltaX, double deltaY, double pointerXPos,
+      double pointerYPos, int pointerId) {
+    onDrag?.call(deltaX, deltaY, pointerXPos, pointerYPos,
+        DragHandlePosition.topLeft, pointerId);
+
     final double widthDelta = _invertSign(deltaX);
     final double heightDelta = _invertSign(deltaY);
     final double xPosDelta = deltaX;
@@ -125,7 +178,11 @@ class DragHandles extends StatelessWidget {
     );
   }
 
-  void _handleTopCenterDrag(double deltaX, double deltaY, int pointerId) {
+  void _handleTopCenterDrag(double deltaX, double deltaY, double pointerXPos,
+      double pointerYPos, int pointerId) {
+    onDrag?.call(deltaX, deltaY, pointerXPos, pointerYPos,
+        DragHandlePosition.topCenter, pointerId);
+
     final double widthDelta = 0;
     final double heightDelta = _invertSign(deltaY);
     final double xPosDelta = 0;
@@ -140,7 +197,11 @@ class DragHandles extends StatelessWidget {
     );
   }
 
-  void _handleTopRightDrag(double deltaX, double deltaY, int pointerId) {
+  void _handleTopRightDrag(double deltaX, double deltaY, double pointerXPos,
+      double pointerYPos, int pointerId) {
+    onDrag?.call(deltaX, deltaY, pointerXPos, pointerYPos,
+        DragHandlePosition.topRight, pointerId);
+
     final double widthDelta = deltaX;
     final double heightDelta = _invertSign(deltaY);
     final double xPosDelta = 0;
@@ -155,7 +216,11 @@ class DragHandles extends StatelessWidget {
     );
   }
 
-  void _handleMiddleRightDrag(double deltaX, double deltaY, int pointerId) {
+  void _handleMiddleRightDrag(double deltaX, double deltaY, double pointerXPos,
+      double pointerYPos, int pointerId) {
+    onDrag?.call(deltaX, deltaY, pointerXPos, pointerYPos,
+        DragHandlePosition.middleRight, pointerId);
+
     final double widthDelta = deltaX;
     final double heightDelta = 0;
     final double xPosDelta = 0;
@@ -170,7 +235,11 @@ class DragHandles extends StatelessWidget {
     );
   }
 
-  void _handleBottomRightDrag(double deltaX, double deltaY, int pointerId) {
+  void _handleBottomRightDrag(double deltaX, double deltaY, double pointerXPos,
+      double pointerYPos, int pointerId) {
+    onDrag?.call(deltaX, deltaY, pointerXPos, pointerYPos,
+        DragHandlePosition.bottomRight, pointerId);
+
     final double widthDelta = deltaX;
     final double heightDelta = deltaY;
     final double xPosDelta = 0;
@@ -185,7 +254,11 @@ class DragHandles extends StatelessWidget {
     );
   }
 
-  void _handleBottomCenterDrag(double deltaX, double deltaY, int pointerId) {
+  void _handleBottomCenterDrag(double deltaX, double deltaY, double pointerXPos,
+      double pointerYPos, int pointerId) {
+    onDrag?.call(deltaX, deltaY, pointerXPos, pointerYPos,
+        DragHandlePosition.bottomCenter, pointerId);
+
     final double widthDelta = 0;
     final double heightDelta = deltaY;
     final double xPosDelta = 0;
@@ -200,7 +273,11 @@ class DragHandles extends StatelessWidget {
     );
   }
 
-  void _handleBottomLeftDrag(double deltaX, double deltaY, int pointerId) {
+  void _handleBottomLeftDrag(double deltaX, double deltaY, double pointerXPos,
+      double pointerYPos, int pointerId) {
+    onDrag?.call(deltaX, deltaY, pointerXPos, pointerYPos,
+        DragHandlePosition.bottomLeft, pointerId);
+
     final double widthDelta = _invertSign(deltaX);
     final double heightDelta = deltaY;
     final double xPosDelta = deltaX;
@@ -215,7 +292,11 @@ class DragHandles extends StatelessWidget {
     );
   }
 
-  void _handleMiddleLeftDrag(double deltaX, double deltaY, int pointerId) {
+  void _handleMiddleLeftDrag(double deltaX, double deltaY, double pointerXPos,
+      double pointerYPos, int pointerId) {
+    onDrag?.call(deltaX, deltaY, pointerXPos, pointerYPos,
+        DragHandlePosition.middleLeft, pointerId);
+
     final double widthDelta = _invertSign(deltaX);
     final double heightDelta = 0;
     final double xPosDelta = deltaX;

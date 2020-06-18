@@ -37,10 +37,19 @@ class _DarkwrongState extends State<Darkwrong> {
         ),
         home: Scaffold(
           appBar: AppBar(title: Text('Layout Editor')),
-          body: LayoutCanvas(),
+          body: Row(
+            children: [
+              Container(
+                width: 100.0,
+                color: Colors.blue,
+              ),
+              Expanded(
+                child: LayoutCanvas(),
+              )
+            ],
+          ),
         ),
       ),
     );
   }
 }
-

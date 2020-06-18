@@ -1,4 +1,6 @@
 import 'package:darkwrong/presentation/layout_editor/DragBoxLayer.dart';
+import 'package:darkwrong/presentation/layout_editor/DragHandle.dart';
+import 'package:darkwrong/presentation/layout_editor/DragHandles.dart';
 import 'package:darkwrong/util/getUid.dart';
 import 'package:flutter/material.dart';
 
@@ -16,6 +18,8 @@ class _LayoutCanvasState extends State<LayoutCanvas> {
   Map<String, LayoutObject> _layoutObjects = {};
   Set<String> _selectedBlockIds = {};
   int _lastPointerId;
+  double _startingXPos = 0.0;
+  DragHandlePosition _activeDragHandle;
 
   @override
   Widget build(BuildContext context) {
@@ -50,29 +54,33 @@ class _LayoutCanvasState extends State<LayoutCanvas> {
                   _lastPointerId = pointerId;
                 });
               },
+              onDragHandleDragged: _handleDragHandleDragged,
+              onResizeDone: _handleResizeDone,
+              onResizeStart: _handleResizeStart,
             ),
             Positioned(
-                bottom: 0,
-                right: 0,
-                child: RaisedButton(
-                  child: Text('New'),
-                  onPressed: () {
-                    setState(() {
-                      final uid = getUid();
-                      _layoutObjects =
-                          Map<String, LayoutObject>.from(_layoutObjects)
-                            ..addAll({
-                              uid: LayoutObject(
-                                uid: uid,
-                                height: 100,
-                                width: 100,
-                                xPos: 25,
-                                yPos: 25,
-                              )
-                            });
-                    });
-                  },
-                ))
+              bottom: 0,
+              right: 0,
+              child: RaisedButton(
+                child: Text('New'),
+                onPressed: () {
+                  setState(() {
+                    final uid = getUid();
+                    _layoutObjects =
+                        Map<String, LayoutObject>.from(_layoutObjects)
+                          ..addAll({
+                            uid: LayoutObject(
+                              uid: uid,
+                              height: 100,
+                              width: 100,
+                              xPos: 25,
+                              yPos: 25,
+                            )
+                          });
+                  });
+                },
+              ),
+            )
           ],
         ),
       ),
@@ -100,6 +108,139 @@ class _LayoutCanvasState extends State<LayoutCanvas> {
     }));
   }
 
+  void _handleResizeDone(int pointerId) {
+    setState(() {
+      _startingXPos = 0.0;
+      _activeDragHandle = null;
+    });
+  }
+
+  void _handleResizeStart(
+      DragHandlePosition position, int pointerId, String blockId) {
+    final object = _layoutObjects[blockId];
+
+    setState(() {
+      _startingXPos = object.xPos;
+      _lastPointerId = pointerId;
+      _activeDragHandle = position;
+    });
+  }
+
+  void _handleDragHandleDragged(
+      double deltaX,
+      double deltaY,
+      double pointerXPos,
+      double pointerYPos,
+      DragHandlePosition handlePosition,
+      int pointerId,
+      String blockId) {
+    final object = _layoutObjects[blockId];
+
+    final DragHandlePosition currentDragHandle = () {
+      if (_activeDragHandle == DragHandlePosition.middleRight) {
+        if (object.xPos + object.width + deltaX <= _startingXPos) {
+          return DragHandlePosition.middleLeft;
+        } else {
+          return _activeDragHandle;
+        }
+      }
+
+      if (_activeDragHandle == DragHandlePosition.middleLeft) {
+        if (object.xPos + deltaX >= _startingXPos) {
+          return DragHandlePosition.middleRight;
+        } else {
+          return _activeDragHandle;
+        }
+      }
+    }();
+
+    switch (currentDragHandle) {
+      case DragHandlePosition.topLeft:
+        // TODO: Handle this case.
+        break;
+      case DragHandlePosition.topCenter:
+        // TODO: Handle this case.
+        break;
+      case DragHandlePosition.topRight:
+        // TODO: Handle this case.
+        break;
+      case DragHandlePosition.middleRight:
+        final double widthDelta = deltaX;
+        final double heightDelta = 0;
+        final double xPosDelta = 0;
+        final double yPosDelta = 0;
+
+        final newWidth = object.width + widthDelta;
+        final newHeight = object.height + heightDelta;
+        final newXPos = object.xPos + xPosDelta;
+        final newYPos = object.yPos + yPosDelta;
+
+        setState(() {
+          _layoutObjects = Map<String, LayoutObject>.from(_layoutObjects)
+            ..update(
+                blockId,
+                (existing) => existing.copyWith(
+                    width: newWidth,
+                    height: newHeight,
+                    xPos: newXPos,
+                    yPos: newYPos));
+          _lastPointerId = pointerId;
+          _activeDragHandle = currentDragHandle;
+        });
+        break;
+      case DragHandlePosition.bottomRight:
+        // TODO: Handle this case.
+        break;
+      case DragHandlePosition.bottomCenter:
+        // TODO: Handle this case.
+        break;
+      case DragHandlePosition.bottomLeft:
+        // TODO: Handle this case.
+        break;
+      case DragHandlePosition.middleLeft:
+        final double widthDelta = _invertSign(deltaX);
+        final double heightDelta = 0;
+        final double xPosDelta = deltaX;
+        final double yPosDelta = 0;
+
+        final newWidth = object.width + widthDelta;
+        final newHeight = object.height + heightDelta;
+        final newXPos = object.xPos + xPosDelta;
+        final newYPos = object.yPos + yPosDelta;
+
+        setState(() {
+          _layoutObjects = Map<String, LayoutObject>.from(_layoutObjects)
+            ..update(
+                blockId,
+                (existing) => existing.copyWith(
+                    width: newWidth,
+                    height: newHeight,
+                    xPos: newXPos,
+                    yPos: newYPos));
+
+          _lastPointerId = pointerId;
+          _activeDragHandle = currentDragHandle;
+        });
+        break;
+
+      default:
+        print('Taking no action');
+        break;
+    }
+  }
+
+  double _invertSign(double value) {
+    if (value == value.sign) {
+      return value;
+    }
+
+    if (value.sign == -1.0) {
+      return value.abs();
+    } else {
+      return 0 - value.abs();
+    }
+  }
+
   void _handlePositionChange(String uid, double xPosDelta, double yPosDelta) {
     final newMap = Map<String, LayoutObject>.from(_layoutObjects);
     newMap[uid] = newMap[uid].copyWith(
@@ -120,30 +261,24 @@ class _LayoutCanvasState extends State<LayoutCanvas> {
     double yPosDelta,
     int pointerId,
   ) {
-    final newMap = Map<String, LayoutObject>.from(_layoutObjects);
-    final item = newMap[uid];
-    final shouldClampWidth =
-        _shouldClamp(_minWidth, double.maxFinite, item.width + widthDelta);
-    final shouldClampHeight =
-        _shouldClamp(_minHeight, double.maxFinite, item.height + heightDelta);
-    final xPos = shouldClampWidth ? item.xPos : item.xPos + xPosDelta;
-    final yPos = shouldClampHeight ? item.yPos : item.yPos + yPosDelta;
+    // final newMap = Map<String, LayoutObject>.from(_layoutObjects);
+    // final item = newMap[uid];
+    // final xPos = item.xPos + xPosDelta;
+    // final yPos = item.yPos + yPosDelta;
+    // final width = item.width + widthDelta;
+    // final height = item.height + heightDelta;
 
-    newMap[uid] = item.copyWith(
-      width: shouldClampWidth ? item.width : item.width + widthDelta,
-      height: shouldClampHeight ? item.height : item.height + heightDelta,
-      xPos: xPos,
-      yPos: yPos,
-    );
+    // newMap[uid] = item.copyWith(
+    //   width: width.abs(),
+    //   height: height.abs(),
+    //   xPos: xPos,
+    //   yPos: yPos,
+    // );
 
-    setState(() {
-      _layoutObjects = newMap;
-      _lastPointerId = pointerId;
-    });
-  }
-
-  bool _shouldClamp(double min, double max, double value) {
-    return !(value > min && value < max);
+    // setState(() {
+    //   _layoutObjects = newMap;
+    //   _lastPointerId = pointerId;
+    // });
   }
 }
 
@@ -203,5 +338,9 @@ class LayoutObject {
       height: height ?? this.height,
       color: color ?? this.color,
     );
+  }
+
+  Rect getRectangle() {
+    return Rect.fromPoints(Offset(0, 0), Offset(width, height));
   }
 }
