@@ -4,6 +4,17 @@ import 'package:darkwrong/presentation/layout_editor/DragHandles.dart';
 import 'package:darkwrong/util/getUid.dart';
 import 'package:flutter/material.dart';
 
+const Map<DragHandlePosition, DragHandlePosition> _opposingDragHandles = {
+  DragHandlePosition.topLeft: DragHandlePosition.bottomRight,
+  DragHandlePosition.topCenter: DragHandlePosition.bottomCenter,
+  DragHandlePosition.topRight: DragHandlePosition.bottomLeft,
+  DragHandlePosition.middleRight: DragHandlePosition.middleLeft,
+  DragHandlePosition.bottomRight: DragHandlePosition.topLeft,
+  DragHandlePosition.bottomCenter: DragHandlePosition.topCenter,
+  DragHandlePosition.bottomLeft: DragHandlePosition.topRight,
+  DragHandlePosition.middleLeft: DragHandlePosition.middleRight,
+};
+
 class LayoutCanvas extends StatefulWidget {
   LayoutCanvas({Key key}) : super(key: key);
 
@@ -19,7 +30,9 @@ class _LayoutCanvasState extends State<LayoutCanvas> {
   Set<String> _selectedBlockIds = {};
   int _lastPointerId;
   double _startingXPos = 0.0;
-  DragHandlePosition _activeDragHandle;
+  double _startingWidth = 0.0;
+  DragHandlePosition _currentDragHandle;
+  DragHandlePosition _actualDragHandle;
 
   @override
   Widget build(BuildContext context) {
@@ -59,26 +72,58 @@ class _LayoutCanvasState extends State<LayoutCanvas> {
               onResizeStart: _handleResizeStart,
             ),
             Positioned(
+              top: 20,
+              left: 20,
+              child: Text(_currentDragHandle
+                      .toString()
+                      ?.replaceAll('DragHandlePosition.', '') ??
+                  'Null'),
+            ),
+            Positioned(
+              top: 200,
+              left: 600,
+              child: Container(
+                height: 700,
+                width: 2,
+                color: Colors.blueAccent,
+              ),
+            ),
+            Positioned(
               bottom: 0,
               right: 0,
-              child: RaisedButton(
-                child: Text('New'),
-                onPressed: () {
-                  setState(() {
-                    final uid = getUid();
-                    _layoutObjects =
-                        Map<String, LayoutObject>.from(_layoutObjects)
-                          ..addAll({
-                            uid: LayoutObject(
-                              uid: uid,
-                              height: 100,
-                              width: 100,
-                              xPos: 25,
-                              yPos: 25,
-                            )
-                          });
-                  });
-                },
+              child: Row(
+                children: [
+                  OutlineButton(
+                      child: Text('Reset'),
+                      onPressed: () {
+                        setState(() {
+                          _layoutObjects = <String, LayoutObject>{};
+                          _selectedBlockIds = <String>{};
+                          _startingXPos = 0.0;
+                          _startingWidth = 0.0;
+                          _currentDragHandle = null;
+                        });
+                      }),
+                  RaisedButton(
+                    child: Text('New'),
+                    onPressed: () {
+                      setState(() {
+                        final uid = getUid();
+                        _layoutObjects =
+                            Map<String, LayoutObject>.from(_layoutObjects)
+                              ..addAll({
+                                uid: LayoutObject(
+                                  uid: uid,
+                                  height: 100,
+                                  width: 100,
+                                  xPos: 25,
+                                  yPos: 25,
+                                )
+                              });
+                      });
+                    },
+                  ),
+                ],
               ),
             )
           ],
@@ -111,7 +156,7 @@ class _LayoutCanvasState extends State<LayoutCanvas> {
   void _handleResizeDone(int pointerId) {
     setState(() {
       _startingXPos = 0.0;
-      _activeDragHandle = null;
+      _currentDragHandle = null;
     });
   }
 
@@ -121,8 +166,9 @@ class _LayoutCanvasState extends State<LayoutCanvas> {
 
     setState(() {
       _startingXPos = object.xPos;
+      _startingWidth = object.width;
       _lastPointerId = pointerId;
-      _activeDragHandle = position;
+      _actualDragHandle = position;
     });
   }
 
@@ -136,20 +182,46 @@ class _LayoutCanvasState extends State<LayoutCanvas> {
       String blockId) {
     final object = _layoutObjects[blockId];
 
-    final DragHandlePosition currentDragHandle = () {
-      if (_activeDragHandle == DragHandlePosition.middleRight) {
-        if (object.xPos + object.width + deltaX <= _startingXPos) {
-          return DragHandlePosition.middleLeft;
+    final double crossOverPoint = () {
+      if (_currentDragHandle == DragHandlePosition.middleRight) {
+        if (_currentDragHandle == _actualDragHandle) {
+          return _startingXPos;
         } else {
-          return _activeDragHandle;
+          return _startingXPos + _startingWidth;
         }
       }
 
-      if (_activeDragHandle == DragHandlePosition.middleLeft) {
-        if (object.xPos + deltaX >= _startingXPos) {
+      if (_currentDragHandle == DragHandlePosition.middleLeft) {
+        if (_currentDragHandle == _actualDragHandle) {
+          return _startingXPos + _startingWidth;
+        } else {
+          return _startingXPos;
+        }
+      }
+    }();
+
+    bool didFlipOver = false;
+
+    final DragHandlePosition currentDragHandle = () {
+      if (_currentDragHandle == null) {
+        return handlePosition;
+      }
+
+      if (_currentDragHandle == DragHandlePosition.middleRight) {
+        if (object.xPos + object.width + deltaX <= crossOverPoint) {
+          didFlipOver = true;
+          return DragHandlePosition.middleLeft;
+        } else {
+          return _currentDragHandle;
+        }
+      }
+
+      if (_currentDragHandle == DragHandlePosition.middleLeft) {
+        if (object.xPos + deltaX >= crossOverPoint) {
+          didFlipOver = true;
           return DragHandlePosition.middleRight;
         } else {
-          return _activeDragHandle;
+          return _currentDragHandle;
         }
       }
     }();
@@ -178,14 +250,16 @@ class _LayoutCanvasState extends State<LayoutCanvas> {
         setState(() {
           _layoutObjects = Map<String, LayoutObject>.from(_layoutObjects)
             ..update(
-                blockId,
-                (existing) => existing.copyWith(
-                    width: newWidth,
-                    height: newHeight,
-                    xPos: newXPos,
-                    yPos: newYPos));
+              blockId,
+              (existing) => existing.copyWith(
+                width: newWidth.isNegative ? 0.0 : newWidth,
+                height: newHeight,
+                xPos: newXPos,
+                yPos: newYPos,
+              ),
+            );
           _lastPointerId = pointerId;
-          _activeDragHandle = currentDragHandle;
+          _currentDragHandle = currentDragHandle;
         });
         break;
       case DragHandlePosition.bottomRight:
@@ -213,14 +287,14 @@ class _LayoutCanvasState extends State<LayoutCanvas> {
             ..update(
               blockId,
               (existing) => existing.copyWith(
-                  width: newWidth,
+                  width: newWidth.isNegative ? 0.0 : newWidth,
                   height: newHeight,
                   xPos: newXPos,
                   yPos: newYPos),
             );
 
           _lastPointerId = pointerId;
-          _activeDragHandle = currentDragHandle;
+          _currentDragHandle = currentDragHandle;
         });
         break;
 
@@ -342,8 +416,8 @@ class LayoutObject {
     );
   }
 
-  double get renderWidth => width.clamp(16.0, double.maxFinite);
-  double get renderHeight => height.clamp(16.0, double.maxFinite);
+  double get renderWidth => width; // width.clamp(16.0, double.maxFinite);
+  double get renderHeight => height; //height.clamp(16.0, double.maxFinite);
 
   Rect getRectangle() {
     return Rect.fromPoints(Offset(0, 0), Offset(width, height));
