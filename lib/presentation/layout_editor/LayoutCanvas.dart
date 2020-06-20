@@ -31,8 +31,10 @@ class _LayoutCanvasState extends State<LayoutCanvas> {
   int _lastPointerId;
   double _startingXPos = 0.0;
   double _startingWidth = 0.0;
-  DragHandlePosition _currentDragHandle;
-  DragHandlePosition _actualDragHandle;
+  DragHandlePosition _logicalDragHandle;
+  DragHandlePosition _physicalDragHandle;
+
+  double _currentBlockWidth = 0.0;
 
   @override
   Widget build(BuildContext context) {
@@ -74,10 +76,15 @@ class _LayoutCanvasState extends State<LayoutCanvas> {
             Positioned(
               top: 20,
               left: 20,
-              child: Text(_currentDragHandle
-                      .toString()
-                      ?.replaceAll('DragHandlePosition.', '') ??
-                  'Null'),
+              child: Column(
+                children: [
+                  Text(_logicalDragHandle
+                          .toString()
+                          ?.replaceAll('DragHandlePosition.', '') ??
+                      'Null'),
+                  Text(_currentBlockWidth.round().toString() ?? ''),
+                ],
+              ),
             ),
             Positioned(
               top: 200,
@@ -101,7 +108,7 @@ class _LayoutCanvasState extends State<LayoutCanvas> {
                           _selectedBlockIds = <String>{};
                           _startingXPos = 0.0;
                           _startingWidth = 0.0;
-                          _currentDragHandle = null;
+                          _logicalDragHandle = null;
                         });
                       }),
                   RaisedButton(
@@ -156,7 +163,7 @@ class _LayoutCanvasState extends State<LayoutCanvas> {
   void _handleResizeDone(int pointerId) {
     setState(() {
       _startingXPos = 0.0;
-      _currentDragHandle = null;
+      _logicalDragHandle = null;
     });
   }
 
@@ -168,8 +175,64 @@ class _LayoutCanvasState extends State<LayoutCanvas> {
       _startingXPos = object.xPos;
       _startingWidth = object.width;
       _lastPointerId = pointerId;
-      _actualDragHandle = position;
+      _physicalDragHandle = position;
     });
+  }
+
+  double _getOpposingSideXPos(
+      LayoutObject object, DragHandlePosition handlePosition) {
+    if (handlePosition == DragHandlePosition.topLeft ||
+        handlePosition == DragHandlePosition.middleLeft ||
+        handlePosition == DragHandlePosition.bottomLeft) {
+      return object.xPos + object.width;
+    }
+
+    if (handlePosition == DragHandlePosition.topRight ||
+        handlePosition == DragHandlePosition.middleRight ||
+        handlePosition == DragHandlePosition.bottomRight) {
+      return object.xPos;
+    }
+
+    return null;
+  }
+
+  double _getManipulatingSideXPos(LayoutObject object, double deltaX,
+      DragHandlePosition manipulatingHandle) {
+    if (manipulatingHandle == DragHandlePosition.topLeft ||
+        manipulatingHandle == DragHandlePosition.middleLeft ||
+        manipulatingHandle == DragHandlePosition.bottomLeft) {
+      return object.xPos + deltaX;
+    }
+
+    if (manipulatingHandle == DragHandlePosition.topRight ||
+        manipulatingHandle == DragHandlePosition.middleRight ||
+        manipulatingHandle == DragHandlePosition.bottomRight) {
+      return object.xPos + deltaX + object.width;
+    }
+
+    return null;
+  }
+
+  bool _getDidFlipOverX(LayoutObject object, double deltaX,
+      DragHandlePosition manipulatingHandle) {
+    final double opposingXPos =
+        _getOpposingSideXPos(object, manipulatingHandle);
+    final double manipulatingSideXPos =
+        _getManipulatingSideXPos(object, deltaX, manipulatingHandle);
+
+    if (manipulatingHandle == DragHandlePosition.topLeft ||
+        manipulatingHandle == DragHandlePosition.middleLeft ||
+        manipulatingHandle == DragHandlePosition.bottomLeft) {
+      return manipulatingSideXPos > opposingXPos;
+    }
+
+    if (manipulatingHandle == DragHandlePosition.topRight ||
+        manipulatingHandle == DragHandlePosition.middleRight ||
+        manipulatingHandle == DragHandlePosition.bottomRight) {
+      return manipulatingSideXPos < opposingXPos;
+    }
+
+    return false;
   }
 
   void _handleDragHandleDragged(
@@ -182,17 +245,19 @@ class _LayoutCanvasState extends State<LayoutCanvas> {
       String blockId) {
     final object = _layoutObjects[blockId];
 
+    final hasFlippedOverXAxis = _getDidFlipOverX(object, deltaX, handlePosition);
+
     final double crossOverPoint = () {
-      if (_currentDragHandle == DragHandlePosition.middleRight) {
-        if (_currentDragHandle == _actualDragHandle) {
+      if (_logicalDragHandle == DragHandlePosition.middleRight) {
+        if (_logicalDragHandle == _physicalDragHandle) {
           return _startingXPos;
         } else {
           return _startingXPos + _startingWidth;
         }
       }
 
-      if (_currentDragHandle == DragHandlePosition.middleLeft) {
-        if (_currentDragHandle == _actualDragHandle) {
+      if (_logicalDragHandle == DragHandlePosition.middleLeft) {
+        if (_logicalDragHandle == _physicalDragHandle) {
           return _startingXPos + _startingWidth;
         } else {
           return _startingXPos;
@@ -200,33 +265,33 @@ class _LayoutCanvasState extends State<LayoutCanvas> {
       }
     }();
 
-    bool didFlipOver = false;
+    
+    print(crossOverPoint);
 
-    final DragHandlePosition currentDragHandle = () {
-      if (_currentDragHandle == null) {
+    final DragHandlePosition newLogicalDragHandle = () {
+      if (_logicalDragHandle == null) {
         return handlePosition;
       }
 
-      if (_currentDragHandle == DragHandlePosition.middleRight) {
+      if (_logicalDragHandle == DragHandlePosition.middleRight) {
         if (object.xPos + object.width + deltaX <= crossOverPoint) {
-          didFlipOver = true;
           return DragHandlePosition.middleLeft;
         } else {
-          return _currentDragHandle;
+          return _logicalDragHandle;
         }
       }
 
-      if (_currentDragHandle == DragHandlePosition.middleLeft) {
+      if (_logicalDragHandle == DragHandlePosition.middleLeft) {
         if (object.xPos + deltaX >= crossOverPoint) {
-          didFlipOver = true;
           return DragHandlePosition.middleRight;
         } else {
-          return _currentDragHandle;
+          return _logicalDragHandle;
         }
       }
     }();
 
-    switch (currentDragHandle) {
+
+    switch (newLogicalDragHandle) {
       case DragHandlePosition.topLeft:
         // TODO: Handle this case.
         break;
@@ -237,12 +302,16 @@ class _LayoutCanvasState extends State<LayoutCanvas> {
         // TODO: Handle this case.
         break;
       case DragHandlePosition.middleRight:
+        final double beforeMove = object.xPos + object.width;
+
+        final double difference = beforeMove - crossOverPoint;
+
         final double widthDelta = deltaX;
         final double heightDelta = 0;
         final double xPosDelta = 0;
         final double yPosDelta = 0;
 
-        final newWidth = object.width + widthDelta;
+        final newWidth = object.width + difference;
         final newHeight = object.height + heightDelta;
         final newXPos = object.xPos + xPosDelta;
         final newYPos = object.yPos + yPosDelta;
@@ -259,7 +328,8 @@ class _LayoutCanvasState extends State<LayoutCanvas> {
               ),
             );
           _lastPointerId = pointerId;
-          _currentDragHandle = currentDragHandle;
+          _logicalDragHandle = newLogicalDragHandle;
+          _currentBlockWidth = newWidth;
         });
         break;
       case DragHandlePosition.bottomRight:
@@ -294,7 +364,8 @@ class _LayoutCanvasState extends State<LayoutCanvas> {
             );
 
           _lastPointerId = pointerId;
-          _currentDragHandle = currentDragHandle;
+          _logicalDragHandle = newLogicalDragHandle;
+          _currentBlockWidth = newWidth;
         });
         break;
 
