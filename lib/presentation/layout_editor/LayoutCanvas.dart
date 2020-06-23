@@ -26,12 +26,9 @@ const double _minWidth = 20.0;
 const double _minHeight = 20.0;
 
 class _LayoutCanvasState extends State<LayoutCanvas> {
-  Map<String, LayoutObject> _layoutObjects = {};
+  Map<String, LayoutElementModel> _layoutElements = {};
   Set<String> _selectedBlockIds = {};
   int _lastPointerId;
-  double _leftBoundry = 0.0;
-  double _rightBoundry = 0.0;
-  double _startingWidth = 0.0;
   DragHandlePosition _logicalDragHandle;
 
   double _currentBlockWidth = 0.0;
@@ -103,27 +100,15 @@ class _LayoutCanvasState extends State<LayoutCanvas> {
                   IconButton(
                     icon: Icon(Icons.arrow_left),
                     onPressed: () {
-                      _handleDragHandleDragged(
-                          -50,
-                          0,
-                          0,
-                          0,
-                          DragHandlePosition.middleLeft,
-                          1,
-                          'helloworld');
+                      _handleDragHandleDragged(-50, 0, 0, 0,
+                          DragHandlePosition.middleLeft, 1, 'helloworld');
                     },
                   ),
                   IconButton(
                     icon: Icon(Icons.arrow_right),
                     onPressed: () {
-                      _handleDragHandleDragged(
-                          50,
-                          0,
-                          0,
-                          0,
-                          DragHandlePosition.middleLeft,
-                          1,
-                          'helloworld');
+                      _handleDragHandleDragged(50, 0, 0, 0,
+                          DragHandlePosition.middleLeft, 1, 'helloworld');
                     },
                   ),
                   OutlineButton(
@@ -131,8 +116,9 @@ class _LayoutCanvasState extends State<LayoutCanvas> {
                       onPressed: () {
                         setState(() {
                           final uid = "helloworld";
-                          _layoutObjects = <String, LayoutObject>{}..addAll({
-                              uid: LayoutObject(
+                          _layoutElements = <String, LayoutElementModel>{}
+                            ..addAll({
+                              uid: LayoutElementModel(
                                 uid: uid,
                                 height: 100,
                                 width: 100,
@@ -141,9 +127,6 @@ class _LayoutCanvasState extends State<LayoutCanvas> {
                               )
                             });
                           _selectedBlockIds = <String>{uid};
-                          _leftBoundry = 0.0;
-                          _rightBoundry = 0.0;
-                          _startingWidth = 0.0;
                           _logicalDragHandle = null;
                         });
                       }),
@@ -164,7 +147,7 @@ class _LayoutCanvasState extends State<LayoutCanvas> {
 
   Map<String, LayoutBlock> _buildBlocks() {
     return Map<String, LayoutBlock>.fromEntries(
-        _layoutObjects.values.map((item) {
+        _layoutElements.values.map((item) {
       return MapEntry(
           item.uid,
           LayoutBlock(
@@ -185,26 +168,21 @@ class _LayoutCanvasState extends State<LayoutCanvas> {
 
   void _handleResizeDone(int pointerId) {
     setState(() {
-      _leftBoundry = 0.0;
-      _rightBoundry = 0.0;
       _logicalDragHandle = null;
     });
   }
 
   void _handleResizeStart(
       DragHandlePosition position, int pointerId, String blockId) {
-    final object = _layoutObjects[blockId];
+    final object = _layoutElements[blockId];
 
     setState(() {
-      _leftBoundry = object.xPos;
-      _rightBoundry = object.xPos + object.width;
-      _startingWidth = object.width;
       _lastPointerId = pointerId;
     });
   }
 
   double _getOpposingSideXPos(
-      LayoutObject object, DragHandlePosition handlePosition) {
+      LayoutElementModel object, DragHandlePosition handlePosition) {
     if (handlePosition == DragHandlePosition.topLeft ||
         handlePosition == DragHandlePosition.middleLeft ||
         handlePosition == DragHandlePosition.bottomLeft) {
@@ -220,7 +198,7 @@ class _LayoutCanvasState extends State<LayoutCanvas> {
     return null;
   }
 
-  double _getManipulatingSideXPos(LayoutObject object, double deltaX,
+  double _getManipulatingSideXPos(LayoutElementModel object, double deltaX,
       DragHandlePosition manipulatingHandle) {
     if (manipulatingHandle == DragHandlePosition.topLeft ||
         manipulatingHandle == DragHandlePosition.middleLeft ||
@@ -237,7 +215,7 @@ class _LayoutCanvasState extends State<LayoutCanvas> {
     return null;
   }
 
-  bool _getDidFlipOverX(LayoutObject object, double deltaX,
+  bool _getDidFlipOverX(LayoutElementModel object, double deltaX,
       DragHandlePosition manipulatingHandle) {
     final double opposingXPos =
         _getOpposingSideXPos(object, manipulatingHandle);
@@ -267,104 +245,109 @@ class _LayoutCanvasState extends State<LayoutCanvas> {
       DragHandlePosition physicalHandle,
       int pointerId,
       String blockId) {
-    final originalObject = _layoutObjects[blockId];
+    final existing = _layoutElements[blockId];
+    final existingLeftEdge = existing.leftEdge;
+    final existingRightEdge = existing.rightEdge;
 
     final currentLogicalHandle = _logicalDragHandle ?? physicalHandle;
 
-    if (currentLogicalHandle == DragHandlePosition.middleRight) {
-      if (originalObject.xPos + originalObject.width + deltaX < _leftBoundry) {
-        // Crossover Update.
-        final existing = _layoutObjects[blockId];
-        final updatedObject = existing.copyWith(
-          width: _leftBoundry - existing.xPos + _invertSign(deltaX),
-          height: existing.height,
-          xPos: existing.xPos + deltaX,
-          yPos: existing.yPos,
-        );
-        setState(() {
-          _layoutObjects = Map<String, LayoutObject>.from(_layoutObjects)
-            ..update(blockId, (_) => updatedObject);
-          _leftBoundry = updatedObject.xPos;
-          _rightBoundry = updatedObject.xPos + updatedObject.width;
-          _logicalDragHandle = _opposingDragHandles[currentLogicalHandle];
-          _lastPointerId = pointerId;
-        });
-        return;
-      } else {
-        // Normal Update.
-        final existing = _layoutObjects[blockId];
-        final updatedObject = existing.copyWith(
-          width: existing.width + deltaX,
-          height: existing.height,
-          xPos: existing.xPos,
-          yPos: existing.yPos,
-        );
-        setState(() {
-          _layoutObjects = Map<String, LayoutObject>.from(_layoutObjects)
-            ..update(
-              blockId,
-              (_) => updatedObject,
-            );
-          _leftBoundry = updatedObject.xPos;
-          _rightBoundry = updatedObject.xPos + updatedObject.width;
-          _logicalDragHandle = currentLogicalHandle;
-          _lastPointerId = pointerId;
-        });
-        return;
-      }
-    }
-
-    if (currentLogicalHandle == DragHandlePosition.middleLeft) {
-      if (originalObject.xPos + deltaX > _rightBoundry) {
-        // Crossover Update.
-        final pointerPos = _leftBoundry + deltaX;
-        final difference = pointerPos - _rightBoundry;
-        final existing = _layoutObjects[blockId];
-        final updatedObject = existing.copyWith(
-          width: difference,
-          height: existing.height,
-          xPos: _rightBoundry,
-          yPos: existing.yPos,
-        );
-
-        if (updatedObject.width.isNegative) {
-          print(updatedObject.width);
+    switch (currentLogicalHandle) {
+      case DragHandlePosition.topLeft:
+        // TODO: Handle this case.
+        break;
+      case DragHandlePosition.topCenter:
+        // TODO: Handle this case.
+        break;
+      case DragHandlePosition.topRight:
+        // TODO: Handle this case.
+        break;
+      case DragHandlePosition.middleRight:
+        if (existingRightEdge + deltaX < existingLeftEdge) {
+          // Crossover Update.
+          final updatedElement = existing.copyWith(
+            width: existingLeftEdge - existing.xPos + _invertSign(deltaX),
+            height: existing.height,
+            xPos: existing.xPos + deltaX,
+            yPos: existing.yPos,
+          );
+          setState(() {
+            _layoutElements =
+                Map<String, LayoutElementModel>.from(_layoutElements)
+                  ..update(blockId, (_) => updatedElement);
+            _logicalDragHandle = _opposingDragHandles[currentLogicalHandle];
+            _lastPointerId = pointerId;
+          });
+        } else {
+          // Normal Update.
+          final updatedElement = existing.copyWith(
+            width: existing.width + deltaX,
+            height: existing.height,
+            xPos: existing.xPos,
+            yPos: existing.yPos,
+          );
+          setState(() {
+            _layoutElements =
+                Map<String, LayoutElementModel>.from(_layoutElements)
+                  ..update(
+                    blockId,
+                    (_) => updatedElement,
+                  );
+            _logicalDragHandle = currentLogicalHandle;
+            _lastPointerId = pointerId;
+          });
         }
+        break;
+      case DragHandlePosition.bottomRight:
+        // TODO: Handle this case.
+        break;
+      case DragHandlePosition.bottomCenter:
+        // TODO: Handle this case.
+        break;
+      case DragHandlePosition.bottomLeft:
+        // TODO: Handle this case.
+        break;
+      case DragHandlePosition.middleLeft:
+        if (existingLeftEdge + deltaX > existingRightEdge) {
+          // Crossover Update.
+          final pointerPos = existingLeftEdge + deltaX;
+          final difference = pointerPos - existingRightEdge;
+          final updatedElement = existing.copyWith(
+            width: difference,
+            height: existing.height,
+            xPos: existingRightEdge,
+            yPos: existing.yPos,
+          );
 
-        setState(() {
-          _layoutObjects = Map<String, LayoutObject>.from(_layoutObjects)
-            ..update(
-              blockId,
-              (_) => updatedObject,
-            );
-          _leftBoundry = updatedObject.xPos;
-          _rightBoundry = updatedObject.xPos + updatedObject.width;
-          _logicalDragHandle = _opposingDragHandles[currentLogicalHandle];
-          _lastPointerId = pointerId;
-        });
-        return;
-      } else {
-        // Normal Update.
-        final existing = _layoutObjects[blockId];
-        final updatedObject = existing.copyWith(
-          width: existing.width + _invertSign(deltaX),
-          height: existing.height,
-          xPos: existing.xPos + deltaX,
-          yPos: existing.yPos,
-        );
-        setState(() {
-          _layoutObjects = Map<String, LayoutObject>.from(_layoutObjects)
-            ..update(
-              blockId,
-              (_) => updatedObject,
-            );
-          _leftBoundry = updatedObject.xPos;
-          _rightBoundry = updatedObject.xPos + updatedObject.width;
-          _logicalDragHandle = currentLogicalHandle;
-          _lastPointerId = pointerId;
-        });
-        return;
-      }
+          setState(() {
+            _layoutElements =
+                Map<String, LayoutElementModel>.from(_layoutElements)
+                  ..update(
+                    blockId,
+                    (_) => updatedElement,
+                  );
+            _logicalDragHandle = _opposingDragHandles[currentLogicalHandle];
+            _lastPointerId = pointerId;
+          });
+        } else {
+          // Normal Update.
+          final updatedElement = existing.copyWith(
+            width: existing.width + _invertSign(deltaX),
+            height: existing.height,
+            xPos: existing.xPos + deltaX,
+            yPos: existing.yPos,
+          );
+          setState(() {
+            _layoutElements =
+                Map<String, LayoutElementModel>.from(_layoutElements)
+                  ..update(
+                    blockId,
+                    (_) => updatedElement,
+                  );
+            _logicalDragHandle = currentLogicalHandle;
+            _lastPointerId = pointerId;
+          });
+        }
+        break;
     }
   }
 
@@ -381,14 +364,14 @@ class _LayoutCanvasState extends State<LayoutCanvas> {
   }
 
   void _handlePositionChange(String uid, double xPosDelta, double yPosDelta) {
-    final newMap = Map<String, LayoutObject>.from(_layoutObjects);
+    final newMap = Map<String, LayoutElementModel>.from(_layoutElements);
     newMap[uid] = newMap[uid].copyWith(
       xPos: newMap[uid].xPos + xPosDelta,
       yPos: newMap[uid].yPos + yPosDelta,
     );
 
     setState(() {
-      _layoutObjects = newMap;
+      _layoutElements = newMap;
     });
   }
 
@@ -445,7 +428,7 @@ class LayoutBlock extends StatelessWidget {
   }
 }
 
-class LayoutObject {
+class LayoutElementModel {
   final String uid;
   final double xPos;
   final double yPos;
@@ -453,7 +436,7 @@ class LayoutObject {
   final double height;
   final Color color;
 
-  LayoutObject({
+  LayoutElementModel({
     this.uid,
     this.xPos,
     this.yPos,
@@ -462,7 +445,7 @@ class LayoutObject {
     this.color,
   });
 
-  LayoutObject copyWith({
+  LayoutElementModel copyWith({
     String uid,
     double xPos,
     double yPos,
@@ -470,7 +453,7 @@ class LayoutObject {
     double height,
     Color color,
   }) {
-    return LayoutObject(
+    return LayoutElementModel(
       uid: uid ?? this.uid,
       xPos: xPos ?? this.xPos,
       yPos: yPos ?? this.yPos,
@@ -479,6 +462,11 @@ class LayoutObject {
       color: color ?? this.color,
     );
   }
+
+  double get leftEdge => xPos;
+  double get rightEdge => xPos + width;
+  double get topEdge => yPos;
+  double get bottomEdge => yPos + height;
 
   double get renderWidth => width; // width.clamp(16.0, double.maxFinite);
   double get renderHeight => height; //height.clamp(16.0, double.maxFinite);
