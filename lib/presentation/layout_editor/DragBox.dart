@@ -1,4 +1,4 @@
-import 'package:darkwrong/presentation/layout_editor/DragHandle.dart';
+import 'package:darkwrong/presentation/layout_editor/ResizeHandle.dart';
 import 'package:flutter/material.dart';
 
 typedef void OnClickCallback(int pointerId);

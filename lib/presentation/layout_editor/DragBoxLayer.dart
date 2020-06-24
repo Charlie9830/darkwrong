@@ -1,18 +1,18 @@
 import 'package:darkwrong/presentation/layout_editor/DragBox.dart';
-import 'package:darkwrong/presentation/layout_editor/DragHandle.dart';
+import 'package:darkwrong/presentation/layout_editor/LayoutBlock.dart';
+import 'package:darkwrong/presentation/layout_editor/ResizeHandle.dart';
 import 'package:darkwrong/presentation/layout_editor/DragHandles.dart';
-import 'package:darkwrong/presentation/layout_editor/LayoutCanvas.dart';
 import 'package:flutter/material.dart';
 
 typedef void OnDragBoxClickCallback(String blockId, int pointerId);
 typedef void OnResizeDoneCallback(int pointerId);
-typedef void OnResizeStartCallback(DragHandlePosition handlePosition, int pointerId, String blockId);
+typedef void OnResizeStartCallback(
+    ResizeHandleLocation handlePosition, int pointerId, String blockId);
 
 class DragBoxLayer extends StatelessWidget {
   final Map<String, LayoutBlock> blocks;
   final Set<String> selectedBlockIds;
   final dynamic onPositionChange;
-  final dynamic onSizeChange;
   final dynamic onDragHandleDragged;
   final OnResizeDoneCallback onResizeDone;
   final OnDragBoxClickCallback onDragBoxClick;
@@ -20,7 +20,6 @@ class DragBoxLayer extends StatelessWidget {
 
   const DragBoxLayer({
     Key key,
-    this.onSizeChange,
     this.blocks,
     this.selectedBlockIds,
     this.onDragBoxClick,
@@ -55,13 +54,11 @@ class DragBoxLayer extends StatelessWidget {
           yPos: block.yPos,
           height: block.height + dragHandleHeight,
           width: block.width + dragHandleWidth,
-          onSizeChange: (widthDelta, heightDelta, xPosDelta, yPosDelta, pointerId) =>
-              _handleSizeChange(widthDelta, heightDelta, xPosDelta, yPosDelta,
-                  blockId, pointerId),
-          onDrag: (deltaX, deltaY, pointerXPos, pointerYPos, position, pointerId) =>
-              onDragHandleDragged(deltaX, deltaY, pointerXPos, pointerYPos, position, pointerId, blockId),
+          onDrag: (deltaX, deltaY, position, pointerId) =>
+              onDragHandleDragged(deltaX, deltaY, position, pointerId, blockId),
           onDragDone: (pointerId) => onResizeDone?.call(pointerId),
-          onDragStart: (handlePosition, pointerId) => onResizeStart?.call(handlePosition, pointerId, blockId),
+          onDragStart: (handlePosition, pointerId) =>
+              onResizeStart?.call(handlePosition, pointerId, blockId),
         ),
       );
     }).toList();
@@ -92,16 +89,6 @@ class DragBoxLayer extends StatelessWidget {
   void _handlePositionChange(
       double xPosDelta, double yPosDelta, String blockId) {
     onPositionChange(xPosDelta, yPosDelta, blockId);
-  }
-
-  void _handleSizeChange(
-      double widthDelta,
-      double heightDelta,
-      double xPosDelta,
-      double yPosDelta,
-      String blockId,
-      int pointerId) {
-    onSizeChange(widthDelta, heightDelta, xPosDelta, yPosDelta, blockId, pointerId);
   }
 
   List<Widget> _positionBlocks() {

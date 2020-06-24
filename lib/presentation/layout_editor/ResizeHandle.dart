@@ -8,13 +8,13 @@ typedef void OnDragStartCallback(int pointerId);
 const double dragHandleWidth = 12.0;
 const double dragHandleHeight = 12.0;
 
-class DragHandle extends StatelessWidget {
+class ResizeHandle extends StatelessWidget {
   final bool selected;
   final OnDragStartCallback onDragStart;
   final OnDragCallback onDrag;
   final OnDragDoneCallback onDragDone;
 
-  const DragHandle(
+  const ResizeHandle(
       {Key key,
       this.onDrag,
       this.onDragStart,
