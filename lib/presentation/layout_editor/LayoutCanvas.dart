@@ -15,6 +15,30 @@ const Map<DragHandlePosition, DragHandlePosition> _opposingDragHandles = {
   DragHandlePosition.middleLeft: DragHandlePosition.middleRight,
 };
 
+const Map<DragHandlePosition, DragHandlePosition>
+    _verticallyOpposingDragHandles = {
+  DragHandlePosition.topLeft: DragHandlePosition.bottomLeft,
+  DragHandlePosition.topCenter: DragHandlePosition.bottomCenter,
+  DragHandlePosition.topRight: DragHandlePosition.bottomRight,
+  DragHandlePosition.middleRight: DragHandlePosition.middleRight,
+  DragHandlePosition.bottomRight: DragHandlePosition.topRight,
+  DragHandlePosition.bottomCenter: DragHandlePosition.topCenter,
+  DragHandlePosition.bottomLeft: DragHandlePosition.topLeft,
+  DragHandlePosition.middleLeft: DragHandlePosition.middleLeft,
+};
+
+const Map<DragHandlePosition, DragHandlePosition>
+    _horizontallyOpposingDragHandles = {
+  DragHandlePosition.topLeft: DragHandlePosition.topRight,
+  DragHandlePosition.topCenter: DragHandlePosition.topCenter,
+  DragHandlePosition.topRight: DragHandlePosition.topLeft,
+  DragHandlePosition.middleRight: DragHandlePosition.middleLeft,
+  DragHandlePosition.bottomRight: DragHandlePosition.bottomLeft,
+  DragHandlePosition.bottomCenter: DragHandlePosition.bottomCenter,
+  DragHandlePosition.bottomLeft: DragHandlePosition.bottomRight,
+  DragHandlePosition.middleLeft: DragHandlePosition.middleRight,
+};
+
 class LayoutCanvas extends StatefulWidget {
   LayoutCanvas({Key key}) : super(key: key);
 
@@ -237,6 +261,34 @@ class _LayoutCanvasState extends State<LayoutCanvas> {
     return false;
   }
 
+  DragHandlePosition _getNextDragHandle(
+    DragHandlePosition currentHandle,
+    bool isXAxisFlipping,
+    bool isYAxisFlipping,
+  ) {
+    if (!isXAxisFlipping && !isYAxisFlipping) {
+      // No Flip
+      return currentHandle;
+    }
+
+    if (isXAxisFlipping && !isYAxisFlipping) {
+      // Horizontal Flip
+      return _horizontallyOpposingDragHandles[currentHandle];
+    }
+
+    if (!isXAxisFlipping && isYAxisFlipping) {
+      // Vertical Flip
+      return _verticallyOpposingDragHandles[currentHandle];
+    }
+
+    if (isXAxisFlipping && isYAxisFlipping) {
+      // Dual Axis Flip
+      return _opposingDragHandles[currentHandle];
+    }
+
+    return currentHandle;
+  }
+
   void _handleDragHandleDragged(
       double deltaX,
       double deltaY,
@@ -246,109 +298,253 @@ class _LayoutCanvasState extends State<LayoutCanvas> {
       int pointerId,
       String blockId) {
     final existing = _layoutElements[blockId];
-    final existingLeftEdge = existing.leftEdge;
-    final existingRightEdge = existing.rightEdge;
+    final isFlippingLeftToRight =
+        existing.leftEdge + deltaX > existing.rightEdge;
+    final isFlippingRightToLeft =
+        existing.rightEdge + deltaX < existing.leftEdge;
+    final isFlippingTopToBottom =
+        existing.topEdge + deltaY > existing.bottomEdge;
+    final isFlippingBottomToTop =
+        existing.bottomEdge + deltaY < existing.topEdge;
 
     final currentLogicalHandle = _logicalDragHandle ?? physicalHandle;
 
     switch (currentLogicalHandle) {
+      // Top Left.
       case DragHandlePosition.topLeft:
-        // TODO: Handle this case.
-        break;
-      case DragHandlePosition.topCenter:
-        // TODO: Handle this case.
-        break;
-      case DragHandlePosition.topRight:
-        // TODO: Handle this case.
-        break;
-      case DragHandlePosition.middleRight:
-        if (existingRightEdge + deltaX < existingLeftEdge) {
-          // Crossover Update.
-          final updatedElement = existing.copyWith(
-            width: existingLeftEdge - existing.xPos + _invertSign(deltaX),
-            height: existing.height,
-            xPos: existing.xPos + deltaX,
-            yPos: existing.yPos,
-          );
-          setState(() {
-            _layoutElements =
-                Map<String, LayoutElementModel>.from(_layoutElements)
-                  ..update(blockId, (_) => updatedElement);
-            _logicalDragHandle = _opposingDragHandles[currentLogicalHandle];
-            _lastPointerId = pointerId;
-          });
-        } else {
-          // Normal Update.
-          final updatedElement = existing.copyWith(
-            width: existing.width + deltaX,
-            height: existing.height,
-            xPos: existing.xPos,
-            yPos: existing.yPos,
-          );
-          setState(() {
-            _layoutElements =
-                Map<String, LayoutElementModel>.from(_layoutElements)
-                  ..update(
-                    blockId,
-                    (_) => updatedElement,
-                  );
-            _logicalDragHandle = currentLogicalHandle;
-            _lastPointerId = pointerId;
-          });
-        }
-        break;
-      case DragHandlePosition.bottomRight:
-        // TODO: Handle this case.
-        break;
-      case DragHandlePosition.bottomCenter:
-        // TODO: Handle this case.
-        break;
-      case DragHandlePosition.bottomLeft:
-        // TODO: Handle this case.
-        break;
-      case DragHandlePosition.middleLeft:
-        if (existingLeftEdge + deltaX > existingRightEdge) {
-          // Crossover Update.
-          final pointerPos = existingLeftEdge + deltaX;
-          final difference = pointerPos - existingRightEdge;
-          final updatedElement = existing.copyWith(
-            width: difference,
-            height: existing.height,
-            xPos: existingRightEdge,
-            yPos: existing.yPos,
-          );
+        final updatedElement = existing.combinedWith(
+            xComponent: isFlippingLeftToRight
+                ? _applyLeftCrossoverUpdate(existing, deltaX)
+                : _applyLeftNormalUpdate(existing, deltaX),
+            yComponent: isFlippingTopToBottom
+                ? _applyTopCrossoverUpdate(existing, deltaY)
+                : _applyTopNormalUpdate(existing, deltaY));
 
-          setState(() {
-            _layoutElements =
-                Map<String, LayoutElementModel>.from(_layoutElements)
-                  ..update(
-                    blockId,
-                    (_) => updatedElement,
-                  );
-            _logicalDragHandle = _opposingDragHandles[currentLogicalHandle];
-            _lastPointerId = pointerId;
-          });
-        } else {
-          // Normal Update.
-          final updatedElement = existing.copyWith(
-            width: existing.width + _invertSign(deltaX),
-            height: existing.height,
-            xPos: existing.xPos + deltaX,
-            yPos: existing.yPos,
-          );
-          setState(() {
-            _layoutElements =
-                Map<String, LayoutElementModel>.from(_layoutElements)
-                  ..update(
-                    blockId,
-                    (_) => updatedElement,
-                  );
-            _logicalDragHandle = currentLogicalHandle;
-            _lastPointerId = pointerId;
-          });
-        }
+        setState(() {
+          _layoutElements =
+              Map<String, LayoutElementModel>.from(_layoutElements)
+                ..update(blockId, (_) => updatedElement);
+          _logicalDragHandle = _getNextDragHandle(currentLogicalHandle,
+              isFlippingLeftToRight, isFlippingTopToBottom);
+          _lastPointerId = pointerId;
+        });
+        break;
+
+      // Top Center.
+      case DragHandlePosition.topCenter:
+        final updatedElement = existing.combinedWith(
+            yComponent: isFlippingTopToBottom
+                ? _applyTopCrossoverUpdate(existing, deltaY)
+                : _applyTopNormalUpdate(existing, deltaY));
+
+        setState(() {
+          _layoutElements =
+              Map<String, LayoutElementModel>.from(_layoutElements)
+                ..update(blockId, (_) => updatedElement);
+          _logicalDragHandle = isFlippingTopToBottom
+              ? _opposingDragHandles[currentLogicalHandle]
+              : currentLogicalHandle;
+          _lastPointerId = pointerId;
+        });
+        break;
+
+      // Top Right.
+      case DragHandlePosition.topRight:
+        final updatedElement = existing.combinedWith(
+            xComponent: isFlippingRightToLeft
+                ? _applyRightCrossoverUpdate(existing, deltaX)
+                : _applyRightNormalUpdate(existing, deltaX),
+            yComponent: isFlippingTopToBottom
+                ? _applyTopCrossoverUpdate(existing, deltaY)
+                : _applyTopNormalUpdate(existing, deltaY));
+                
+        setState(() {
+          _layoutElements =
+              Map<String, LayoutElementModel>.from(_layoutElements)
+                ..update(blockId, (_) => updatedElement);
+          _logicalDragHandle = _getNextDragHandle(currentLogicalHandle,
+              isFlippingRightToLeft, isFlippingTopToBottom);
+          _lastPointerId = pointerId;
+        });
+        break;
+
+      // Middle Right.
+      case DragHandlePosition.middleRight:
+        final updatedElement = existing.combinedWith(
+          xComponent: isFlippingRightToLeft
+              ? _applyRightCrossoverUpdate(existing, deltaX)
+              : _applyRightNormalUpdate(existing, deltaX),
+        );
+
+        setState(() {
+          _layoutElements =
+              Map<String, LayoutElementModel>.from(_layoutElements)
+                ..update(blockId, (_) => updatedElement);
+          _logicalDragHandle = isFlippingRightToLeft
+              ? _opposingDragHandles[currentLogicalHandle]
+              : currentLogicalHandle;
+          _lastPointerId = pointerId;
+        });
+        break;
+
+      // Bottom Right.
+      case DragHandlePosition.bottomRight:
+        final updatedElement = existing.combinedWith(
+            xComponent: isFlippingRightToLeft
+                ? _applyRightCrossoverUpdate(existing, deltaX)
+                : _applyRightNormalUpdate(existing, deltaX),
+            yComponent: isFlippingBottomToTop
+                ? _applyBottomCrossoverUpdate(existing, deltaY)
+                : _applyBottomNormalUpdate(existing, deltaY));
+
+        setState(() {
+          _layoutElements =
+              Map<String, LayoutElementModel>.from(_layoutElements)
+                ..update(blockId, (_) => updatedElement);
+          _logicalDragHandle = _getNextDragHandle(currentLogicalHandle,
+              isFlippingRightToLeft, isFlippingBottomToTop);
+          _lastPointerId = pointerId;
+        });
+        break;
+
+      // Bottom Center.
+      case DragHandlePosition.bottomCenter:
+        final updatedElement = existing.combinedWith(
+          yComponent: isFlippingBottomToTop
+              ? _applyBottomCrossoverUpdate(existing, deltaY)
+              : _applyBottomNormalUpdate(existing, deltaY),
+        );
+
+        setState(() {
+          _layoutElements =
+              Map<String, LayoutElementModel>.from(_layoutElements)
+                ..update(blockId, (_) => updatedElement);
+          _logicalDragHandle = isFlippingBottomToTop
+              ? _opposingDragHandles[currentLogicalHandle]
+              : currentLogicalHandle;
+          _lastPointerId = pointerId;
+        });
+
+        break;
+
+      // Bottom Left.
+      case DragHandlePosition.bottomLeft:
+        final updatedElement = existing.combinedWith(
+            xComponent: isFlippingLeftToRight
+                ? _applyLeftCrossoverUpdate(existing, deltaX)
+                : _applyLeftNormalUpdate(existing, deltaX),
+            yComponent: isFlippingBottomToTop
+                ? _applyBottomCrossoverUpdate(existing, deltaY)
+                : _applyBottomNormalUpdate(existing, deltaY));
+
+        setState(() {
+          _layoutElements =
+              Map<String, LayoutElementModel>.from(_layoutElements)
+                ..update(blockId, (_) => updatedElement);
+          _logicalDragHandle = _getNextDragHandle(currentLogicalHandle,
+              isFlippingLeftToRight, isFlippingBottomToTop);
+          _lastPointerId = pointerId;
+        });
+        break;
+
+      // Middle Left.
+      case DragHandlePosition.middleLeft:
+        final updatedElement = existing.combinedWith(
+          xComponent: isFlippingLeftToRight
+              ? _applyLeftCrossoverUpdate(existing, deltaX)
+              : _applyLeftNormalUpdate(existing, deltaX),
+        );
+
+        setState(() {
+          _layoutElements =
+              Map<String, LayoutElementModel>.from(_layoutElements)
+                ..update(
+                  blockId,
+                  (_) => updatedElement,
+                );
+          _logicalDragHandle = isFlippingLeftToRight
+              ? _opposingDragHandles[currentLogicalHandle]
+              : currentLogicalHandle;
+          _lastPointerId = pointerId;
+        });
         break;
     }
+  }
+
+  LayoutElementModel _applyTopNormalUpdate(
+      LayoutElementModel existing, double deltaY) {
+    final updatedElement = existing.copyWith(
+      height: existing.height + _invertSign(deltaY),
+      yPos: existing.yPos + deltaY,
+    );
+    return updatedElement;
+  }
+
+  LayoutElementModel _applyTopCrossoverUpdate(
+      LayoutElementModel existing, double deltaY) {
+    final pointerPos = existing.topEdge + deltaY;
+    final difference = pointerPos - existing.bottomEdge;
+    final updatedElement = existing.copyWith(
+      height: difference,
+      yPos: existing.bottomEdge,
+    );
+    return updatedElement;
+  }
+
+  LayoutElementModel _applyLeftNormalUpdate(
+      LayoutElementModel existing, double deltaX) {
+    final updatedElement = existing.copyWith(
+      width: existing.width + _invertSign(deltaX),
+      xPos: existing.xPos + deltaX,
+    );
+    return updatedElement;
+  }
+
+  LayoutElementModel _applyLeftCrossoverUpdate(
+      LayoutElementModel existing, double deltaX) {
+    final pointerPos = existing.leftEdge + deltaX;
+    final difference = pointerPos - existing.rightEdge;
+    final updatedElement = existing.copyWith(
+      width: difference,
+      xPos: existing.rightEdge,
+    );
+    return updatedElement;
+  }
+
+  LayoutElementModel _applyBottomNormalUpdate(
+      LayoutElementModel existing, double deltaY) {
+    final updatedElement = existing.copyWith(
+      height: existing.height + deltaY,
+      yPos: existing.yPos,
+    );
+    return updatedElement;
+  }
+
+  LayoutElementModel _applyRightNormalUpdate(
+      LayoutElementModel existing, double deltaX) {
+    final updatedElement = existing.copyWith(
+      width: existing.width + deltaX,
+      xPos: existing.xPos,
+    );
+    return updatedElement;
+  }
+
+  LayoutElementModel _applyBottomCrossoverUpdate(
+      LayoutElementModel existing, double deltaY) {
+    final updatedElement = existing.copyWith(
+      height: existing.topEdge - existing.yPos + _invertSign(deltaY),
+      yPos: existing.yPos + deltaY,
+    );
+    return updatedElement;
+  }
+
+  LayoutElementModel _applyRightCrossoverUpdate(
+      LayoutElementModel existing, double deltaX) {
+    final updatedElement = existing.copyWith(
+      width: existing.leftEdge - existing.xPos + _invertSign(deltaX),
+      xPos: existing.xPos + deltaX,
+    );
+    return updatedElement;
   }
 
   double _invertSign(double value) {
@@ -460,6 +656,18 @@ class LayoutElementModel {
       width: width ?? this.width,
       height: height ?? this.height,
       color: color ?? this.color,
+    );
+  }
+
+  LayoutElementModel combinedWith({
+    LayoutElementModel xComponent,
+    LayoutElementModel yComponent,
+  }) {
+    return copyWith(
+      xPos: xComponent?.xPos ?? this.xPos,
+      yPos: yComponent?.yPos ?? this.yPos,
+      width: xComponent?.width ?? this.width,
+      height: yComponent?.height ?? this.height,
     );
   }
 
