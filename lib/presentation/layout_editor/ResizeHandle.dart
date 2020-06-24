@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 typedef void OnDragCallback(
-    double deltaX, double deltaY, double posX, double posY, int pointerId);
+    double deltaX, double deltaY, int pointerId);
 typedef void OnDragDoneCallback(int pointerId);
 typedef void OnDragStartCallback(int pointerId);
 
@@ -30,8 +30,6 @@ class ResizeHandle extends StatelessWidget {
           onDrag?.call(
               pointerEvent.localDelta.dx,
               pointerEvent.localDelta.dy,
-              pointerEvent.position.dx,
-              pointerEvent.position.dy,
               pointerEvent.original.pointer);
         }
       },

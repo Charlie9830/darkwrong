@@ -163,43 +163,35 @@ class DragHandles extends StatelessWidget {
     onDragDone?.call(pointerId);
   }
 
-  void _handleTopLeftDrag(double deltaX, double deltaY, double pointerXPos,
-      double pointerYPos, int pointerId) {
+  void _handleTopLeftDrag(double deltaX, double deltaY, int pointerId) {
     onDrag?.call(deltaX, deltaY, ResizeHandleLocation.topLeft, pointerId);
   }
 
-  void _handleTopCenterDrag(double deltaX, double deltaY, double pointerXPos,
-      double pointerYPos, int pointerId) {
+  void _handleTopCenterDrag(double deltaX, double deltaY, int pointerId) {
     onDrag?.call(deltaX, deltaY, ResizeHandleLocation.topCenter, pointerId);
   }
 
-  void _handleTopRightDrag(double deltaX, double deltaY, double pointerXPos,
-      double pointerYPos, int pointerId) {
+  void _handleTopRightDrag(double deltaX, double deltaY, int pointerId) {
     onDrag?.call(deltaX, deltaY, ResizeHandleLocation.topRight, pointerId);
   }
 
-  void _handleMiddleRightDrag(double deltaX, double deltaY, double pointerXPos,
-      double pointerYPos, int pointerId) {
+  void _handleMiddleRightDrag(double deltaX, double deltaY, int pointerId) {
     onDrag?.call(deltaX, deltaY, ResizeHandleLocation.middleRight, pointerId);
   }
 
-  void _handleBottomRightDrag(double deltaX, double deltaY, double pointerXPos,
-      double pointerYPos, int pointerId) {
+  void _handleBottomRightDrag(double deltaX, double deltaY, int pointerId) {
     onDrag?.call(deltaX, deltaY, ResizeHandleLocation.bottomRight, pointerId);
   }
 
-  void _handleBottomCenterDrag(double deltaX, double deltaY, double pointerXPos,
-      double pointerYPos, int pointerId) {
+  void _handleBottomCenterDrag(double deltaX, double deltaY, int pointerId) {
     onDrag?.call(deltaX, deltaY, ResizeHandleLocation.bottomCenter, pointerId);
   }
 
-  void _handleBottomLeftDrag(double deltaX, double deltaY, double pointerXPos,
-      double pointerYPos, int pointerId) {
+  void _handleBottomLeftDrag(double deltaX, double deltaY, int pointerId) {
     onDrag?.call(deltaX, deltaY, ResizeHandleLocation.bottomLeft, pointerId);
   }
 
-  void _handleMiddleLeftDrag(double deltaX, double deltaY, double pointerXPos,
-      double pointerYPos, int pointerId) {
+  void _handleMiddleLeftDrag(double deltaX, double deltaY, int pointerId) {
     onDrag?.call(deltaX, deltaY, ResizeHandleLocation.middleLeft, pointerId);
   }
 }
