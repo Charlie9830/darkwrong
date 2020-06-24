@@ -52,8 +52,8 @@ class LayoutElementModel {
   double get topEdge => yPos;
   double get bottomEdge => yPos + height;
 
-  double get renderWidth => width; // width.clamp(16.0, double.maxFinite);
-  double get renderHeight => height; //height.clamp(16.0, double.maxFinite);
+  double get renderWidth => width.clamp(16.0, double.maxFinite);
+  double get renderHeight => height.clamp(16.0, double.maxFinite);
 
   Rect getRectangle() {
     return Rect.fromPoints(Offset(0, 0), Offset(width, height));
