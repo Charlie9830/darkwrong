@@ -7,6 +7,7 @@ class LayoutBlock extends StatelessWidget {
   final double yPos;
   final double width;
   final double height;
+  final double rotation;
 
   const LayoutBlock({
     Key key,
@@ -16,6 +17,7 @@ class LayoutBlock extends StatelessWidget {
     this.width,
     this.height,
     this.child,
+    this.rotation,
   }) : super(key: key);
 
   @override

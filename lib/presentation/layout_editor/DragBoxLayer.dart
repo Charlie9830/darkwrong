@@ -2,12 +2,27 @@ import 'package:darkwrong/presentation/layout_editor/DragBox.dart';
 import 'package:darkwrong/presentation/layout_editor/LayoutBlock.dart';
 import 'package:darkwrong/presentation/layout_editor/ResizeHandle.dart';
 import 'package:darkwrong/presentation/layout_editor/DragHandles.dart';
+import 'package:darkwrong/presentation/layout_editor/RotateHandle.dart';
 import 'package:flutter/material.dart';
 
 typedef void OnDragBoxClickCallback(String blockId, int pointerId);
 typedef void OnResizeDoneCallback(int pointerId);
 typedef void OnResizeStartCallback(
     ResizeHandleLocation handlePosition, int pointerId, String blockId);
+
+typedef void OnRotateStartCallback(int pointerId, String blockId);
+
+typedef void OnRotateCallback(
+  double deltaX,
+  double deltaY,
+  String blockId,
+  int pointerId,
+);
+
+typedef void OnRotateDoneCallback(
+  String blockId,
+  int pointerId,
+);
 
 class DragBoxLayer extends StatelessWidget {
   final Map<String, LayoutBlock> blocks;
@@ -17,6 +32,9 @@ class DragBoxLayer extends StatelessWidget {
   final OnResizeDoneCallback onResizeDone;
   final OnDragBoxClickCallback onDragBoxClick;
   final OnResizeStartCallback onResizeStart;
+  final OnRotateStartCallback onRotateStart;
+  final OnRotateCallback onRotate;
+  final OnRotateDoneCallback onRotateDone;
 
   const DragBoxLayer({
     Key key,
@@ -27,6 +45,9 @@ class DragBoxLayer extends StatelessWidget {
     this.onResizeDone,
     this.onDragHandleDragged,
     this.onResizeStart,
+    this.onRotateStart,
+    this.onRotate,
+    this.onRotateDone,
   }) : super(key: key);
 
   @override
@@ -45,20 +66,29 @@ class DragBoxLayer extends StatelessWidget {
       final blockId = block.id;
       return Positioned(
         left: block.xPos - dragHandleWidth / 2,
-        top: block.yPos - dragHandleHeight / 2,
+        top: (block.yPos - dragHandleHeight / 2) - rotateHandleTotalHeight,
         width: block.width + dragHandleWidth,
-        height: block.height + dragHandleHeight,
-        child: DragHandles(
-          selected: selectedBlockIds.contains(blockId),
-          xPos: block.xPos,
-          yPos: block.yPos,
-          height: block.height + dragHandleHeight,
-          width: block.width + dragHandleWidth,
-          onDrag: (deltaX, deltaY, position, pointerId) =>
-              onDragHandleDragged(deltaX, deltaY, position, pointerId, blockId),
-          onDragDone: (pointerId) => onResizeDone?.call(pointerId),
-          onDragStart: (handlePosition, pointerId) =>
-              onResizeStart?.call(handlePosition, pointerId, blockId),
+        height: block.height + dragHandleHeight + rotateHandleTotalHeight,
+        child: Transform(
+          transform: Matrix4.rotationZ(block.rotation),
+          origin: Offset(0, rotateHandleTotalHeight / 2),
+          alignment: Alignment.center,
+          child: DragHandles(
+            selected: selectedBlockIds.contains(blockId),
+            height: block.height + dragHandleHeight,
+            width: block.width + dragHandleWidth,
+            onDrag: (deltaX, deltaY, position, pointerId) =>
+                onDragHandleDragged(
+                    deltaX, deltaY, position, pointerId, blockId),
+            onDragDone: (pointerId) => onResizeDone?.call(pointerId),
+            onDragStart: (handlePosition, pointerId) =>
+                onResizeStart?.call(handlePosition, pointerId, blockId),
+            onRotateStart: (pointerId) =>
+                onRotateStart?.call(pointerId, blockId),
+            onRotate: (deltaX, deltaY, pointerId) =>
+                onRotate?.call(deltaX, deltaY, blockId, pointerId),
+            onRotateDone: (pointerId) => onRotateDone?.call(blockId, pointerId),
+          ),
         ),
       );
     }).toList();
@@ -72,15 +102,19 @@ class DragBoxLayer extends StatelessWidget {
         top: block.yPos - dragHandleHeight / 2,
         width: block.width + dragHandleWidth,
         height: block.height + dragHandleHeight,
-        child: DragBox(
-          selected: selectedBlockIds.contains(blockId),
-          xPos: block.xPos,
-          yPos: block.yPos,
-          height: block.height + dragHandleHeight,
-          width: block.width + dragHandleWidth,
-          onPositionChange: (xPosDelta, yPosDelta) =>
-              _handlePositionChange(xPosDelta, yPosDelta, blockId),
-          onClick: (pointerId) => onDragBoxClick?.call(blockId, pointerId),
+        child: Transform(
+          transform: Matrix4.rotationZ(block.rotation),
+          alignment: Alignment.center,
+          child: DragBox(
+            selected: selectedBlockIds.contains(blockId),
+            xPos: block.xPos,
+            yPos: block.yPos,
+            height: block.height + dragHandleHeight,
+            width: block.width + dragHandleWidth,
+            onPositionChange: (xPosDelta, yPosDelta) =>
+                _handlePositionChange(xPosDelta, yPosDelta, blockId),
+            onClick: (pointerId) => onDragBoxClick?.call(blockId, pointerId),
+          ),
         ),
       );
     }).toList();

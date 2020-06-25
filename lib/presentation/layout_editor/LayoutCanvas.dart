@@ -1,8 +1,11 @@
+import 'dart:math';
+
 import 'package:darkwrong/presentation/layout_editor/DragBoxLayer.dart';
 import 'package:darkwrong/presentation/layout_editor/LayoutBlock.dart';
 import 'package:darkwrong/presentation/layout_editor/LayoutElementModel.dart';
 import 'package:darkwrong/presentation/layout_editor/DragHandles.dart';
 import 'package:darkwrong/presentation/layout_editor/ResizeModifers.dart';
+import 'package:darkwrong/presentation/layout_editor/RotateHandle.dart';
 import 'package:darkwrong/presentation/layout_editor/consts.dart';
 import 'package:flutter/material.dart';
 
@@ -18,6 +21,7 @@ class _LayoutCanvasState extends State<LayoutCanvas> {
   Set<String> _selectedBlockIds = {};
   int _lastPointerId;
   ResizeHandleLocation _logicalResizeHandle;
+  Offset _pointerPosition;
 
   double _currentBlockWidth = 0.0;
 
@@ -52,7 +56,21 @@ class _LayoutCanvasState extends State<LayoutCanvas> {
               onDragHandleDragged: _handleResizeHandleDragged,
               onResizeDone: _handleResizeDone,
               onResizeStart: _handleResizeStart,
+              onRotateStart: _handleRotateStart,
+              onRotate: _handleRotate,
+              onRotateDone: _handleRotateDone,
             ),
+            Positioned(
+                left: _pointerPosition?.dx ?? 0,
+                top: _pointerPosition?.dy ?? 0,
+                child: Container(
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.purpleAccent,
+                  ),
+                  width: 8,
+                  height: 8,
+                )),
             Positioned(
               top: 20,
               left: 20,
@@ -63,6 +81,8 @@ class _LayoutCanvasState extends State<LayoutCanvas> {
                           ?.replaceAll('DragHandlePosition.', '') ??
                       'Null'),
                   Text(_currentBlockWidth.round().toString() ?? ''),
+                  Text(
+                      'Pointer Pos: (${_pointerPosition?.dx?.round() ?? null}, ${_pointerPosition?.dy?.round() ?? null})')
                 ],
               ),
             ),
@@ -93,6 +113,7 @@ class _LayoutCanvasState extends State<LayoutCanvas> {
                                 width: 100,
                                 xPos: 500,
                                 yPos: 200,
+                                rotation: 0,
                               )
                             });
                           _selectedBlockIds = <String>{uid};
@@ -125,12 +146,17 @@ class _LayoutCanvasState extends State<LayoutCanvas> {
             yPos: item.yPos,
             height: item.renderHeight,
             width: item.renderWidth,
-            child: Container(
-                decoration: BoxDecoration(
-                    border: Border.all(color: Colors.white),
-                    color: item.uid.hashCode.isEven
-                        ? Colors.deepOrange
-                        : Colors.deepPurple)),
+            rotation: item.rotation,
+            child: Transform(
+              transform: Matrix4.rotationZ(item.rotation),
+              alignment: Alignment.center,
+              child: Container(
+                  decoration: BoxDecoration(
+                      border: Border.all(color: Colors.white),
+                      color: item.uid.hashCode.isEven
+                          ? Colors.deepOrange
+                          : Colors.deepPurple)),
+            ),
           ));
     }));
   }
@@ -145,6 +171,41 @@ class _LayoutCanvasState extends State<LayoutCanvas> {
       ResizeHandleLocation position, int pointerId, String blockId) {
     setState(() {
       _lastPointerId = pointerId;
+    });
+  }
+
+  void _handleRotateStart(int pointerId, String blockId) {
+    final existing = _layoutElements[blockId];
+    setState(() {
+      _lastPointerId = pointerId;
+      _pointerPosition = Offset(existing.xPos + existing.width / 2,
+          existing.yPos - rotateHandleTotalHeight);
+    });
+  }
+
+  void _handleRotateDone(String blockId, int pointerId) {
+    setState(() {
+      _pointerPosition = null;
+    });
+  }
+
+  void _handleRotate(
+      double deltaX, double deltaY, String blockId, int pointerId) {
+    final existing = _layoutElements[blockId];
+    final center = existing.rectangle.center;
+
+    final pointerPos =
+        Offset(_pointerPosition.dx + deltaX, _pointerPosition.dy + deltaY);
+    final rotation =
+        atan2((pointerPos.dx - center.dx), (pointerPos.dy - center.dy)) * -1;
+
+    final updatedElement = existing.copyWith(rotation: rotation);
+
+    setState(() {
+      _layoutElements = Map<String, LayoutElementModel>.from(_layoutElements)
+        ..update(blockId, (_) => updatedElement);
+      _lastPointerId = pointerId;
+      _pointerPosition = pointerPos;
     });
   }
 

@@ -7,6 +7,7 @@ class LayoutElementModel {
   final double width;
   final double height;
   final Color color;
+  final double rotation;
 
   LayoutElementModel({
     this.uid,
@@ -15,6 +16,7 @@ class LayoutElementModel {
     this.width,
     this.height,
     this.color,
+    this.rotation = 0.0,
   });
 
   LayoutElementModel copyWith({
@@ -23,6 +25,7 @@ class LayoutElementModel {
     double yPos,
     double width,
     double height,
+    double rotation,
     Color color,
   }) {
     return LayoutElementModel(
@@ -31,6 +34,7 @@ class LayoutElementModel {
       yPos: yPos ?? this.yPos,
       width: width ?? this.width,
       height: height ?? this.height,
+      rotation: rotation ?? this.rotation,
       color: color ?? this.color,
     );
   }
@@ -55,7 +59,6 @@ class LayoutElementModel {
   double get renderWidth => width.clamp(16.0, double.maxFinite);
   double get renderHeight => height.clamp(16.0, double.maxFinite);
 
-  Rect getRectangle() {
-    return Rect.fromPoints(Offset(0, 0), Offset(width, height));
-  }
+  Rect get rectangle =>
+      Rect.fromPoints(Offset(xPos, yPos), Offset(xPos + width, yPos + height));
 }

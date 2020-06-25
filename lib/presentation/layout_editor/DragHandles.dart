@@ -1,4 +1,5 @@
 import 'package:darkwrong/presentation/layout_editor/ResizeHandle.dart';
+import 'package:darkwrong/presentation/layout_editor/RotateHandle.dart';
 import 'package:flutter/material.dart';
 
 enum ResizeHandleLocation {
@@ -12,38 +13,63 @@ enum ResizeHandleLocation {
   middleLeft,
 }
 
-typedef void OnHandleDragged(
+typedef void OnResizeHandleDragged(
     double deltaX, double deltaY, ResizeHandleLocation position, int pointerId);
 
-typedef void OnDragHandlesDragStartCallback(
+typedef void OnResizeHandleDragStartCallback(
     ResizeHandleLocation handlePosition, int pointerId);
+
+typedef void OnRotateHandleDragStartCallback(
+  int pointerId,
+);
+
+typedef void OnRotateHandleDraggedCallback(
+  double deltaX, double deltaY, int pointerId
+);
+
+typedef void OnRotateDoneCallback(
+  int pointerId
+);
 
 class DragHandles extends StatelessWidget {
   final bool selected;
-  final double xPos;
-  final double yPos;
   final double width;
   final double height;
-  final OnDragHandlesDragStartCallback onDragStart;
+  final OnResizeHandleDragStartCallback onDragStart;
   final OnDragDoneCallback onDragDone;
-  final OnHandleDragged onDrag;
+  final OnResizeHandleDragged onDrag;
+  final OnRotateHandleDragStartCallback onRotateStart;
+  final OnRotateHandleDraggedCallback onRotate;
+  final OnRotateDoneCallback onRotateDone;
 
   const DragHandles({
     Key key,
     this.width,
-    this.xPos,
-    this.yPos,
     this.height,
     this.onDrag,
     this.onDragDone,
     this.onDragStart,
     this.selected = false,
+    this.onRotateStart,
+    this.onRotate,
+    this.onRotateDone,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    final topLeft = Positioned(
+    final rotator = Positioned(
       top: 0,
+      left: width / 2 - rotateHandleWidth / 2,
+      child: RotateHandle(
+        selected: selected,
+        onDragStart: (pointerId) => onRotateStart?.call(pointerId),
+        onDrag: (deltaX, deltaY, pointerId) => onRotate?.call(deltaX, deltaY, pointerId),
+        onDragDone: (pointerId) => onRotateDone?.call(pointerId),
+      )
+    );
+
+    final topLeft = Positioned(
+      top: rotateHandleTotalHeight,
       left: 0,
       child: ResizeHandle(
         selected: selected,
@@ -55,7 +81,7 @@ class DragHandles extends StatelessWidget {
     );
 
     final topCenter = Positioned(
-        top: 0,
+        top: rotateHandleTotalHeight,
         left: width / 2 - dragHandleWidth / 2,
         child: ResizeHandle(
           selected: selected,
@@ -66,7 +92,7 @@ class DragHandles extends StatelessWidget {
         ));
 
     final topRight = Positioned(
-      top: 0,
+      top: rotateHandleTotalHeight,
       left: width - dragHandleWidth,
       child: ResizeHandle(
         selected: selected,
@@ -78,7 +104,7 @@ class DragHandles extends StatelessWidget {
     );
 
     final middleRight = Positioned(
-        top: height / 2 - dragHandleHeight / 2,
+        top: height / 2 - dragHandleHeight / 2 + rotateHandleTotalHeight,
         left: width - dragHandleWidth,
         child: ResizeHandle(
           selected: selected,
@@ -89,7 +115,7 @@ class DragHandles extends StatelessWidget {
         ));
 
     final bottomRight = Positioned(
-      top: height - dragHandleHeight,
+      top: height - dragHandleHeight + rotateHandleTotalHeight,
       left: width - dragHandleWidth,
       child: ResizeHandle(
         selected: selected,
@@ -101,7 +127,7 @@ class DragHandles extends StatelessWidget {
     );
 
     final bottomCenter = Positioned(
-      top: height - dragHandleHeight,
+      top: height - dragHandleHeight + rotateHandleTotalHeight,
       left: width / 2 - dragHandleWidth / 2,
       child: ResizeHandle(
         selected: selected,
@@ -113,7 +139,7 @@ class DragHandles extends StatelessWidget {
     );
 
     final bottomLeft = Positioned(
-      top: height - dragHandleHeight,
+      top: height - dragHandleHeight + rotateHandleTotalHeight,
       left: 0,
       child: ResizeHandle(
         selected: selected,
@@ -125,7 +151,7 @@ class DragHandles extends StatelessWidget {
     );
 
     final middleLeft = Positioned(
-      top: height / 2 - dragHandleHeight / 2,
+      top: height / 2 - dragHandleHeight / 2 + rotateHandleTotalHeight,
       left: 0,
       child: ResizeHandle(
         selected: selected,
@@ -137,11 +163,10 @@ class DragHandles extends StatelessWidget {
     );
 
     return Container(
-      width: width,
-      height: height,
       child: Stack(
         alignment: Alignment.center,
         children: [
+          rotator,
           topLeft,
           topCenter,
           topRight,

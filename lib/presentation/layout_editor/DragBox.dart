@@ -43,8 +43,9 @@ class DragBox extends StatelessWidget {
                 },
                 onPointerMove: (pointerEvent) {
                   if (pointerEvent.down) {
+                    final transformedEvent = pointerEvent.transformed(Matrix4.rotationZ(0));
                     onPositionChange?.call(
-                        pointerEvent.localDelta.dx, pointerEvent.localDelta.dy);
+                        transformedEvent.localDelta.dx, transformedEvent.localDelta.dy);
                   }
                 },
                 child: Container(
