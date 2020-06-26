@@ -44,8 +44,8 @@ class RotateHandle extends StatelessWidget {
                   if (pointerEvent.down) {
                     
                     onDrag?.call(
-                        pointerEvent.localDelta.dx,
-                        pointerEvent.localDelta.dy,
+                        pointerEvent.delta.dx,
+                        pointerEvent.delta.dy,
                         pointerEvent.original.pointer);
                   }
                 },

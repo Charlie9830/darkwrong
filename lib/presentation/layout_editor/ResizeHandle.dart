@@ -27,10 +27,9 @@ class ResizeHandle extends StatelessWidget {
     return Listener(
       onPointerMove: (pointerEvent) {
         if (pointerEvent.down) {
-          final transformedEvent = pointerEvent.transformed(Matrix4.rotationZ(0));
           onDrag?.call(
-              transformedEvent.localDelta.dx,
-              transformedEvent.localDelta.dy,
+              pointerEvent.localDelta.dx,
+              pointerEvent.localDelta.dy,
               pointerEvent.original.pointer);
         }
       },

@@ -21,7 +21,7 @@ class _LayoutCanvasState extends State<LayoutCanvas> {
   Set<String> _selectedBlockIds = {};
   int _lastPointerId;
   ResizeHandleLocation _logicalResizeHandle;
-  Offset _pointerPosition;
+  Point _pointerPosition;
 
   double _currentBlockWidth = 0.0;
 
@@ -61,8 +61,8 @@ class _LayoutCanvasState extends State<LayoutCanvas> {
               onRotateDone: _handleRotateDone,
             ),
             Positioned(
-                left: _pointerPosition?.dx ?? 0,
-                top: _pointerPosition?.dy ?? 0,
+                left: _pointerPosition?.x ?? 0,
+                top: _pointerPosition?.y ?? 0,
                 child: Container(
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
@@ -82,7 +82,7 @@ class _LayoutCanvasState extends State<LayoutCanvas> {
                       'Null'),
                   Text(_currentBlockWidth.round().toString() ?? ''),
                   Text(
-                      'Pointer Pos: (${_pointerPosition?.dx?.round() ?? null}, ${_pointerPosition?.dy?.round() ?? null})')
+                      'Pointer Pos: (${_pointerPosition?.x?.round() ?? null}, ${_pointerPosition?.y?.round() ?? null})')
                 ],
               ),
             ),
@@ -100,6 +100,18 @@ class _LayoutCanvasState extends State<LayoutCanvas> {
               right: 0,
               child: Row(
                 children: [
+                  OutlineButton(
+                    child: Text('Start'),
+                    onPressed: () {
+                      _handleRotateStart(1000, 'helloworld');
+                    },
+                  ),
+                  OutlineButton(
+                    child: Text('Bump'),
+                    onPressed: () {
+                      _handleRotate(15, 15, 'helloworld', 1000);
+                    },
+                  ),
                   OutlineButton(
                       child: Text('Reset'),
                       onPressed: () {
@@ -176,10 +188,16 @@ class _LayoutCanvasState extends State<LayoutCanvas> {
 
   void _handleRotateStart(int pointerId, String blockId) {
     final existing = _layoutElements[blockId];
+
+    final rectangle = existing.rectangle;
+    final nakedPoint = Point(0, existing.height / 2 + rotateHandleTotalHeight);
+    final rotatedPoint = _rotatePoint(nakedPoint, existing.rotation);
+    final screenSpacePoint = Point(rotatedPoint.x + rectangle.center.dx,
+        rotatedPoint.y + rectangle.center.dy);
+        
     setState(() {
       _lastPointerId = pointerId;
-      _pointerPosition = Offset(existing.xPos + existing.width / 2,
-          existing.yPos - rotateHandleTotalHeight);
+      _pointerPosition = screenSpacePoint;
     });
   }
 
@@ -189,15 +207,21 @@ class _LayoutCanvasState extends State<LayoutCanvas> {
     });
   }
 
+  Point _rotatePoint(Point existing, double radians) {
+    return Point((existing.x * cos(radians)) + (existing.y * sin(radians)),
+        (existing.x * sin(radians)) + (existing.y * -1 * cos(radians)));
+  }
+
   void _handleRotate(
       double deltaX, double deltaY, String blockId, int pointerId) {
     final existing = _layoutElements[blockId];
     final center = existing.rectangle.center;
 
     final pointerPos =
-        Offset(_pointerPosition.dx + deltaX, _pointerPosition.dy + deltaY);
+        Point(_pointerPosition.x + deltaX, _pointerPosition.y + deltaY);
     final rotation =
-        atan2((pointerPos.dx - center.dx), (pointerPos.dy - center.dy)) * -1;
+        atan2((pointerPos.y - center.dy), (pointerPos.x - center.dx)) +
+            (pi / 2);
 
     final updatedElement = existing.copyWith(rotation: rotation);
 
@@ -240,6 +264,7 @@ class _LayoutCanvasState extends State<LayoutCanvas> {
   void _handleResizeHandleDragged(double deltaX, double deltaY,
       ResizeHandleLocation physicalHandle, int pointerId, String blockId) {
     final existing = _layoutElements[blockId];
+
     final isFlippingLeftToRight =
         existing.leftEdge + deltaX > existing.rightEdge;
     final isFlippingRightToLeft =

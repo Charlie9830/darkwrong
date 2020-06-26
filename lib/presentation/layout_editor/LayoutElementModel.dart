@@ -59,6 +59,8 @@ class LayoutElementModel {
   double get renderWidth => width.clamp(16.0, double.maxFinite);
   double get renderHeight => height.clamp(16.0, double.maxFinite);
 
-  Rect get rectangle =>
-      Rect.fromPoints(Offset(xPos, yPos), Offset(xPos + width, yPos + height));
+  Rect get rectangle {
+    return Rect.fromPoints(
+        Offset(xPos, yPos), Offset(xPos + width, yPos + height));
+  }
 }
