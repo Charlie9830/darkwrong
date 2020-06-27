@@ -7,6 +7,7 @@ import 'package:darkwrong/presentation/layout_editor/DragHandles.dart';
 import 'package:darkwrong/presentation/layout_editor/ResizeModifers.dart';
 import 'package:darkwrong/presentation/layout_editor/RotateHandle.dart';
 import 'package:darkwrong/presentation/layout_editor/consts.dart';
+import 'package:darkwrong/presentation/layout_editor/rotatePoint.dart';
 import 'package:flutter/material.dart';
 
 class LayoutCanvas extends StatefulWidget {
@@ -101,18 +102,6 @@ class _LayoutCanvasState extends State<LayoutCanvas> {
               child: Row(
                 children: [
                   OutlineButton(
-                    child: Text('Start'),
-                    onPressed: () {
-                      _handleRotateStart(1000, 'helloworld');
-                    },
-                  ),
-                  OutlineButton(
-                    child: Text('Bump'),
-                    onPressed: () {
-                      _handleRotate(15, 15, 'helloworld', 1000);
-                    },
-                  ),
-                  OutlineButton(
                       child: Text('Reset'),
                       onPressed: () {
                         setState(() {
@@ -125,7 +114,7 @@ class _LayoutCanvasState extends State<LayoutCanvas> {
                                 width: 100,
                                 xPos: 500,
                                 yPos: 200,
-                                rotation: 0,
+                                rotation: 0.5,
                               )
                             });
                           _selectedBlockIds = <String>{uid};
@@ -156,6 +145,8 @@ class _LayoutCanvasState extends State<LayoutCanvas> {
             id: item.uid,
             xPos: item.xPos,
             yPos: item.yPos,
+            debugRenderXPos: item.debugRenderXPos,
+            debugRenderYPos: item.debugRenderYPos,
             height: item.renderHeight,
             width: item.renderWidth,
             rotation: item.rotation,
@@ -163,11 +154,14 @@ class _LayoutCanvasState extends State<LayoutCanvas> {
               transform: Matrix4.rotationZ(item.rotation),
               alignment: Alignment.center,
               child: Container(
+                
+                  alignment: Alignment.center,
                   decoration: BoxDecoration(
                       border: Border.all(color: Colors.white),
                       color: item.uid.hashCode.isEven
                           ? Colors.deepOrange
-                          : Colors.deepPurple)),
+                          : Colors.deepPurple),
+                          child: Text('Box', textScaleFactor: 2.0,)),
             ),
           ));
     }));
@@ -191,7 +185,7 @@ class _LayoutCanvasState extends State<LayoutCanvas> {
 
     final rectangle = existing.rectangle;
     final nakedPoint = Point(0, existing.height / 2 + rotateHandleTotalHeight);
-    final rotatedPoint = _rotatePoint(nakedPoint, existing.rotation);
+    final rotatedPoint = rotatePoint(nakedPoint, existing.rotation);
     final screenSpacePoint = Point(rotatedPoint.x + rectangle.center.dx,
         rotatedPoint.y + rectangle.center.dy);
         
@@ -205,11 +199,6 @@ class _LayoutCanvasState extends State<LayoutCanvas> {
     setState(() {
       _pointerPosition = null;
     });
-  }
-
-  Point _rotatePoint(Point existing, double radians) {
-    return Point((existing.x * cos(radians)) + (existing.y * sin(radians)),
-        (existing.x * sin(radians)) + (existing.y * -1 * cos(radians)));
   }
 
   void _handleRotate(
@@ -264,6 +253,12 @@ class _LayoutCanvasState extends State<LayoutCanvas> {
   void _handleResizeHandleDragged(double deltaX, double deltaY,
       ResizeHandleLocation physicalHandle, int pointerId, String blockId) {
     final existing = _layoutElements[blockId];
+    // final rawDelta = Point(rawDeltaX, rawDeltaY);
+    // final rotatedDelta = _rotatePoint(rawDelta, existing.rotation);
+    // final deltaX = rotatedDelta.x;
+    // final deltaY = rotatedDelta.y * -1;
+
+    // print('Raw: (${rawDeltaX.round()}, ${rawDeltaY.round()})   Rotated: (${deltaX.round()}, ${deltaY.round()}) ');  
 
     final isFlippingLeftToRight =
         existing.leftEdge + deltaX > existing.rightEdge;
@@ -332,6 +327,8 @@ class _LayoutCanvasState extends State<LayoutCanvas> {
           _logicalResizeHandle = _getOpposingResizeHandle(currentLogicalHandle,
               isFlippingRightToLeft, isFlippingTopToBottom);
           _lastPointerId = pointerId;
+
+          _pointerPosition = Point(existing.rectangle.topRight.dx + deltaX, existing.rectangle.topRight.dy + deltaY);
         });
         break;
 

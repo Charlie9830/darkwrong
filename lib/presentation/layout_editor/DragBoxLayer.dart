@@ -57,6 +57,7 @@ class DragBoxLayer extends StatelessWidget {
         ..._positionBlocks(),
         ..._drawDragBoxes(),
         ..._drawDragHandles(),
+        ..._drawDebugIndicators(),
       ],
     );
   }
@@ -91,6 +92,21 @@ class DragBoxLayer extends StatelessWidget {
           ),
         ),
       );
+    }).toList();
+  }
+
+  List<Widget> _drawDebugIndicators() {
+    return blocks.values.map((block) {
+      return Positioned(
+          left: block.debugRenderXPos,
+          top: block.debugRenderYPos,
+          child: Container(
+            width: 16,
+            height: 16,
+            decoration: BoxDecoration(
+                border: Border.all(color: Colors.red, width: 2.0),
+                shape: BoxShape.circle, color: Colors.purpleAccent),
+          ));
     }).toList();
   }
 

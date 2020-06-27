@@ -47,7 +47,6 @@ LayoutElementModel applyLeftCrossoverUpdate(
   return updatedElement;
 }
 
-
 //
 // Bottom
 //
@@ -60,7 +59,6 @@ LayoutElementModel applyBottomNormalUpdate(
   return updatedElement;
 }
 
-
 LayoutElementModel applyBottomCrossoverUpdate(
     LayoutElementModel existing, double deltaY) {
   final updatedElement = existing.copyWith(
@@ -69,7 +67,6 @@ LayoutElementModel applyBottomCrossoverUpdate(
   );
   return updatedElement;
 }
-
 
 //
 // Right

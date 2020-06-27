@@ -1,3 +1,6 @@
+import 'dart:math';
+
+import 'package:darkwrong/presentation/layout_editor/rotatePoint.dart';
 import 'package:flutter/material.dart';
 
 class LayoutElementModel {
@@ -58,6 +61,18 @@ class LayoutElementModel {
 
   double get renderWidth => width.clamp(16.0, double.maxFinite);
   double get renderHeight => height.clamp(16.0, double.maxFinite);
+
+  double get debugRenderXPos {
+    final normalizedTopLeft = Point(0 - width / 2, 0 - height / 2);
+    final rotated = rotatePoint(normalizedTopLeft, rotation);
+    return rotated.x + xPos + width / 2;
+  }
+
+  double get debugRenderYPos {
+    final normalizedTopLeft = Point(0 - width / 2, 0 - height / 2);
+    final rotated = rotatePoint(normalizedTopLeft, rotation);
+    return rotated.y + yPos + height / 2;
+  }
 
   Rect get rectangle {
     return Rect.fromPoints(
