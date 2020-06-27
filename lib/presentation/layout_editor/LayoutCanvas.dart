@@ -154,7 +154,6 @@ class _LayoutCanvasState extends State<LayoutCanvas> {
               transform: Matrix4.rotationZ(item.rotation),
               alignment: Alignment.center,
               child: Container(
-                
                   alignment: Alignment.center,
                   decoration: BoxDecoration(
                       border: Border.all(color: Colors.white),
