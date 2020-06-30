@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'package:vector_math/vector_math_64.dart' hide Colors;
 
 import 'package:darkwrong/presentation/layout_editor/DragBoxLayer.dart';
 import 'package:darkwrong/presentation/layout_editor/LayoutBlock.dart';
@@ -102,6 +103,37 @@ class _LayoutCanvasState extends State<LayoutCanvas> {
               child: Row(
                 children: [
                   OutlineButton(
+                    child: Text('Thinner'),
+                    onPressed: () {
+                      setState(() {
+                        _layoutElements = Map<String, LayoutElementModel>.from(
+                            _layoutElements
+                              ..update(
+                                  'helloworld',
+                                  (existing) => existing.copyWith(
+                                      width: existing.width - 100)));
+                      });
+                    },
+                  ),
+                  OutlineButton(
+                    child: Text('Fatter'),
+                    onPressed: () {
+                      setState(() {
+                        _layoutElements =
+                            Map<String, LayoutElementModel>.from(_layoutElements
+                              ..update(
+                                'helloworld',
+                                (existing) {
+                                  return existing.copyWith(
+                                    width: existing.width + 100,
+                                    //xPos: existing.xPos - 50,
+                                  );
+                                },
+                              ));
+                      });
+                    },
+                  ),
+                  OutlineButton(
                       child: Text('Reset'),
                       onPressed: () {
                         setState(() {
@@ -112,9 +144,9 @@ class _LayoutCanvasState extends State<LayoutCanvas> {
                                 uid: uid,
                                 height: 100,
                                 width: 100,
-                                xPos: 500,
+                                xPos: 600,
                                 yPos: 200,
-                                rotation: 0.5,
+                                rotation: 0,
                               )
                             });
                           _selectedBlockIds = <String>{uid};
@@ -151,8 +183,11 @@ class _LayoutCanvasState extends State<LayoutCanvas> {
             width: item.renderWidth,
             rotation: item.rotation,
             child: Transform(
-              transform: Matrix4.rotationZ(item.rotation),
-              alignment: Alignment.center,
+              transform: Matrix4.identity()
+                ..translate(item.width / 2, item.height / 2)
+                ..rotateZ(item.rotation)
+                ..translate(item.width / 2 * -1, item.height / 2 * -1),
+              origin: Offset(0, 0),
               child: Container(
                   alignment: Alignment.center,
                   decoration: BoxDecoration(
@@ -160,7 +195,10 @@ class _LayoutCanvasState extends State<LayoutCanvas> {
                       color: item.uid.hashCode.isEven
                           ? Colors.deepOrange
                           : Colors.deepPurple),
-                          child: Text('Box', textScaleFactor: 2.0,)),
+                  child: Text(
+                    'Box',
+                    textScaleFactor: 2.0,
+                  )),
             ),
           ));
     }));
@@ -176,6 +214,7 @@ class _LayoutCanvasState extends State<LayoutCanvas> {
       ResizeHandleLocation position, int pointerId, String blockId) {
     setState(() {
       _lastPointerId = pointerId;
+      _pointerPosition = Point(100.0, 100.0);
     });
   }
 
@@ -187,7 +226,7 @@ class _LayoutCanvasState extends State<LayoutCanvas> {
     final rotatedPoint = rotatePoint(nakedPoint, existing.rotation);
     final screenSpacePoint = Point(rotatedPoint.x + rectangle.center.dx,
         rotatedPoint.y + rectangle.center.dy);
-        
+
     setState(() {
       _lastPointerId = pointerId;
       _pointerPosition = screenSpacePoint;
@@ -257,7 +296,7 @@ class _LayoutCanvasState extends State<LayoutCanvas> {
     // final deltaX = rotatedDelta.x;
     // final deltaY = rotatedDelta.y * -1;
 
-    // print('Raw: (${rawDeltaX.round()}, ${rawDeltaY.round()})   Rotated: (${deltaX.round()}, ${deltaY.round()}) ');  
+    // print('Raw: (${rawDeltaX.round()}, ${rawDeltaY.round()})   Rotated: (${deltaX.round()}, ${deltaY.round()}) ');
 
     final isFlippingLeftToRight =
         existing.leftEdge + deltaX > existing.rightEdge;
@@ -327,7 +366,8 @@ class _LayoutCanvasState extends State<LayoutCanvas> {
               isFlippingRightToLeft, isFlippingTopToBottom);
           _lastPointerId = pointerId;
 
-          _pointerPosition = Point(existing.rectangle.topRight.dx + deltaX, existing.rectangle.topRight.dy + deltaY);
+          _pointerPosition = Point(existing.rectangle.topRight.dx + deltaX,
+              existing.rectangle.topRight.dy + deltaY);
         });
         break;
 
@@ -339,10 +379,57 @@ class _LayoutCanvasState extends State<LayoutCanvas> {
               : applyRightNormalUpdate(existing, deltaX),
         );
 
+        // final originalMatrix = Matrix4.identity()
+        //   ..translate(existing.width / 2, existing.height / 2)
+        //   ..rotateZ(existing.rotation)
+        //   ..translate(existing.width / 2 * -1, existing.height / 2 * -1);
+        final newMatrix = Matrix4.identity()
+          ..translate(updatedElement.width / 2, updatedElement.height / 2)
+          ..rotateZ(existing.rotation)
+          ..translate(
+              updatedElement.width / 2 * -1, updatedElement.height / 2 * -1);
+
+        setState(() {
+          _pointerPosition =
+              Point(_pointerPosition.x + deltaX, _pointerPosition.y + deltaY);
+        });
+
+        final dimensionChangeVector = Vector3(
+            updatedElement.width - existing.width,
+            updatedElement.height - existing.height,
+            0);
+
+        // Represents the Transformation that would have been applied to the existing Shape.
+        final Matrix4 existingElementMatrix = Matrix4.identity()
+          ..translate(existing.width / 2, existing.height / 2)
+          ..rotateZ(existing.rotation)
+          ..translate(
+              existing.width / 2 * -1, existing.height / 2 * -1);
+
+        // Represents the Transformation that Will be applied to the updated Shape.
+        final Matrix4 updatedElementMatrix = Matrix4.identity()
+          ..translate(updatedElement.width / 2, updatedElement.height / 2)
+          ..rotateZ(existing.rotation)
+          ..translate(
+              updatedElement.width / 2 * -1, updatedElement.height / 2 * -1);
+
+        // Pass the DimensionChangeVector through both Matrices.
+        final existingTransformedVector = existingElementMatrix.transformed3(dimensionChangeVector);
+        final updatedTransformedVector = updatedElementMatrix.transformed3(dimensionChangeVector);
+
+        // Find the X and Y Difference. Use these to offset the xPos and yPos of the shape ahead of the transformation.
+        final xPosDelta = existingTransformedVector.x - updatedTransformedVector.x;
+        final yPosDelta = existingTransformedVector.y - updatedTransformedVector.y;
+
         setState(() {
           _layoutElements =
               Map<String, LayoutElementModel>.from(_layoutElements)
-                ..update(blockId, (_) => updatedElement);
+                ..update(
+                    blockId,
+                    (_) => updatedElement.copyWith(
+                          xPos: updatedElement.xPos + xPosDelta,
+                          yPos: updatedElement.yPos + yPosDelta,
+                        ));
           _logicalResizeHandle = isFlippingRightToLeft
               ? opposingResizeHandles[currentLogicalHandle]
               : currentLogicalHandle;

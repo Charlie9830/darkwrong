@@ -30,6 +30,7 @@ dependencies:
   redux_thunk: ^0.3.0
   random_words: ^1.0.2
   autocomplete_textfield: ^1.7.3
+  vector_math: ^2.0.8
 
 
   # The following adds the Cupertino Icons font to your application.
